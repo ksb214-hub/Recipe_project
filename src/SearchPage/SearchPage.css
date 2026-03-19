@@ -2,6 +2,8 @@
 .search-wrapper {
   position: relative;
   width: 100%;
+  max-width: 600px; /* 핵심: 최대 너비 제한 */
+  margin: 0 auto;   /* 가운데 정렬 */
 }
 /* 검색 input */
 .search-input {
@@ -34,5 +36,5 @@
   transform: translateY(-50%);
 
   color: #9ca3af;
-  pointer-events: none; /* 👈 클릭 방해 안함 */
+  pointer-events: none; /* 클릭 방해 안함 */
 }
