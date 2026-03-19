@@ -59,8 +59,7 @@
 /* 태블릿 */
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
-    gap: 10px;
+    display: ruby-text;
   }
 
   .nav-buttons {
