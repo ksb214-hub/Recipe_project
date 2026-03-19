@@ -1,6 +1,6 @@
 // 아이콘 라이브러리 (검색, 필터, 요리 관련 아이콘)
 import { Search, Filter, TrendingUp, Clock, ChefHat, Timer, Users } from 'lucide-react';
-
+import "./SearchPage.css";
 // React 상태 관리
 import { useState } from 'react';
 
