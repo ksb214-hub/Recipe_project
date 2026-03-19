@@ -1,7 +1,7 @@
 /* 검색 영역 */
 .search-wrapper {
   position: relative;
-  width: 100%;
+  width: 50%;
   max-width: 600px; /* 핵심: 최대 너비 제한 */
   margin: 0 auto;   /* 가운데 정렬 */
 }
