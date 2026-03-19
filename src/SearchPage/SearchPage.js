@@ -4,9 +4,6 @@ import { Search, Filter, TrendingUp, Clock, ChefHat, Timer, Users } from 'lucide
 // React 상태 관리
 import { useState } from 'react';
 
-// 이미지 로딩 실패 대비 컴포넌트 (없으면 <img>로 대체 가능)
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
-
 export default function SearchPage() {
 
   // 검색어 상태
@@ -159,11 +156,6 @@ export default function SearchPage() {
             {recipeResults.map((recipe) => (
               <div key={recipe.id} className="border rounded-lg p-4">
 
-                {/* 이미지 */}
-                <ImageWithFallback
-                  src={recipe.image}
-                  alt={recipe.title}
-                />
 
                 {/* 제목 */}
                 <h3>{recipe.title}</h3>

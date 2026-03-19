@@ -1,6 +1,6 @@
 import "./App.css";
 import Login from "./Login";
-import SearchPage from "./SearchPage";
+import SearchPage from "./SearchPage/SearchPage";
 
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
@@ -21,7 +21,7 @@ function App() {
 
         {/*  페이지 영역 */}
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/search" element={<SearchPage />} />
         </Routes>
 
