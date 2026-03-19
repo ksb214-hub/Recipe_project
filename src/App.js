@@ -20,11 +20,13 @@ function App() {
         </nav>
 
         {/*  페이지 영역 */}
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/search" element={<SearchPage />} />
-        </Routes>
-
+        <div className="main-content">
+          <Routes>
+            <Route path="/" element={<SearchPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/search" element={<SearchPage />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
