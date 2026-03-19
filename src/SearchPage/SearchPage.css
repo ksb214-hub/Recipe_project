@@ -1,0 +1,24 @@
+/* 🔍 검색 input */
+.search-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px; /* 왼쪽 아이콘 공간 */
+
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+
+  font-size: 16px;
+  outline: none;
+
+  transition: 0.2s;
+}
+
+/* 포커스 효과 */
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* placeholder 스타일 */
+.search-input::placeholder {
+  color: #9ca3af;
+}
