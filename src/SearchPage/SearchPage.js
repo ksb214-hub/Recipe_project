@@ -87,19 +87,22 @@ export default function SearchPage() {
           원하는 레시피를 검색해보세요
         </p>
 
-        {/* 🔍 검색 바 */}
+        {/* 검색 바 */}
         <form onSubmit={handleSearch} className="max-w-3xl mx-auto">
           <div className="relative flex gap-2">
 
-            {/* 입력창 */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2" />
+            <div className="search-wrapper">
+
+              {/* 아이콘 */}
+              <Search className="search-icon" size={20} />
+
+              {/* input */}
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="재료나 요리 이름 입력"
-                className="w-full pl-12 pr-4 py-4 border rounded-lg"
+                className="search-input"
               />
             </div>
 
