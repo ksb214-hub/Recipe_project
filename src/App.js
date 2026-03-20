@@ -15,7 +15,7 @@ function App() {
 
           <div className="nav-buttons">
             <Link to="/search" className="nav-btn">검색</Link>
-            <Link to="/" className="nav-btn">로그인</Link>
+            <Link to="/login" className="nav-btn">로그인</Link>
           </div>
         </nav>
 
