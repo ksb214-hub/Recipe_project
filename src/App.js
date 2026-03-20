@@ -1,5 +1,5 @@
 import "./App.css";
-import Login from "./Login";
+import Login from "./Login/Login";
 import SearchPage from "./SearchPage/SearchPage";
 
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
