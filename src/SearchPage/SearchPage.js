@@ -107,16 +107,14 @@ export default function SearchPage() {
           </div>
         </form>
 
-        {/* 🏷 카테고리 필터 */}
-        <div className="flex justify-center gap-2 mt-6 flex-wrap">
+        {/* 카테고리 필터 */}
+        <div className="category-container">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full border ${
-                selectedCategory === category
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white'
+              className={`category-btn ${
+                selectedCategory === category ? "active" : ""
               }`}
             >
               {category}
@@ -132,15 +130,18 @@ export default function SearchPage() {
         <div className="lg:col-span-2">
 
           {/* 상세 필터 */}
-          <div className="border p-4 mb-6">
-            <h2>상세 필터</h2>
+          <div className="filter-box">
+            <h2 className="filter-title">상세 필터</h2>
 
             {/* 난이도 */}
-            <div>
+            <div className="filter-group">
               {difficulties.map((difficulty) => (
                 <button
                   key={difficulty}
                   onClick={() => setSelectedDifficulty(difficulty)}
+                  className={`filter-btn ${
+                    selectedDifficulty === difficulty ? "active" : ""
+                  }`}
                 >
                   {difficulty}
                 </button>
