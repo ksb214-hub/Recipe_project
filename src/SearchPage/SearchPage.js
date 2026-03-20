@@ -87,16 +87,11 @@ export default function SearchPage() {
           원하는 레시피를 검색해보세요
         </p>
 
-        {/* 검색 바 */}
-        <form onSubmit={handleSearch} className="max-w-3xl mx-auto">
-          <div className="relative flex gap-2">
-
+        <form onSubmit={handleSearch} className="search-form">
+          <div className="search-container">
+            {/* input 영역 */}
             <div className="search-wrapper">
-
-              {/* 아이콘 */}
               <Search className="search-icon" size={20} />
-
-              {/* input */}
               <input
                 type="text"
                 value={searchQuery}
@@ -105,9 +100,8 @@ export default function SearchPage() {
                 className="search-input"
               />
             </div>
-
             {/* 검색 버튼 */}
-            <button className="px-6 py-4 bg-blue-500 text-white rounded-lg">
+            <button type="submit" className="search-btn">
               검색
             </button>
           </div>
