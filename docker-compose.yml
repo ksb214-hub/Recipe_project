@@ -1,0 +1,30 @@
+services:
+  app:
+    image: rogi2/zero-naeng-be:latest
+    platform: linux/amd64
+    container_name: zero-naeng-be
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/zeronaeng?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: zero-naeng-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: zeronaeng
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    volumes:
+      - zeronaeng_mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  zeronaeng_mysql_data:
