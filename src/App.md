@@ -138,13 +138,10 @@ utils
 
 
 구조 흐름 (중요)
-    App.js
-        ↓
-    pages/
-        ↓
-    components/
-        ↓
-    styles/
+   flowchart TD
+    A[App.js] --> B[pages/]
+    B --> C[components/]
+    C --> D[styles/]
 
 App.js 역할
     1. 라우팅 관리
