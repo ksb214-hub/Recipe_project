@@ -77,6 +77,7 @@ FindPw
 
 
 
+
 전체 기능 구조 (프로젝트 기능 맵)
 [메인 페이지]
     ├── 네비게이션
@@ -143,6 +144,7 @@ utils
     B --> C[components/]
     C --> D[styles/]
 
+    ![alt text](image.png)
 App.js 역할
     1. 라우팅 관리
     2. Layout 연결
