@@ -1,0 +1,103 @@
+recipes.js 설계 문서
+
+1. 개요 (Overview)
+
+    recipes.js는 zero-naeng-fe 프로젝트에서 사용하는 레시피 데이터를 관리하는 데이터 모듈이다.
+    메인 페이지에서 출력되는 레시피 목록을 별도의 파일로 분리하여 관리함으로써 다음과 같은 장점을 얻을 수 있다.
+        •	페이지 코드와 데이터 분리
+        •	코드 가독성 향상
+        •	데이터 관리 효율 증가
+        •	향후 API 연동 시 구조 확장 용이
+
+
+2. 개발 환경
+
+        항목	    내용
+    Language	JavaScript
+    Data Type	Array
+    Export	    ES Module export
+
+3. 폴더 구조
+    text
+        src/
+        │
+        ├── data/
+        │   └── recipes.js
+
+    구성 요소
+        recipes.js
+        → 레시피 데이터 배열 관리
+
+
+4. 목적
+
+    recipes.js는 다음 목적을 가진다.
+        •	레시피 데이터 관리
+        •	메인 페이지 카드 리스트 출력 데이터 제공
+        •	UI와 데이터 로직 분리
+        •	향후 API 데이터 구조와 동일하게 설계
+
+    
+5. 데이터 구조
+    recipes.js는 레시피 객체 배열 형태로 구성된다.
+        JavaScript
+            export const recipes = [
+                {
+                    id: 1,
+                    title: "유부초밥 레시피 모음",
+                    image: "https://via.placeholder.com/150",
+                    time: "10분",
+                    difficulty: "쉬움",
+                    servings: "2인분"
+                },
+
+                {
+                    id: 2,
+                    title: "간단한 김치볶음밥",
+                    image: "https://via.placeholder.com/150",
+                    time: "15분",
+                    difficulty: "쉬움",
+                    servings: "1인분"
+                }
+            ];
+
+6. 데이터 흐름
+    recipes.js는 다음 데이터 흐름을 가진다.
+        text
+            recipes.js
+                │
+                ▼
+            Main.js import
+                │
+                ▼
+            map()
+                │
+                ▼
+            Card 컴포넌트 props 전달
+                │
+                ▼
+            UI 렌더링
+
+7. 사용 방법
+    Main 페이지에서 다음과 같이 사용할 수 있다.
+        JavaScript
+            import { recipes } from "../../data/recipes";
+        
+        카드 출력
+            JavaScript
+                {recipes.map((recipe) => (
+                    <Card
+                        key={recipe.id}
+                        title={recipe.title}
+                        image={recipe.image}
+                        time={recipe.time}
+                        difficulty={recipe.difficulty}
+                    />
+                ))}
+
+8. 설계 포인트
+	•	데이터와 UI 분리
+	•	배열 기반 렌더링
+	•	확장 가능한 데이터 구조
+	•	API 연동 대비 구조
+

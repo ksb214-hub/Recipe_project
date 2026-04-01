@@ -1,0 +1,139 @@
+Section.js 설계 문서
+
+1. 개요 (Overview)
+    Section 컴포넌트는 zero-naeng-fe 프로젝트에서 페이지 내 콘텐츠 영역을 구분하기 위한 공통 UI 컴포넌트이다.
+    메인 페이지에서 레시피 목록과 같은 콘텐츠를 하나의 Section 단위로 구성할 수 있도록 설계되었다.
+    이를 통해 다음과 같은 장점을 제공한다.
+        •	UI 구조 통일
+        •	콘텐츠 영역 재사용
+        •	코드 가독성 향상
+        •	유지보수 효율 증가
+
+2. 개발 환경
+        항목	        내용
+    Framework	    React
+    Language	    JavaScript
+    Component Type	Functional Component
+    Styling	        CSS
+
+3. 폴더 구조
+    text
+        src/
+        │
+        ├── components/
+        │   └── Section/
+        │       ├── Section.js
+        │       └── Section.css
+
+    구성 요소
+        Section.js
+        → Section UI 구조 및 기능
+
+        Section.css
+        → Section 스타일 정의
+
+4. 목적
+    Section 컴포넌트는 다음 목적을 가진다.
+        •	콘텐츠 영역 구분
+        •	제목 + 내용 구조 제공
+        •	다양한 페이지에서 재사용 가능
+        •	UI 레이아웃 통일
+
+
+5. 컴포넌트 구조
+    Section 컴포넌트는 다음 구조로 구성된다.
+        text
+            Section
+            │
+            ├── section-header
+            │     └── title
+            │
+            └── section-body
+                └── children
+
+6. 코드 구조
+    Section 컴포넌트는 props 기반 구조로 설계된다.
+        JavaScript
+            function Section({ title, children }) {
+
+                return (
+                    <div className="section">
+
+                    <div className="section-header">
+                        <h3>{title}</h3>
+                    </div>
+
+                    <div className="section-body">
+                        {children}
+                    </div>
+
+                    </div>
+                );
+            }
+
+            export default Section;
+
+7. 데이터 흐름
+    Section 컴포넌트의 데이터 흐름
+        text
+            Main 페이지
+                │
+                ▼
+            Section 컴포넌트 호출
+                │
+                ▼
+            title props 전달
+            children 전달
+                │
+                ▼
+            UI 렌더링
+
+
+8. 사용 방법
+    Main 페이지에서 다음과 같이 사용할 수 있다.
+        JavaScript
+            import Section from "../../components/Section/Section";
+        
+        사용 예시
+            JavaScript
+                <Section title="BEST 요리모음">
+                    <div className="card-wrapper">
+
+                        {recipes.map((recipe) => (
+                        <Card
+                            key={recipe.id}
+                            title={recipe.title}
+                            image={recipe.image}
+                        />
+                        ))}
+
+                    </div>
+                </Section>
+        
+9. 설계 포인트
+    1️⃣ props 기반 설계
+        •	title과 children을 통해 다양한 콘텐츠 표현 가능
+
+    2️⃣ UI 재사용성
+        •	여러 페이지에서 동일한 Section 구조 사용
+
+    3️⃣ 구조 분리
+        •	콘텐츠 영역을 컴포넌트 단위로 관리
+
+    4️⃣ 확장성
+        •	버튼 / 필터 / 정렬 UI 추가 가능
+
+
+10. 최종 구조
+    Section 컴포넌트는 다음과 같은 구조를 가진다.
+        text
+            Main
+            │
+            └── Section
+                │
+                ├── title
+                │
+                └── content
+                        │
+                        └── Card 리스트
+    

@@ -37,11 +37,16 @@
   overflow-x: auto;
 }
 /* 제목 + 버튼 영역 */
-.section-header{
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+}
+
+/* 버튼 영역 */
+.header-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .section-header h3{

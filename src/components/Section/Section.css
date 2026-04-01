@@ -1,0 +1,41 @@
+/* Section 전체 영역 */
+.section {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+/* 제목 + 버튼 영역 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+/* 제목 */
+.section-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* 버튼 영역 */
+.section-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* 카드 영역 */
+.section-body {
+  width: 100%;
+}
+
+/* 카드 wrapper */
+.card-wrapper {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+
+  gap: 20px;
+}

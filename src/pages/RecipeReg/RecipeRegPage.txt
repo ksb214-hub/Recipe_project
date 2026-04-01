@@ -1,0 +1,229 @@
+RecipeRegPage 설계 문서
+
+1. 개요 (Overview)
+    RecipeRegPage는 사용자가 레시피를 직접 등록할 수 있는 페이지이다.
+    사용자는 레시피 이름, 설명, 조리 시간, 난이도, 이미지 등을 입력하여
+    자신만의 레시피를 서비스에 추가할 수 있다.
+
+    등록된 레시피는 **카드 형태(Card Component)**로 화면에 출력되며
+    수정 및 삭제 기능을 통해 관리할 수 있다.
+
+    또한 LocalStorage를 사용하여 페이지 새로고침 이후에도 데이터가 유지되도록 한다.
+
+
+2. 개발 환경
+    항목		내용
+	Framework	React
+	Language	JavaScript
+	Routing		React Router
+	Component	Input, Button
+	Styling	    CSS
+
+3. 폴더 구조
+    plaintext
+        src/
+        │
+        ├── pages/
+        │   └── RecipeReg/
+        │       ├── RecipeRegPage.js
+        │       └── RecipeRegPage.css
+
+    구성 요소
+        RecipeRegPage.js
+        → 레시피 등록 및 관리 기능 구현
+
+        RecipeRegPage.css
+        → 레시피 등록 페이지 UI 스타일
+
+4. 목적
+    RecipeRegPage는 다음 기능을 제공한다.
+        레시피 등록
+        레시피 수정
+        레시피 삭제
+        레시피 카드 출력
+        LocalStorage 데이터 저장
+
+    이를 통해 사용자는 자신만의 레시피 목록을 관리할 수 있다.
+
+
+5. 주요 기능
+    plaintext
+        RecipeReg 기능  
+        │
+        ├── 레시피 입력
+        │     ├── 레시피 이름
+        │     ├── 레시피 설명
+        │     ├── 조리 시간
+        │     ├── 난이도
+        │     └── 이미지 URL
+        │
+        ├── 레시피 등록
+        │     ├── Enter 키 등록
+        │     └── 버튼 클릭 등록
+        │
+        ├── 레시피 수정
+        │     └── 수정 버튼 클릭 시 Input 자동 채움
+        │
+        ├── 레시피 삭제
+        │     └── 삭제 버튼 클릭
+        │
+        ├── 데이터 저장
+        │     └── LocalStorage 저장
+        │
+        └── 레시피 출력
+            └── Card 컴포넌트
+
+6. UI 구조
+    plaintext
+        RecipeRegPage
+        │
+        └── Container
+            │
+            ├── Header
+            │     ├── Title
+            │     └── Description
+            │
+            ├── Input Section
+            │     ├── Input (레시피 이름)
+            │     ├── Input (설명)
+            │     ├── Input (조리 시간)
+            │     ├── Input (난이도)
+            │     └── Input (이미지 URL)
+            │
+            ├── Register Button
+            │
+            ├── Divider
+            │
+            └── Recipe List
+                    │
+                    └── Card 리스트
+
+7. 컴포넌트 구조
+    RecipeRegPage는 다음 컴포넌트로 구성된다.   
+        plaintext
+            RecipeRegPage
+            │
+            ├── Input (레시피 이름)
+            │
+            ├── Input (설명)
+            │
+            ├── Input (조리 시간)
+            │
+            ├── Input (난이도)
+            │
+            ├── Input (이미지 URL)
+            │
+            ├── Button (등록 / 수정)
+            │
+            └── Card
+                └── 레시피 정보 출력
+
+8. 데이터 흐름
+    RecipeRegPage의 핵심 구조는 등록 데이터 흐름이다.
+        plaintext
+
+            사용자 입력
+                │
+                ▼
+            Input 컴포넌트
+                │
+                ▼
+            useState 저장
+                │
+                ▼
+            handleRegister 실행
+                │
+                ▼
+            recipes state 업데이트
+                │
+                ▼
+            LocalStorage 저장
+                │
+                ▼
+            Card 리스트 렌더링
+
+9. 상태 관리
+    RecipeRegPage에서는 useState를 사용하여 입력값과 레시피 데이터를 관리한다.    
+        JavaScript
+            const [title, setTitle] = useState("");
+            const [desc, setDesc] = useState("");
+            const [time, setTime] = useState("");
+            const [difficulty, setDifficulty] = useState("");
+            const [image, setImage] = useState("");
+
+            const [recipes, setRecipes] = useState([]);
+
+            const [editId, setEditId] = useState(null);
+
+10. 데이터 저장 구조
+    LocalStorage에 저장되는 데이터 구조
+        JSON
+            recipes = [
+                {
+                    id: 1710000000,
+                    title: "김치볶음밥",
+                    desc: "간단한 한식 레시피",
+                    time: "10분",
+                    difficulty: "쉬움",
+                    image: "image_url"
+                },
+
+                {
+                    id: 1710000001,
+                    title: "토스트",
+                    desc: "초간단 레시피",
+                    time: "5분",
+                    difficulty: "쉬움",
+                    image: "image_url"
+                }
+
+            ]
+
+11. 로그인 처리 흐름
+    레시피 등록 흐름
+        plaintext
+            레시피 입력
+                │
+                ▼
+            등록 버튼 클릭
+                │
+                ▼
+            handleRegister()
+                │
+                ▼
+            recipes state 업데이트
+                │
+                ▼
+            LocalStorage 저장
+                │
+                ▼
+            Card UI 출력
+
+
+12. 핵심 설계 포인트
+    1️⃣ 컴포넌트 재사용
+        Input / Button / Card 재사용    
+
+    2️⃣ 상태 기반 UI
+        useState로 입력 및 데이터 관리
+
+    3️⃣ 데이터 영속성
+        LocalStorage 사용
+
+    4️⃣ UI 일관성
+        RegPage와 동일한 디자인 시스템
+
+    5️⃣ 확장성
+        API 연결 시 백엔드와 쉽게 연동 가능
+
+13. 최종 요약
+
+    RecipeRegPage는 사용자가 레시피를 직접 등록하고 관리할 수 있는 페이지이다.
+
+    주요 특징
+        ✔ 레시피 등록
+        ✔ 레시피 수정
+        ✔ 레시피 삭제
+        ✔ 카드 형태 UI 출력
+        ✔ LocalStorage 데이터 유지
+        ✔ 컴포넌트 재사용 구조

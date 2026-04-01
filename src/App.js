@@ -9,6 +9,7 @@ import Main from "./pages/Main/Main";
 import Login from "./pages/Login/Login";
 import SearchPage from "./pages/Search/SearchPage";
 import RegPage from "./pages/Reg/RegPage";   // 🔥 추가
+import RecipeRegPage from "./pages/RecipeReg/RecipeRegPage";
 import FindId from "./pages/Find/FindId/FindId";
 import FindPw from "./pages/Find/FindPw/FindPw";
 
@@ -24,7 +25,7 @@ function App() {
         <Route path="/reg" element={<Layout><RegPage /></Layout>} /> {/* 🔥 추가 */}
         <Route path="/find-id" element={<Layout><FindId /></Layout>} />
         <Route path="/find-pw" element={<Layout><FindPw /></Layout>} />
-
+        <Route path="/recipe-reg" element={<Layout><RecipeRegPage /></Layout>}/>
         {/* ================= 404 ================= */}
         <Route path="*" element={<div>404 Not Found</div>} />
 
