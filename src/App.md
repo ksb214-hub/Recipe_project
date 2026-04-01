@@ -139,10 +139,13 @@ utils
 
 
 구조 흐름 (중요)
-   flowchart TD
-    A[App.js] --> B[pages/]
-    B --> C[components/]
-    C --> D[styles/]
+    App.js
+        ↓
+    pages/
+        ↓
+    components/
+        ↓
+    styles/
 
     ![alt text](image.png)
 App.js 역할
