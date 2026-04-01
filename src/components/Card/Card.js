@@ -1,4 +1,5 @@
 // src/components/Card/Card.js
+
 import React from "react";
 import "./Card.css";
 
@@ -13,7 +14,7 @@ function Card({
 }) {
   return (
     <div className="card" onClick={onClick}>
-      
+
       {/* 썸네일 */}
       <div className="card_thumb">
         <img src={image} alt={title} />
@@ -21,7 +22,7 @@ function Card({
 
       {/* 내용 */}
       <div className="card_body">
-        
+
         {/* 제목 */}
         <h3 className="card_title">{title}</h3>
 
@@ -30,14 +31,31 @@ function Card({
           <p className="card_desc">{description}</p>
         )}
 
-        {/* 정보 */}
+        {/* 🔥 레시피 정보 */}
         <div className="card_info">
-          {time && <span>{time}</span>}
-          {difficulty && <span>{difficulty}</span>}
-          {servings && <span>{servings}</span>}
+
+          {time && (
+            <span className="card_meta">
+              ⏱ {time}
+            </span>
+          )}
+
+          {difficulty && (
+            <span className="card_meta">
+              ⭐ {difficulty}
+            </span>
+          )}
+
+          {servings && (
+            <span className="card_meta">
+              👤 {servings}
+            </span>
+          )}
+
         </div>
 
       </div>
+
     </div>
   );
 }

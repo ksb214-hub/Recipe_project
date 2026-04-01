@@ -55,6 +55,9 @@ function Main() {
               key={recipe.id}
               title={recipe.title}
               image={recipe.image}
+              time={recipe.time}
+              difficulty={recipe.difficulty}
+              servings={recipe.servings}
             />
 
           ))}
