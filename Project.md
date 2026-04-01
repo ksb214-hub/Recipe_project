@@ -1,7 +1,10 @@
 ---
 title: zero-naeng-fe
 description: 식재료 관리 및 레시피 추천 서비스
+<<<<<<< HEAD
 author: 강성빈
+=======
+>>>>>>> 6b8e9e6 (변경)
 date: 2026-04-02
 version: 1.0
 status: development
