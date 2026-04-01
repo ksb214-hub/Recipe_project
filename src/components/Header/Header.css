@@ -1,0 +1,58 @@
+/* 헤더 전체 */
+.header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #222;
+  z-index: 1000;
+}
+
+/* nav */
+.nav {
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+/* 내부 정렬 */
+.inner {
+  width: 100%;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+}
+
+/* 로고 */
+.logo_link {
+  color: white;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* 오른쪽 메뉴 */
+.menu {
+  margin-left: auto;
+  display: flex;
+  gap: 16px;
+}
+
+/* 버튼 */
+.nav_btn {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+
+  padding: 6px 12px;
+  border: 1px solid white;
+  border-radius: 6px;
+
+  transition: 0.2s;
+}
+
+.nav_btn:hover {
+  background: white;
+  color: #222;
+}

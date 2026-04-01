@@ -1,0 +1,117 @@
+Header 컴포넌트 설계 문서
+
+1. Header 컴포넌트 역할 (Overview)
+    Header 컴포넌트는 zero-naeng-fe 프로젝트의 공통 네비게이션 UI를 담당하는 컴포넌트이다.
+    모든 페이지에서 동일한 네비게이션을 사용하기 위해 재사용 가능한 구조로 분리하였다.
+
+2. Header 분리 목적
+    Header 컴포넌트를 분리하여 다음 문제를 해결한다.
+        -> 코드 중복 제거
+        -> UI 일관성 유지
+        -> 유지보수 효율 향상
+        -> 재사용성 확보
+
+3. 폴더 구조
+    src/
+    ├─ components/
+    │   └─ Header/
+    │       ├─ Header.js
+    │       └─ Header.css
+
+    구성 요소
+	    -> Header.js → Header 컴포넌트 구조 및 기능
+	    -> Header.css → Header 스타일 정의
+
+4. UI 구조
+    Header
+    │
+    └── nav
+        │
+        ├── logo
+        │     └── Link → 메인 페이지
+        │
+        └── menu
+                ├── 로그인
+                └── 검색
+
+5. 구조 흐름 (Component Flow)
+    App
+    │
+    ├── Header (공통 네비게이션)
+    │
+    ├── Page
+    │     ├── Main
+    │     ├── Login
+    │     └── Search
+    │
+    └── main
+        └── 페이지 내용
+
+6. 데이터 흐름 (Navigation Flow)
+    Header는 React Router의 Link 컴포넌트를 사용하여 페이지 이동을 처리한다.    
+
+        사용자 클릭
+            │
+            ▼
+        Header 메뉴
+            │
+            ▼
+           Link
+            │
+            ▼
+        React Router
+            │
+            ▼
+        페이지 이동
+
+7. 중요한 UI 문제 해결
+    문제
+        Header가 position: fixed일 경우
+        페이지 내용과 겹치는 문제가 발생한다.
+
+            header {
+                position: fixed;
+            }
+        이 경우 main 영역이 Header 아래로 들어간다.
+
+        해결 방법
+            main 영역에 margin을 추가한다.
+                main {
+                   margin-top: 60px;
+                }
+            이렇게 하면 Header와 main 영역이 겹치지 않는다.
+
+8. 핵심 설계 포인트
+    Header 컴포넌트는 다음 설계 원칙을 기반으로 한다.
+    
+    1️⃣ 완전 분리
+        Header는 페이지 컴포넌트와 독립적으로 동작한다.
+    2️⃣ 재사용성
+        모든 페이지에서 동일한 Header를 사용할 수 있다.
+            -> Main
+            -> Login
+            -> Search
+            -> FindId
+            -> FindPw
+    
+    3️⃣ 유지보수성
+        메뉴 수정 시 Header 파일만 수정하면 된다.
+
+    4️⃣ 라우팅 통합
+        React Router의 Link를 사용하여 페이지 이동을 관리한다.
+
+9. Header 컴포넌트 특징
+    -> 공통 네비게이션 제공
+    -> React Router 기반 페이지 이동
+    -> 재사용 가능한 구조
+    -> UI 일관성 유지
+
+정리
+    Header 컴포넌트는 모든 페이지를 연결하는 공통 네비게이션 컴포넌트이다.
+
+    이를 통해 다음 효과를 얻을 수 있다.
+        -> 코드 중복 감소
+        -> UI 통일
+        -> 유지보수 효율 향상
+        -> 확장성 확보
+        

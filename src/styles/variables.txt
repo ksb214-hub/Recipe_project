@@ -1,0 +1,8 @@
+위치 (구조)
+src/
+├─ styles/
+│   ├─ global.css
+│   └─ variables.css   ✅ 여기
+
+
+

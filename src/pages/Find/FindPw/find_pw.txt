@@ -1,0 +1,81 @@
+전체 프로젝트 구조
+src/
+│
+├─ App.js                // 라우터 관리
+│
+├─ Main/
+│   ├─ Main.js           // 메인 페이지 (홈)
+│   └─ Main.css
+│
+├─ Login/
+│   ├─ Login.js          // 로그인 페이지
+│   └─ Login.css
+│
+├─ SearchPage/
+│   ├─ SearchPage.js     // 검색 페이지
+│   └─ SearchPage.module.css
+│
+└─ Login/
+    └─ find_id/
+        └─ find_id.js    // 아이디 찾기 페이지
+    └─ find_pw/
+        └─ find_pw.js
+
+
+웹 구조
+
+Findpw (컴포넌트)
+│
+├── header
+│     └── nav
+│           └── div.inner
+│                ├── div.logo
+│                │     └── h1
+│                │          └── Link → zero-naeng-fe (메인 이동)
+│                │
+│                └── h2.name
+│                      └── Link → 로그인
+│
+└── main
+      ├── h3.main_title
+      │     비밀번호 찾기
+      │
+      ├── div.description
+      │     └── button
+      │           └── span → 아이디를 입력하세요
+      │
+      └── form
+            ├── div.Label-input
+            │     └── div.Label-input_in
+            │           ├── label
+            │           └── input.id_input
+            │
+            └── div.form-main-button
+                  └── button.Button-button → 다음
+
+기능 구조 
+기능
+│
+├── 입력
+│     └── 아이디 입력
+│
+├── 제출
+│     └── handleSubmit()
+│           ↓
+│        비밀번호 재설정 요청
+│
+└── 결과
+      └── (추후)
+          ├── 이메일 인증
+          └── 비밀번호 변경 페이지 이동
+
+공통 UI 구조
+find-container
+ └── find-main
+      ├── title
+      ├── description
+      ├── form
+      │    ├── input
+      │    └── button
+      └── bottom-link
+

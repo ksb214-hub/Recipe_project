@@ -1,0 +1,120 @@
+Input 페이지 설계 문서
+1. 개요 (Overview)
+    Input 컴포넌트는 zero-naeng-fe 프로젝트에서 반복적으로 사용되는 입력 UI를 재사용하기 위해 제작된 공통 컴포넌트이다.
+
+    여러 페이지에서 동일한 Input 구조를 사용함으로써 다음과 같은 문제를 해결할 수 있다.
+        - 반복되는 input 코드 작성 방지
+        - UI 디자인 통일
+        - 유지보수 효율 향상
+
+2. 개발 환경
+    항목		내용
+	Framework	React
+	Language	JavaScript
+	Routing		React Router
+	Component	Input, Button
+	Styling	    CSS
+
+3. 폴더 구조
+    src/
+    └─ components/
+    └─ Input/
+        ├─ Input.js
+        └─ Input.css
+
+    구성 요소
+	    -> Input.js → Input 컴포넌트 구조 및 기능
+	    -> Input.css → Input 스타일 정의
+
+4. Input 컴포넌트 목적
+    Input 컴포넌트는 다음과 같은 목적을 가진다.
+        -> 공통 입력 UI 제공
+        -> 다양한 페이지에서 재사용 가능
+        -> props 기반 입력 처리
+        -> React 상태 관리와 연결
+
+5. Input 주요 기능
+
+    Input 기능
+    │
+    ├── 입력 UI 제공
+    │
+    ├── props 기반 데이터 전달
+    │     ├── label
+    │     ├── type
+    │     ├── value
+    │     ├── onChange
+    │     └── placeholder
+    │
+    ├── 입력 상태 연결
+    │     └── 부모 컴포넌트 useState와 연결
+    │
+    └── UI 확장 가능
+        ├── error 상태
+        ├── hint text
+        └── 아이콘 추가
+
+
+6. Input 컴포넌트 구조
+    Input
+    │
+    └── input-wrapper
+        │
+        ├── label (옵션)
+        │
+        └── input-field
+
+7. props 구조
+    props	    설명
+    label	    input 위에 표시되는 텍스트
+    type	    input 타입 (text, password 등)
+    value	    입력값
+    onChange	입력 이벤트
+    placeholder	안내 텍스트
+    name	    input 이름
+
+9. 데이터 흐름 (Data Flow)
+    사용자 입력
+        │
+        ▼
+    Input 컴포넌트
+        │
+        ▼
+    onChange 이벤트 발생
+        │
+        ▼
+    부모 컴포넌트 useState 업데이트
+        │
+        ▼
+    value 다시 Input으로 전달
+
+10. 상태 관리
+    Input 컴포넌트 자체는 상태를 관리하지 않고, 부모 컴포넌트에서 관리한다.
+
+    예시
+        const [id, setId] = useState("");
+    Input 연결
+        <Input
+        value={id}
+        onChange={(e) => setId(e.target.value)}
+        />
+
+    이 구조는 React의 단방향 데이터 흐름 (One-way data flow) 원칙을 따른다.
+
+11. Input 컴포넌트 특징
+    -> 재사용 가능한 UI
+    -> 컴포넌트 기반 설계
+    -> props 기반 데이터 전달
+    -> React 상태 관리와 연결
+    -> UI 확장 가능
+
+
+13. 정리
+
+    Input 컴포넌트는 프로젝트에서 입력 UI를 표준화하기 위해 설계된 공통 컴포넌트이다.
+
+    이를 통해 다음과 같은 효과를 얻을 수 있다.
+        -> 코드 중복 감소
+        -> UI 일관성 유지
+        -> 유지보수 효율 향상
+        -> 확장성 확보

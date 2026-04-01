@@ -1,0 +1,107 @@
+구조 
+src/
+│
+├── App.js (Router)
+│
+├── Main/
+│   └── Main.js
+│
+├── Login/
+│   ├── Login.js
+│   └── find_id/
+│       └── find_id.js
+│
+├── SearchPage/
+│   ├── SearchPage.js
+│   └── SearchPage.module.css
+
+목적: 로그인 footer 아이디 찾기 클릭시 아이디 찾기 화면을 구현하는 것을 목표로 한다.
+사용언어: react를 사용하고 언어는 js를 사용한다.
+기능: 내비바, 아이디 찾기 h3, 본인 확인 이메일 input, 다음 버튼
+
+전체 흐름 
+Login 페이지
+   ↓ 클릭 (아이디 찾기)
+Link to="/find-id"
+   ↓
+Router
+   ↓
+FindId 컴포넌트 렌더링
+
+기능 구조 
+
+기능
+│
+├── 입력
+│     └── 이메일 입력
+│
+├── 제출
+│     └── handleSubmit()
+│           ↓
+│        이메일 기반 아이디 조회
+│
+└── 결과
+      └── (추후) 아이디 출력 or 안내 메시지
+
+
+
+웹페이지 구조 
+header, main, footer 
+
+FindId (컴포넌트)
+│
+├── header
+│     └── nav
+│           └── div.inner
+│                ├── div.logo
+│                │     └── h1
+│                │          └── Link → zero-naeng-fe (메인 이동)
+│                │
+│                └── h2.name
+│                      └── Link → 로그인
+│
+└── main
+      ├── h3.main_title
+      │     아이디 찾기
+      │
+      ├── div.description
+      │     └── button
+      │           └── span → 이메일을 입력하세요
+      │
+      └── form
+            ├── div.Label-input
+            │     └── div.Label-input_in
+            │           ├── label
+            │           └── input.email_input
+            │
+            └── div.form-main-button
+                  └── button.Button-button → 다음
+
+핵심 개선 포인트
+    배경 통일
+        body {
+            background-color: black;
+        }
+    중앙 정렬
+        main {
+            max-width: 400px;
+            margin: 80px auto;
+        }
+
+        모바일 + PC 모두 대응
+    버튼 UX 개선
+        .Button-button:hover {
+            background: #049944;
+        }
+        실제 서비스 느낌
+
+    input UX 개선
+        .email_input {
+            outline: none;
+        }
+
+잘못된 구조 (이전)
+    <a href="Main.js">
+
+올바른 방식
+    <Link to="/">

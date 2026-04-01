@@ -1,0 +1,164 @@
+Components 설계 문서
+
+1. 개요 (Overview)
+    components 폴더는 zero-naeng-fe 프로젝트에서 재사용 가능한 UI 컴포넌트를 모아놓은 폴더이다.
+    각 컴포넌트는 독립적으로 설계되어 여러 페이지에서 재사용할 수 있도록 구성되어 있다.
+
+    이를 통해 다음과 같은 장점을 얻을 수 있다.
+        -> 코드 재사용성 증가
+        -> UI 일관성 유지
+        -> 유지보수 효율 향상
+
+2. components 폴더 구조
+    src/
+    │
+    ├─ components/
+    │   │
+    │   ├─ Header/
+    │   │   ├─ Header.js
+    │   │   └─ Header.css
+    │   │
+    │   ├─ Button/
+    │   │   ├─ Button.js
+    │   │   └─ Button.css
+    │   │
+    │   ├─ Card/
+    │   │   ├─ Card.js
+    │   │   └─ Card.css
+    │   │
+    │   └─ Input/
+    │       ├─ Input.js
+    │       └─ Input.css
+
+3. 컴포넌트 구성
+    components 폴더에는 다음과 같은 공통 UI 컴포넌트가 포함되어 있다.
+        components
+        │
+        ├── Header
+        ├── Button
+        ├── Card
+        └── Input
+    각 컴포넌트는 특정 역할을 담당하며 다양한 페이지에서 재사용된다.
+
+4. Header 컴포넌트
+    역할
+        Header 컴포넌트는 사이트의 네비게이션 바(Navigation Bar) 역할을 한다.
+        사용자는 Header 메뉴를 통해 다른 페이지로 이동할 수 있다.
+    
+    사용 페이지
+        Header 컴포넌트는 모든 페이지에서 공통으로 사용된다.
+    
+    구조
+        Header
+        │
+        └── nav
+            │
+            ├── logo
+            │     └── Link → 메인 페이지
+            │
+            └── menu
+                    ├── 로그인
+                    └── 검색
+    
+5. Button 컴포넌트
+    역할
+        Button 컴포넌트는 사용자의 행동을 실행하기 위한 버튼 UI 컴포넌트이다.
+        예를 들어 다음 기능에서 사용된다.
+            -> 로그인
+            -> 검색
+            -> 등록
+
+    특징
+        -> variant 스타일 지원
+        -> primary / secondary / outline
+        -> disabled 상태 지원
+        -> submit 버튼 지원
+    
+    사용 페이지
+        -> Login
+        -> Search
+        -> 레시피 등록
+        -> 식재료 등록
+
+    구조
+        Card
+        │
+        ├── card_thumb
+        │     └── img
+        │
+        └── card_body
+            │
+            ├── title
+            ├── description
+            └── info
+
+6. Card 컴포넌트
+
+    역할
+        Card 컴포넌트는 레시피 정보를 카드 형태로 표시하는 UI 컴포넌트이다.
+        레시피 데이터를 받아 화면에 출력하는 역할을 한다.
+
+    사용 페이지
+        Main
+        Search
+        추천 레시피
+    
+    구조
+        Card
+        │
+        ├── card_thumb
+        │     └── img
+        │
+        └── card_body
+            │
+            ├── title
+            ├── description
+            └── info
+
+7. Input 컴포넌트
+    역할
+        Input 컴포넌트는 사용자 입력을 받기 위한 공통 입력 UI 컴포넌트이다.
+        여러 페이지에서 동일한 입력 UI를 사용하기 위해 제작되었다.
+    
+    사용 페이지
+        Login
+        회원가입
+        아이디 찾기
+        비밀번호 찾기
+        검색
+    
+    구조
+        Input
+        │
+        ├── label
+        │
+        └── input
+    
+8. components 구조 특징
+    재사용 가능한 UI 컴포넌트
+    컴포넌트 기반 설계
+    UI 일관성 유지
+    확장 가능한 구조
+
+
+9. 데이터 흐름
+    components는 props 기반 데이터 전달 방식으로 동작한다.  
+           Page
+            │
+            ▼
+        Component 호출
+            │
+            ▼
+        props 전달
+            │
+            ▼
+          UI 렌더링
+
+10. 정리
+    components 폴더는 프로젝트 전체 UI를 구성하는 재사용 가능한 컴포넌트 모음이다.
+
+    이를 통해 다음 효과를 얻을 수 있다.
+        코드 중복 감소
+        UI 디자인 통일
+        유지보수 효율 향상
+

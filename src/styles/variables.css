@@ -1,0 +1,80 @@
+:root {
+
+  /* ================= COLOR ================= */
+
+  /* Primary (메인 컬러) */
+  --color-primary: #05ac4f;
+  --color-primary-dark: #049a45;
+  --color-primary-light: #e6f7ee;
+
+  /* Background */
+  --color-bg-dark: #1f1f1f;
+  --color-bg-light: #ffffff;
+
+  /* Text */
+  --color-text: #111111;
+  --color-text-secondary: #666666;
+  --color-text-light: #999999;
+
+  /* Border */
+  --color-border: #e5e5e5;
+  --color-border-light: #f0f0f0;
+
+  /* 상태 색상 */
+  --color-success: #05ac4f;
+  --color-error: #ff4d4f;
+  --color-warning: #faad14;
+
+  /* ================= CARD ================= */
+
+  --card-bg: #ffffff;
+  --card-radius: 16px;
+  --card-radius-sm: 10px;
+  --card-radius-lg: 20px;
+
+  --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  --card-shadow-light: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+  /* ================= BUTTON ================= */
+
+  --btn-height: 50px;
+  --btn-radius: 10px;
+  --btn-font-size: 14px;
+
+  /* ================= INPUT ================= */
+
+  --input-height: 50px;
+  --input-radius: 10px;
+  --input-border: 1px solid #ddd;
+  --input-padding: 0 14px;
+
+  /* ================= FONT ================= */
+
+  --font-family: 'Pretendard', sans-serif;
+
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+
+  /* ================= SPACING ================= */
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+
+  /* ================= Z-INDEX ================= */
+
+  --z-header: 1000;
+  --z-modal: 2000;
+
+  /* ================= TRANSITION ================= */
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}

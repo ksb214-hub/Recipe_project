@@ -1,0 +1,64 @@
+/* src/pages/Search/SearchPage.css */
+
+.search-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 100px auto 0;
+  padding: 20px;
+}
+
+/* 검색 영역 */
+.search-area {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.search-area h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* 검색 박스 */
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.search-box svg{
+  color: #ddd;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+}
+
+/* 결과 */
+.search-result {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+/* 검색 결과 개수 */
+.result-info {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+/* 결과 없음 */
+.no-result {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 14px;
+  color: #999;
+}

@@ -1,0 +1,232 @@
+RegPage 설계 문서
+
+1. 개요 (Overview)
+
+    RegPage는 사용자가 냉장고에 보유한 재료를 등록하고 관리할 수 있는 페이지이다.
+    사용자는 재료 이름, 수량, 유통기한을 입력하여 재료를 등록할 수 있으며, 등록된 재료는 카드 형태로 화면에 표시된다.
+
+    이 기능을 통해 다음과 같은 목적을 달성한다.
+        냉장고 재료 관리
+        식재료 소비기한 관리
+        재료 기반 레시피 추천을 위한 데이터 확보
+
+2. 개발 환경
+    항목		내용
+	Framework	React
+	Language	JavaScript
+	Routing		React Router
+	Component	Input, Button
+	Styling	    CSS
+
+3. 폴더 구조
+    src/
+    │
+    ├── pages/
+    │   └── Reg/
+    │       ├── RegPage.js
+    │       └── RegPage.css
+
+    구성 요소
+		RegPage.js → 재료 및 음식 등록 및 UI 구조
+		RegPage.css → 재료 및 음식 등록 페이지 스타일
+
+4. RegPage 목적
+
+    RegPage는 다음 기능을 제공한다.
+    - 재료 및 음식 등록
+    - 등록된 재료 목록 출력
+    - 카드 형태의 UI 제공
+
+    이를 통해 사용자는 보유 식재료를 관리할 수 있다.
+
+5. 주요 기능
+    1️⃣ 재료 등록
+    2️⃣ Enter 등록
+    3️⃣ 입력 초기화
+    4️⃣ 재료 삭제
+    5️⃣ 재료 수정
+    6️⃣ 유통기한 D-day 표시
+    7️⃣ LocalStorage 저장
+    8️⃣ 새로고침 데이터 유지
+    9️⃣ 등록된 재료 없을 때 안내
+
+    plaintext
+        등록 기능
+        │
+        ├── 재료 및 음식 입력
+        │     └── Input 컴포넌트
+        │
+        ├── 등록 실행
+        │     ├── Enter 키 등록
+        │     └── 버튼 클릭 등록
+        │
+        ├── 입력 데이터 처리
+        │     └── 배열에 데이터 추가
+        │
+        └── 등록 결과 출력
+            └── Card 컴포넌트
+
+6. UI 구조
+    plaintext
+        RegPage
+        │
+        └ reg_container
+            │
+            ├ reg_header
+            │     ├ title
+            │     └ description
+            │
+            ├ reg_input_area
+            │     ├ Input (재료 이름)
+            │     ├ Input (수량)
+            │     ├ Input (유통기한)
+            │     └ Button (재료 등록)
+            │
+            ├ divider
+            │
+            └ reg_results
+                └ ingredient_card 리스트
+
+7. 컴포넌트 구조
+    plaintext
+        RegPage
+        │
+        ├── Input (재료 입력)
+        │
+        ├── Button (등록 실행)
+        │
+        └── Card
+            └── 등록된 재료 출력
+
+
+8. 데이터 흐름
+  RegPage의 핵심 구조는 입력 데이터를 UI로 출력하는 흐름이다.
+        plaintext 
+            사용자 입력
+                │
+                ▼
+            Input 컴포넌트
+                │
+                ▼
+            useState 저장
+                │
+                ▼
+            등록 버튼 클릭
+                │
+                ▼
+            재료 리스트 배열 추가
+                │
+                ▼
+            Card 컴포넌트 렌더링
+
+    
+9. 상태 관리
+    RegPage에서는 useState를 사용하여 입력 데이터와 등록 목록을 관리한다.
+        const [ingredient, setIngredient] = useState("");
+        const [ingredientList, setIngredientList] = useState([]);
+
+10. 등록 처리 흐름
+    사용자 입력
+        │
+        ▼
+    재료 입력
+        │
+        ▼
+    등록 버튼 클릭
+        │
+        ▼
+    handleRegister()
+        │
+        ▼
+    ingredientList 배열 추가
+        │
+        ▼
+    Card UI 출력
+
+11. Card 출력 구조
+
+    등록된 재료는 Card 컴포넌트를 활용하여 출력한다.
+
+    예시
+        JavaScript
+            ingredientList.map((item) => (
+            <Card
+                key={item.id}
+                title={item.name}
+            />
+            ))
+
+12. UI 구조 (DOM)
+
+    RegPage
+    │
+    ├── div.Reg_container
+    │
+    ├── div.Reg_header
+    │     │
+    │     ├── Title
+    │     ├── Input
+    │     └── Button
+    │
+    └── div.Reg_results
+        │
+        └── Card (반복)
+
+
+13. 핵심 설계 포인트
+    RegPage는 다음 설계 원칙을 기반으로 한다.
+        1️⃣ 컴포넌트 재사용
+            Input
+            Button
+            Card
+            기존 공통 컴포넌트를 재사용한다.
+        
+        2️⃣ 데이터 기반 UI
+            등록된 데이터에 따라 카드 UI가 자동으로 업데이트된다.
+        
+        3️⃣ 확장성
+            추후 다음 기능을 추가할 수 있다.
+                재료 삭제 기능
+                재료 수정 기능
+                유통기한 관리
+                재료 카테고리
+
+14. RegPage 특징
+    RegPage는 다음 특징을 가진다.  
+        입력 기반 UI
+        Card 리스트 출력
+        컴포넌트 재사용
+        데이터 기반 렌더링
+
+15. 전체 구조 흐름
+    App
+    │
+    ├── Layout
+    │
+    └── Page
+        │
+        ├── Main
+        ├── SearchPage
+        ├── Login
+        └── RegPage
+
+
+한 줄 핵심
+    - RegPage는 “재료를 등록하고 관리하는 페이지”
+
+데이터 흐름 (백엔드 연결)
+    plaintext
+        사용자 입력
+            │
+            ▼
+        프론트 상태 저장
+            │
+            ▼
+        API 요청
+        POST /ingredients
+            │
+            ▼
+        DB 저장
+            │
+            ▼
+        Card UI 업데이트

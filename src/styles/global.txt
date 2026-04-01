@@ -1,0 +1,38 @@
+위치 (구조)
+src/
+├─ styles/
+│   ├─ global.css       ✅ 여기 생성
+│   └─ variables.css
+
+global.css 역할
+    global.css = "전체 공통 UI 규칙"
+
+구조 흐름
+    global.css
+    ├─ reset (기본 초기화)
+    ├─ layout (container, center)
+    ├─ component (card, button, input)
+    ├─ utility (flex, text)
+    └─ animation
+
+variables.css 역할
+    variables.css = "프로젝트 전체 디자인 기준을 한 곳에서 관리하는 파일"
+
+
+하는 역할
+    1️⃣ 색상 통제
+        모든 버튼 / 포인트 컬러 통일
+    2️⃣ UI 스타일 통일
+        카드, 버튼, input 느낌 동일
+    3️⃣ 유지보수 핵심
+        전체 UI 자동 변경됨
+
+구조 흐름 (핵심 이해)
+    variables.css
+        ↓
+    global.css
+        ↓
+    각 페이지 CSS (Main.css / Search.css)
+        ↓
+    React 컴포넌트
+            

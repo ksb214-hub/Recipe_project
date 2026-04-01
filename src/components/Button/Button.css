@@ -1,0 +1,54 @@
+/* 기본 버튼 */
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+/* 🔥 PRIMARY (메인 버튼) */
+.btn.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn.primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* 🔥 SECONDARY (보조 버튼) */
+.btn.secondary {
+  background-color: white;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn.secondary:hover {
+  background-color: #f9f9f9;
+}
+
+/* 🔥 OUTLINE */
+.btn.outline {
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn.outline:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* 🔥 DISABLED */
+.btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

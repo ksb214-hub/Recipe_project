@@ -1,0 +1,49 @@
+/* src/pages/Main/Main.css */
+
+/* 메인 영역 */
+.con {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 80px; /* header 높이 보정 */
+}
+
+/* 카드 영역 */
+.home_cont_cate {
+  width: 1240px;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  padding: 28px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+}
+
+/* 제목 */
+.home_cont_cate h3 {
+  margin-bottom: 20px;
+}
+
+.home_cont_cate h3 a {
+  text-decoration: none;
+  color: #000;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* 카드 리스트 */
+.card-wrapper {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+}
+/* 제목 + 버튼 영역 */
+.section-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h3{
+  font-size: 20px;
+}

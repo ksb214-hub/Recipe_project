@@ -1,34 +1,35 @@
-import "./App.css";
-import Login from "./Login/Login";
-import SearchPage from "./SearchPage/SearchPage";
+// src/App.js
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+// 🔥 Layout (Header 포함)
+import Layout from "./layout/Layout";
+
+// 📄 Pages
+import Main from "./pages/Main/Main";
+import Login from "./pages/Login/Login";
+import SearchPage from "./pages/Search/SearchPage";
+import RegPage from "./pages/Reg/RegPage";   // 🔥 추가
+import FindId from "./pages/Find/FindId/FindId";
+import FindPw from "./pages/Find/FindPw/FindPw";
 
 function App() {
   return (
-    <Router>
-      <div className="app">
+    <BrowserRouter>
+      <Routes>
 
-        {/*  네비바 */}
-        <nav className="navbar">
-          <h2 className="logo">🍳 Recipe</h2>
+        {/* ================= 공통 Layout 적용 ================= */}
+        <Route path="/" element={<Layout><Main /></Layout>} />
+        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/search" element={<Layout><SearchPage /></Layout>} />
+        <Route path="/reg" element={<Layout><RegPage /></Layout>} /> {/* 🔥 추가 */}
+        <Route path="/find-id" element={<Layout><FindId /></Layout>} />
+        <Route path="/find-pw" element={<Layout><FindPw /></Layout>} />
 
-          <div className="nav-buttons">
-            <Link to="/search" className="nav-btn">검색</Link>
-            <Link to="/login" className="nav-btn">로그인</Link>
-          </div>
-        </nav>
+        {/* ================= 404 ================= */}
+        <Route path="*" element={<div>404 Not Found</div>} />
 
-        {/*  페이지 영역 */}
-        <div className="main-content">
-          <Routes>
-            <Route path="/" element={<SearchPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/search" element={<SearchPage />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

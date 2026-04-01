@@ -1,0 +1,195 @@
+SearchPage 설계 문서
+
+1. 개요 (Overview)
+  SearchPage는 사용자가 레시피를 검색할 수 있는 페이지이다.
+  사용자는 검색창에 재료명 또는 요리 이름을 입력하여 레시피를 찾을 수 있다.
+  검색 결과는 Card 컴포넌트를 활용하여 리스트 형태로 출력된다.
+
+2. 개발 환경
+    항목		내용
+  Framework	React
+	Language	JavaScript
+	Routing		React Router
+	Component	Input, Button
+	Styling	    CSS
+
+
+3. 폴더 구조
+  src/
+  │
+  ├── pages/
+  │   └── Search/
+  │       ├── SearchPage.js
+  │       └── SearchPage.css
+  
+  구성 요소
+		SearchPage.js → 검색 기능 및 UI 구조
+		SearchPage.css → 검색 페이지 스타일
+
+4. SearchPage 목적
+  SearchPage는 다음 기능을 제공한다.
+    레시피 검색
+    검색 결과 출력
+    레시피 카드 표시
+
+5. 주요 기능
+  Search 기능
+  │
+  ├── 검색 입력
+  │     └── Input 컴포넌트
+  │
+  ├── 검색 실행
+  │     ├── Enter 키 검색
+  │     └── 버튼 검색
+  │
+  ├── 검색 결과 처리
+  │     └── 레시피 데이터 필터링
+  │
+  └── 검색 결과 출력
+        └── Card 컴포넌트
+
+6. UI 구조
+  SearchPage
+  │
+  ├── search_container
+  │
+  ├── search_header
+  │     └── 검색 입력창
+  │
+  └── search_results
+        │
+        └── Card 리스트
+
+7. 컴포넌트 구조
+  SearchPage는 다음 컴포넌트로 구성된다.
+    SearchPage
+    │
+    ├── Input (검색창)
+    │
+    ├── Button (검색 실행)
+    │
+    └── Card
+          └── 검색 결과 출력
+
+8. 데이터 흐름
+  SearchPage의 핵심 구조는 검색 데이터 흐름이다.
+    사용자 입력
+        │
+        ▼
+    Input 컴포넌트
+        │
+        ▼
+    useState 저장
+        │
+        ▼
+    검색 실행
+        │
+        ▼
+    데이터 필터링
+        │
+        ▼
+    Card 리스트 출력
+
+9. 상태 관리
+  SearchPage에서는 useState를 사용하여 검색 데이터를 관리한다.
+
+  예시
+      const [query, setQuery] = useState("");
+      const [results, setResults] = useState([]);
+
+
+10. 검색 처리 흐름
+  사용자 검색
+      │
+      ▼
+  검색어 입력
+      │
+      ▼
+  검색 실행
+      │
+      ▼
+  레시피 데이터 필터링
+      │
+      ▼
+  검색 결과 생성
+      │
+      ▼
+  Card UI 출력
+
+11. Card 출력 구조
+  검색 결과는 Card 컴포넌트를 사용하여 출력된다.
+  
+  예시
+    {results.map((recipe) => (
+      <Card
+        key={recipe.id}
+        title={recipe.title}
+        description={recipe.description}
+        time={recipe.time}
+        difficulty={recipe.difficulty}
+        servings={recipe.servings}
+      />
+    ))}
+
+12. UI 구조 (DOM)
+  SearchPage
+  │
+  ├── div.search_container
+  │
+  ├── div.search_box
+  │     │
+  │     ├── Input
+  │     └── Button
+  │
+  └── div.search_results
+        │
+        └── Card (반복)
+
+13. 핵심 설계 포인트
+  SearchPage는 다음 설계 원칙을 기반으로 한다.
+
+    1️⃣ 컴포넌트 재사용
+      Input
+      Button
+      Card
+      기존 컴포넌트를 재사용한다.
+    
+    2️⃣ 데이터 기반 UI
+      검색 결과 데이터에 따라 UI가 자동으로 변경된다.
+
+    3️⃣ 확장성
+      다음 기능을 추가할 수 있다.
+        재료 기반 검색
+        카테고리 필터
+        정렬 기능
+        추천 레시피
+
+14. SearchPage 특징
+  SearchPage는 다음 특징을 가진다.
+    검색 중심 UI
+    Card 기반 결과 출력
+    컴포넌트 재사용
+    데이터 기반 렌더링
+  
+15. 전체 구조 흐름
+  App
+  │
+  ├── Layout
+  │     │
+  │     ├── Header
+  │     │
+  │     └── Page
+  │          │
+  │          ├── Main
+  │          ├── Login
+  │          └── SearchPage
+
+16. 정리
+  SearchPage는 사용자가 레시피를 검색하고 결과를 확인할 수 있는 페이지이다.
+  이를 통해 다음 기능을 제공한다.
+    레시피 검색
+    결과 카드 출력
+    레시피 탐색 기능 제공
+
+  한 줄 핵심
+    SearchPage는 “레시피 검색 기능을 제공하는 페이지”

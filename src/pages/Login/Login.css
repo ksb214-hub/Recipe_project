@@ -1,0 +1,79 @@
+/* 전체 컨테이너 */
+.login_container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* 메인 */
+.login_main {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 80px;
+}
+
+/* 로그인 박스 */
+.login_form {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+/* 제목 */
+.login_title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* hint text */
+.hint_text {
+  font-size: 12px;
+  color: #ff4d4f;
+  margin-top: -6px;
+  margin-bottom: 4px;
+}
+
+/* input 에러 */
+.input_error {
+  border: 1px solid #ff4d4f !important;
+}
+
+/* 비밀번호 영역 */
+.password_wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 👁 아이콘 */
+.password_toggle {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #888;
+}
+/* form */
+.login_form form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* footer */
+.login_footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.login_footer a {
+  font-size: 12px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.login_footer a:hover {
+  color: var(--color-primary);
+}

@@ -1,0 +1,117 @@
+Card 컴포넌트 설계 문서
+
+1. 개요 (Overview)
+    Card 컴포넌트는 zero-naeng-fe 프로젝트에서 레시피 데이터를 UI 형태로 출력하기 위한 공통 컴포넌트이다.
+    여러 페이지에서 동일한 카드 UI를 사용하기 위해 하나의 Card 컴포넌트로 통일하였다.
+
+    핵심 개념
+        -> 데이터 → UI 변환 컴포넌트
+    
+    해결하는 문제
+		-> 카드 UI 중복 제거
+		-> 디자인 일관성 유지
+		-> 유지보수 효율 향상
+
+2. 개발 환경
+        항목	        내용
+    Framework	    React
+    Language	    JavaScript
+    Styling	        CSS
+    Architecture	Component 기반
+
+3. 폴더 구조
+    src/
+    ├─ components/
+    │   └─ Card/
+    │       ├─ Card.js
+    │       └─ Card.css
+
+    구성 요소
+		-> Card.js → 카드 UI 구조 및 데이터 처리
+		-> Card.css → 카드 스타일 정의
+
+4. Card 컴포넌트 목적
+
+    Card 컴포넌트는 다음과 같은 목적을 가진다.
+        	-> 레시피 데이터를 시각적으로 표현
+        	-> 다양한 페이지에서 재사용 가능
+        	-> props 기반 데이터 출력
+        	-> UI 일관성 유지
+
+5. 데이터 흐름 (핵심 🔥)
+    Card 컴포넌트의 가장 중요한 구조이다.
+        데이터 배열 (recipes)
+            │
+            ▼
+          map()
+            │
+            ▼
+        <Card props 전달>
+            │
+            ▼
+        Card 컴포넌트 렌더링
+            │
+            ▼
+          UI 출력
+    React의 핵심 패턴: 리스트 렌더링 + props 전달
+
+
+6. 구조 흐름 (DOM 구조)
+    Card
+    │
+    ├── div.card
+    │     │
+    │     ├── div.card_thumb
+    │     │     └── img
+    │     │
+    │     └── div.card_body
+    │           │
+    │           ├── h3.card_title
+    │           │
+    │           ├── p.card_desc (옵션)
+    │           │
+    │           └── div.card_info
+    │                 ├── span (time)
+    │                 ├── span (difficulty)
+    │                 └── span (servings)
+
+7. props 구조
+    props	       설명
+    title	    레시피 제목
+    image	    썸네일 이미지
+    description	설명 (선택)
+    time	    조리 시간
+    difficulty	난이도
+    servings	인분
+
+8. 조건부 렌더링
+    Card 컴포넌트는 필요한 데이터만 출력하도록 설계한다. 
+9. Card 컴포넌트 특징
+    -> 데이터 기반 UI 렌더링
+    -> props 기반 설계
+    -> 조건부 렌더링 지원
+    -> 재사용 가능한 구조
+    -> UI 일관성 유지
+
+10. 핵심 설계 포인트
+    1️⃣ props 기반 설계
+        데이터만 변경 → UI 자동 변경
+    2️⃣ 조건부 렌더링
+        필요한 요소만 출력
+    3️⃣ 재사용성
+        Main / Search / 추천 페이지 등에서 동일 사용
+    4️⃣ UI 일관성
+        Card 하나로 전체 디자인 통일
+
+11. 정리
+    Card 컴포넌트는 데이터를 UI로 변환하는 핵심 컴포넌트이다.
+
+    이를 통해 다음 효과를 얻을 수 있다.
+        -> 코드 중복 제거
+        -> UI 통일
+        -> 유지보수 효율 향상
+        -> 확장성 확보
+
+    한 줄 핵심
+        -> Card는 “데이터를 UI로 변환하는 컴포넌트”
+    

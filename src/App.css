@@ -1,81 +1,38 @@
-/* 전체 레이아웃 */
-.app {
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
   min-height: 100vh;
-  background-color: #f3f4f6; /* 연한 회색 배경 */
-  font-family: Arial, sans-serif;
-}
-
-/* ================= 네비바 ================= */
-
-.navbar {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-
-  padding: 16px 24px;
-  background-color: #ffffff;
-
-  border-bottom: 1px solid #e5e7eb;
-}
-
-/* 로고 */
-.logo {
-  margin: 0;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-/* 버튼 그룹 */
-.nav-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-/* 네비 버튼 */
-.nav-btn {
-  padding: 8px 16px;
-  background-color: #3b82f6;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
   color: white;
-
-  border-radius: 8px;
-  text-decoration: none;
-
-  transition: 0.2s;
 }
 
-/* hover 효과 */
-.nav-btn:hover {
-  background-color: #2563eb;
+.App-link {
+  color: #61dafb;
 }
 
-/* ================= 페이지 영역 ================= */
-
-.main-content {
-  padding: 20px;
-}
-
-/* ================= 반응형 ================= */
-
-/* 태블릿 */
-@media (max-width: 768px) {
-  .navbar {
-    display: ruby-text;
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
   }
-
-  .nav-buttons {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* 모바일 */
-@media (max-width: 480px) {
-  .logo {
-    font-size: 18px;
-  }
-
-  .nav-btn {
-    padding: 6px 12px;
-    font-size: 14px;
+  to {
+    transform: rotate(360deg);
   }
 }

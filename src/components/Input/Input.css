@@ -1,0 +1,44 @@
+/* src/components/Input/Input.css */
+
+/* src/components/Input/Input.css */
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%; /* 🔥 추가 */
+}
+
+/* label */
+.input-label {
+  font-size: 14px;
+  color: #555;
+}
+
+/* input */
+.input-field {
+  width: 100%; /* 🔥 추가 */
+  height: 48px;
+  padding: 0 12px;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  font-size: 14px;
+
+  outline: none;
+  transition: 0.2s;
+
+  box-sizing: border-box; /* 🔥 중요 */
+}
+
+/* focus 효과 */
+.input-field:focus {
+  border-color: #05ac4f;
+  box-shadow: 0 0 0 2px rgba(5, 172, 79, 0.1);
+}
+
+/* placeholder 색 */
+.input-field::placeholder {
+  color: #aaa;
+}

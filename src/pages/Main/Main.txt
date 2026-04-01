@@ -1,0 +1,235 @@
+Main 페이지 설계 문서
+
+1. 개요 (Overview)
+      Main 페이지는 zero-naeng-fe 서비스의 메인 화면을 제공하는 페이지이다.
+
+      사용자는 메인 페이지에서 추천 레시피(BEST 요리모음) 를 확인할 수 있으며,
+      각 레시피는 Card 형태로 표시된다.
+
+      또한 상단에는 Header 컴포넌트를 통해 네비게이션 기능이 제공된다.
+
+2. 개발 환경
+      항목		        내용
+      Framework	      React
+	Language	     JavaScript
+	Routing		React Router
+	Component	      Input, Button
+	Styling	        CSS
+
+3. 폴더 구조
+      plaintext
+            src/
+            │
+            ├── App.js
+            │
+            ├── components/
+            │   ├── Header/
+            │   │   ├── Header.js
+            │   │   └── Header.css
+            │   │
+            │   └── Card/
+            │       ├── Card.js
+            │       └── Card.css
+            │
+            ├── pages/
+            │   └── Main/
+            │       ├── Main.js
+            │       └── Main.css
+
+      구성 요소
+            Main.js → 메인 페이지 UI 및 레시피 리스트
+            Main.css → 메인 페이지 스타일 
+
+4. 목적
+
+      Main 페이지는 다음 기능을 제공한다.
+      - 추천 레시피 목록 제공
+      - 레시피 카드 UI 제공
+      - 레시피 상세 페이지 이동 (추후 기능)
+
+5. 컴포넌트 구조
+      Main 페이지는 다음과 같은 컴포넌트 구조로 구성된다.   
+            plaintext
+                  Main
+                  │
+                  ├── Header (공통 네비게이션)
+                  │
+                  └── main
+                  │
+                  └── home_cont_cate
+                        │
+                        ├── Title
+                        │
+                        └── Card 리스트
+6. UI 구조
+      plaintext
+            Main Page
+            │
+            ├── Header
+            │
+            └── main (class="con")
+                  │
+                  └── div.home_cont_cate
+                        │
+                        ├── h3
+                        │     BEST 요리모음
+                        │
+                        └── div.card-wrapper
+                              │
+                              └── Card 리스트
+
+7. 데이터 흐름
+      Main 페이지의 핵심 구조는 데이터 기반 UI 렌더링이다.
+            plaintext
+                  recipes 데이터
+                        │
+                        ▼
+                        map()
+                        │
+                        ▼
+                  Card 컴포넌트 전달
+                        │
+                        ▼
+                        UI 출력
+
+8. Card 출력 구조
+      레시피 목록은 Card 컴포넌트를 사용하여 출력한다.
+
+      예시
+            JavaScript
+                  recipes.map((recipe) => (
+                        <Card
+                        key={recipe.id}
+                        title={recipe.title}
+                        image={recipe.image}
+                        />
+                  ))
+
+9. DOM 구조
+      plaintext
+            main.con
+            │
+            └── div.home_cont_cate
+            │
+            ├── h3
+            │
+            └── div.card-wrapper
+                  │
+                  └── Card (반복)
+            
+10. CSS 구조
+      Main.css는 다음 영역으로 구성된다.
+            plaintext
+                  Main.css
+                  │
+                  ├── layout (.con)
+                  ├── 콘텐츠 영역 (.home_cont_cate)
+                  ├── 카드 리스트 (.card-wrapper)
+                  ├── 카드 스타일
+                  └── hover 효과
+
+11. 변경된 CSS 구조
+      메인 콘텐츠는 화면 중앙 정렬을 위해 다음 스타일을 사용한다.
+            css
+                  .con {
+                        width: 100%;
+                        position: absolute;
+                        top: 12%;
+                        display: flex;
+                        justify-content: center;
+                  }
+12. 탭 UI (추가 기능)
+      메인 페이지에는 레시피 / 냉장고 재료 탭 UI가 추가될 수 있다.
+            plaintext
+                  TAB
+                  │
+                  ├── 레시피
+                  └── 냉장고 재료
+      DOM 구조
+            plaintext
+                  div#tab
+                  │
+                  └── ul
+                  │
+                  ├── li (class="on")
+                  │     레시피
+                  │
+                  └── li
+                        냉장고 재료
+            css
+                  #tab {
+                        width: 70%;
+                        margin: 0 auto;
+                        overflow: hidden;
+                        margin-bottom: 1.688rem;
+                        border: solid 1px #e5e5e5;
+                        border-radius: 3.0625rem;
+                  }
+
+13. 기능
+      Main 페이지는 다음 기능을 제공한다.
+            plaintext
+                  Main 기능
+                  │
+                  ├── 레시피 카드 리스트
+                  │     ├── 이미지 출력
+                  │     └── 제목 출력
+                  │
+                  ├── 카드 반복 렌더링
+                  │     └── map()
+                  │
+                  └── UX
+                        ├── hover 효과
+                        └── 카드 클릭 (추후 상세 페이지)
+
+14. 사용자 흐름
+      plaintext
+            사용자 접속
+                  │
+                  ▼
+            Main 페이지
+                  │
+                  ▼
+            BEST 요리모음 확인
+                  │
+                  ▼
+            레시피 카드 탐색
+15. 핵심 설계 포인트
+      Main 페이지는 다음 설계 원칙을 기반으로 한다.
+            1️⃣ 컴포넌트 기반 UI
+                  plaintext
+                        Header
+                        Card  
+            2️⃣ 데이터 기반 렌더링
+                  레시피 데이터를 기반으로 카드 UI가 자동 생성된다.
+
+            3️⃣ 확장성
+                  추후 다음 기능을 추가할 수 있다.
+                        plaintext
+                              레시피 상세 페이지
+                              레시피 필터
+                              추천 레시피
+                              인기 레시피
+16. 최종 구조
+      plaintext
+            App
+            │
+            ├── Layout
+            │
+            └── Pages
+            │
+            ├── Main
+            ├── SearchPage
+            ├── RegPage
+            ├── Login
+            └── FindId / FindPw
+핵심 요약
+      Main 페이지는 추천 레시피를 카드 형태로 제공하는 서비스 메인 화면이다.
+
+페이지 역할 다이어그램
+      plaintext
+            Main
+            │
+            ├ 레시피 추천
+            ├ 검색 이동
+            └ 재료 등록 이동
