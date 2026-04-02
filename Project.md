@@ -90,6 +90,7 @@ flowchart TD
 ---
 
 # 🏗 시스템 아키텍처
+```mermaid
 flowchart TD
     A[사용자 Browser] --> B[React Frontend]
     B --> C[React Router]
@@ -104,10 +105,11 @@ flowchart TD
 
     H --> J[FindId]
     H --> K[FindPw]
-
+```
 ---
 
 # ⚛ React 컴포넌트 구조
+```mermaid
 flowchart TD
     A[App.js] --> B[Layout]
     B --> C[Header]
@@ -123,10 +125,11 @@ flowchart TD
     I --> I2[CategoryFilter]
     I --> I3[DifficultyFilter]
     I --> I4[RecipeResults]
-
+```
 ---
 
 # 🔎 검색 기능 데이터 흐름
+```mermaid
 flowchart TD
     A[사용자 입력] --> B[Search Input]
     B --> C["searchQuery (State)"]
@@ -135,11 +138,11 @@ flowchart TD
     E --> F[Filtered Results]
     F --> G[React 렌더링]
     G --> H[Recipe Card 출력]
-
-
+```
 ---
 
 # 📁 프로젝트 폴더 구조
+```mermaid
 flowchart TD
     A[src] --> B[App.js]
     A --> C[layout]
@@ -161,7 +164,7 @@ flowchart TD
     G --> G2[variables.css]
     A --> H[utils]
     H --> H1[filterRecipes.js]
-
+```
 
 ---
 
@@ -183,7 +186,7 @@ flowchart TD
 ---
 
 # 🧠 핵심 기능 구조
-
+```mermaid
 flowchart TD
     A[레시피 서비스] --> B[사용자 기능]
     B --> B1[로그인]
@@ -196,7 +199,7 @@ flowchart TD
     A --> D[데이터]
     D --> D1[추천 레시피]
     D --> D2[크롤링 데이터]
-
+```
 ---
 
 # 🛠 기술 스택
@@ -222,7 +225,7 @@ flowchart TD
 ---
 
 # 🔄 서비스 흐름
-
+```mermaid
 flowchart TD
     A[사용자 접속] --> B[React App]
     B --> C[Router]
@@ -231,7 +234,7 @@ flowchart TD
     E --> F["사용자 행동<br/>(검색 / 로그인)"]
     F --> G[State 변경]
     G --> H[UI 업데이트]
-
+```
 ---
 
 # 📌 실행 방법
