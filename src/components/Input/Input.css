@@ -1,44 +1,48 @@
 /* src/components/Input/Input.css */
 
-/* src/components/Input/Input.css */
-
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 100%; /* 🔥 추가 */
+  width: 100%;
 }
 
-/* label */
+
 .input-label {
-  font-size: 14px;
-  color: #555;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-/* input */
-.input-field {
-  width: 100%; /* 🔥 추가 */
-  height: 48px;
-  padding: 0 12px;
+.required {
+  color: red;
+  margin-left: 4px;
+}
 
+
+
+.input-field {
+  width: 100%;          /* 🔥 핵심 */
+  height: 44px;
   border: 1px solid #ddd;
   border-radius: 8px;
-
-  font-size: 14px;
-
-  outline: none;
-  transition: 0.2s;
-
-  box-sizing: border-box; /* 🔥 중요 */
+  padding: 0 12px;
+  box-sizing: border-box; /* 🔥 padding 때문에 줄어드는 문제 방지 */
 }
 
-/* focus 효과 */
 .input-field:focus {
-  border-color: #05ac4f;
-  box-shadow: 0 0 0 2px rgba(5, 172, 79, 0.1);
+  outline: none;
+  border-color: var(--color-primary);
 }
 
-/* placeholder 색 */
-.input-field::placeholder {
-  color: #aaa;
+.input-hint {
+  font-size: 12px;
+  color: #888;
+}
+
+.input-error-text {
+  font-size: 12px;
+  color: #ff4d4f;
+}
+
+.input-error {
+  border-color: #ff4d4f;
 }

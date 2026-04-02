@@ -41,9 +41,11 @@
 
 /* 비밀번호 영역 */
 .password_wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
 /* 👁 아이콘 */
