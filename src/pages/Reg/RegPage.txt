@@ -1,0 +1,9 @@
+3. RegPage.js (인증 기반 식재료 관리)
+    [진행 상황: CRUD 연동 및 방어 로직 완료]
+    로그인한 사용자만 접근하여 식재료를 등록, 수정, 조회하는 기능을 담당합니다.
+
+    Bearer 토큰 활용: api.js에 설정된 인터셉터 덕분에, 이 페이지에서 api.get("/ingredients")를 호출할 때 별도의 코드 없이도 헤더에 Authorization: Bearer {token}이 포함되어 요청됩니다.
+
+    DB 데이터 매핑: 식재료의 이름, 설명, 이미지 URL(image_url)을 관리하며 수정 모드(Edit Mode)와 등록 모드를 유연하게 전환합니다.
+
+    이미지 에러 방어: 외부 이미지 서버(via.placeholder.com)의 연결 문제(ERR_CONNECTION_CLOSED)가 발생해도 화면이 깨지지 않도록 onError 핸들러를 통해 대체 이미지를 보여주도록 설정되었습니다.
