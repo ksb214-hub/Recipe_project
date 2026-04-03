@@ -41,6 +41,7 @@ flowchart TD
     E --> E1[SearchPage.js]
     E --> E2[SearchPage.module.css]
 ```
+---
 
 # 4. Login 페이지 목적
 
@@ -52,36 +53,45 @@ Login 페이지는 사용자가 아이디와 비밀번호를 입력하여 로그
 	•	비밀번호 찾기 페이지 이동
 	•	회원가입 페이지 이동
 
+---
+
 # 5. Login 주요 기능
 
 ```mermaid
 flowchart TD
-	A[Login 기능]
+    A[Login 기능]
 
-	A --> B[입력 기능]
-	B --> B1[아이디 입력]
-	B1 --> B2[실시간 이메일 형식 검사]
+    A --> B[입력 기능]
+    B --> B1[아이디 입력]
+    B1 --> B2[실시간 이메일 형식 검사]
 
-	B --> B3[비밀번호 입력]
-	B3 --> B4[실시간 비밀번호 검사]
-	B3 --> B5[비밀번호 보기 아이콘]
+    B --> B3[비밀번호 입력]
+    B3 --> B4[실시간 비밀번호 검사]
+    B3 --> B5[비밀번호 보기 아이콘]
 
-	A --> C[입력 검증]
-	C --> C1[이메일 형식 검사]
-	C --> C2[비밀번호 길이 검사]
-	C --> C3[에러 메시지 표시]
-	C --> C4[Input 에러 테두리]
+    A --> C[입력 검증]
+    C --> C1[이메일 형식 검사]
+    C --> C2[비밀번호 길이 검사]
+    C --> C3[에러 메시지 표시]
+    C --> C4[Input 에러 테두리]
 
-	A --> D[로그인 처리]
-	D --> D1[handleSubmit]
-	D1 --> D2[Enter 키 로그인]
-	D1 --> D3[로그인 API 요청]
+    A --> D[로그인 처리]
+    D --> D1[handleSubmit]
+    D1 --> D2[Enter 키 로그인]
+    D1 --> D3[로그인 API 요청]
 
-	A --> E[페이지 이동]
-	E --> E1[/find-id]
-	E --> E2[/find-pw]
-	E --> E3[/join]
+    A --> E[페이지 이동]
+    E --> E1[Find ID Page]
+    E --> E2[Find Password Page]
+    E --> E3[Sign Up Page]
 ```
+| 기능 | 경로 |
+|-----|-----|
+| 아이디 찾기 | /find-id |
+| 비밀번호 찾기 | /find-pw |
+| 회원가입 | /join |
+
+---
 
 # 6. 컴포넌트 구조
 ```mermaid
@@ -98,6 +108,7 @@ flowchart TD
     E --> E2[비밀번호 찾기]
     E --> E3[회원가입]
 ```
+---
 
 ## 7. 핵심 기능 요약
 
@@ -123,6 +134,7 @@ Login 페이지에서는 **React의 `useState`를 사용하여 사용자 입력 
 const [id, setId] = useState("");
 const [pw, setPw] = useState("");
 ```
+---
 
 ## 9. 데이터 흐름 (Data Flow)
 
@@ -139,6 +151,7 @@ flowchart TD
     D --> E[handleSubmit 실행]
     E --> F[로그인 API 요청]
 ```
+---
 
 ## 10. 로그인 처리 흐름
 
@@ -178,6 +191,7 @@ G --> H{로그인 성공 여부}
 H -->|Yes| I[메인 페이지 이동]
 H -->|No| J[에러 메시지 표시]
 ```
+---
 
 ## 11. Router 연결
 
@@ -202,6 +216,8 @@ flowchart TD
     A --> C[Find Password Page]
     A --> D[Sign Up Page]
 ```
+---
+
 ## 12. 정리
 
 Login 페이지는 **사용자 인증을 수행하는 핵심 화면**이며  
@@ -247,3 +263,4 @@ B --> E[사용자 입력]
 C --> F[로그인 실행]
 D --> G[페이지 이동]
 ```
+---
