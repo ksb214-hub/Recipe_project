@@ -3,54 +3,50 @@ import { Link, useNavigate } from "react-router-dom";
 
 import Button from "../../components/Button/Button";
 import Input from "../../components/Input/Input";
-
-import authRequest from "../../api/authRequest"; // ★ API 인스턴스
+import api from "../../api/api"; 
 
 import "./Login.css";
 
 function Login() {
-
   const navigate = useNavigate();
 
-  const [id, setId] = useState("");
+  // 상태 관리: 서버 명세(login_id, password) 준수
+  const [loginId, setLoginId] = useState("");
   const [pw, setPw] = useState("");
   const [idError, setIdError] = useState("");
   const [pwError, setPwError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const validateEmail = (value) => {
-    if (!value.includes("@")) setIdError("이메일 형식이 올바르지 않습니다.");
+  // 기존 유효성 검사 로직 (이메일 체크 대신 아이디 체크로 변경)
+  const validateId = (value) => {
+    if (!value) setIdError("아이디를 입력해주세요.");
     else setIdError("");
   };
 
   const validatePassword = (value) => {
-    if (value.length < 6) setPwError("비밀번호는 6자 이상이어야 합니다.");
+    if (value.length < 8) setPwError("비밀번호는 8자 이상이어야 합니다.");
     else setPwError("");
   };
 
-  // 로그인 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
-    validateEmail(id);
+    validateId(loginId);
     validatePassword(pw);
 
-    if (idError || pwError) return;
+    if (!loginId || pw.length < 8 || idError || pwError) return;
 
     try {
-      const res = await authRequest.post("/login", {
-        email: id,
+      const res = await api.post("/login", {
+        loginId: loginId,
         password: pw,
       });
 
-      // 서버에서 AT, RT 반환 가정
       const { accessToken, refreshToken } = res.data;
-
-      // 로컬스토리지 저장
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
 
       alert("로그인 성공!");
-      navigate("/"); // 메인 페이지 이동
+      navigate("/"); 
 
     } catch (err) {
       console.error(err);
@@ -61,23 +57,26 @@ function Login() {
   return (
     <div className="login_container">
       <main className="login_main">
+        {/* 기존 스타일을 위해 login_form 클래스를 유지합니다 */}
         <div className="login_form">
           <h2 className="login_title">로그인</h2>
+          
           <form onSubmit={handleSubmit}>
-
+            {/* 아이디 입력 */}
             <Input
               type="text"
               id="input-id"
-              placeholder="Enter your email"
-              value={id}
+              placeholder="Enter your ID"
+              value={loginId}
               className={idError ? "input_error" : ""}
               onChange={(e) => {
-                setId(e.target.value);
-                validateEmail(e.target.value);
+                setLoginId(e.target.value);
+                validateId(e.target.value);
               }}
             />
             {idError && <p className="hint_text">{idError}</p>}
 
+            {/* 비밀번호 입력 */}
             <div className="password_wrapper">
               <Input
                 type={showPassword ? "text" : "password"}
@@ -93,13 +92,18 @@ function Login() {
               <span
                 className="password_toggle"
                 onClick={() => setShowPassword(!showPassword)}
+                style={{ cursor: 'pointer' }} // 클릭 가능 표시
               >
                 {showPassword ? "🙈" : "👁"}
               </span>
             </div>
             {pwError && <p className="hint_text">{pwError}</p>}
 
-            <Button type="submit" variant="primary" disabled={!id || !pw}>
+            <Button 
+              type="submit" 
+              variant="primary" 
+              disabled={!loginId || !pw}
+            >
               로그인
             </Button>
           </form>
@@ -107,7 +111,7 @@ function Login() {
           <div className="login_footer">
             <Link to="/find-id">아이디 찾기</Link>
             <Link to="/find-pw">비밀번호 찾기</Link>
-            <Link to="/join">회원가입</Link>
+            <Link to="/signup">회원가입</Link>
           </div>
         </div>
       </main>

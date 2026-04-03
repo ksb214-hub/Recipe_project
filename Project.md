@@ -257,6 +257,17 @@ React 프로젝트 구조 참고
 
 https://grape-curiosity-e94.notion.site/35b86a30c543458c9af716c50a331b77
 
+ 
+React 프로젝트 로그인 참고
+https://12716.tistory.com/entry/ReactJS-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%ED%8E%98%EC%9D%B4%EC%A7%80-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0
+
+React 프로젝트 회원가입 참고 
+https://12716.tistory.com/entry/ReactJS-%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85-%ED%8E%98%EC%9D%B4%EC%A7%80-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0?category=1023699
+    
+React 프로젝트 인증 참고
+https://12716.tistory.com/entry/ReactJS-%EC%9D%B8%EC%A6%9D-%EC%B2%B4%ED%81%AC%ED%95%98%EB%8A%94-%EA%B8%B0%EB%8A%A5-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0
+    
+        
 ---
 
 # 📌 프로젝트 한 줄 정리
