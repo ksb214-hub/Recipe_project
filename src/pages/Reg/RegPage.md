@@ -186,8 +186,8 @@ flowchart TD
     D --> E{등록 버튼 클릭}
 
     E -->|등록| F[POST /ingredients]
-    E -->|수정| G[PUT /ingredients/{id}]
-    E -->|삭제| H[DELETE /ingredients/{id}]
+    E -->|수정| G[PUT /ingredients (id)]
+    E -->|삭제| H[DELETE /ingredients (id)]
 
     F --> I[DB 저장]
     G --> I
