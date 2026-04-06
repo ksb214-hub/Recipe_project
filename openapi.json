@@ -1,20 +1,22 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "연습용 Petstore API",
+    "title": "제로냉 레시피 API",
+    "description": "냉장고 속 재료로 만드는 꿀조합 레시피 조회 API",
     "version": "1.0.0"
   },
   "paths": {
-    "/pets": {
+    "/recipes": {
       "get": {
-        "summary": "모든 애완동물 목록 조회",
-        "operationId": "listPets",
+        "summary": "전체 레시피 목록 조회",
+        "operationId": "listRecipes",
+        "tags": ["Recipe"],
         "responses": {
           "200": {
             "description": "성공",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Pets" }
+                "schema": { "$ref": "#/components/schemas/Recipes" }
               }
             }
           }
@@ -24,17 +26,25 @@
   },
   "components": {
     "schemas": {
-      "Pet": {
-        "required": ["id", "name"],
+      "Recipe": {
+        "type": "object",
+        "required": ["id", "title", "ingredients"],
         "properties": {
-          "id": { "type": "integer", "format": "int64" },
-          "name": { "type": "string" },
-          "tag": { "type": "string" }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "title": { "type": "string", "example": "스팸 마요 덮밥" },
+          "description": { "type": "string", "example": "남은 스팸으로 만드는 간단한 한 끼" },
+          "ingredients": { 
+            "type": "array", 
+            "items": { "type": "string" },
+            "example": ["스팸", "계란", "마요네즈", "밥"]
+          },
+          "difficulty": { "type": "string", "enum": ["EASY", "NORMAL", "HARD"], "example": "EASY" },
+          "cookingTime": { "type": "integer", "description": "분 단위", "example": 15 }
         }
       },
-      "Pets": {
+      "Recipes": {
         "type": "array",
-        "items": { "$ref": "#/components/schemas/Pet" }
+        "items": { "$ref": "#/components/schemas/Recipe" }
       }
     }
   }

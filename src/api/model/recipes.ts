@@ -5,9 +5,6 @@
  * 냉장고 속 재료로 만드는 꿀조합 레시피 조회 API
  * OpenAPI spec version: 1.0.0
  */
+import type { Recipe } from './recipe';
 
-export * from './pet';
-export * from './pets';
-export * from './recipe';
-export * from './recipeDifficulty';
-export * from './recipes';
+export type Recipes = Recipe[];

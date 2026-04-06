@@ -1,38 +1,49 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+/* 기본 배경 설정 (브라우저 전체) */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f7; /* 배경을 연한 회색으로 해서 기기가 돋보이게 함 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* 모바일 기기 프레임 (#root 또는 .App 컨테이너) */
+.App {
+  /* 성빈님이 요청하신 402x874 규격 고정 */
+  width: 402px;
+  height: 874px;
+  
+  /* 실제 아이폰 같은 느낌을 주는 스타일 */
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden; /* 내부 요소가 기기 밖으로 나가지 않게 함 */
+  
+  /* 테두리와 그림자 (디바이스 느낌) */
+  border: 10px solid #222; /* 검정색 기기 테두리 */
+  border-radius: 40px;      /* 아이폰 특유의 둥근 모서리 */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  
+  /* 내부 스크롤 허용 */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* 내부 콘텐츠가 담길 영역 */
+.App main {
+  flex: 1;
+  overflow-y: auto; /* 내용이 길어지면 기기 안에서만 스크롤 */
+  width: 100%;
+  height: 100%;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* 스크롤바 디자인 (깔끔하게 숨기기) */
+.App main::-webkit-scrollbar {
+  width: 4px;
+}
+.App main::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
 }

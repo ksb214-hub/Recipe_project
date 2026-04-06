@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../../api/api";
+// import api from "../../api/api"; // 백엔드 연결 시 주석 해제
 import "./RegPage.css";
 
 import Input from "../../components/Input/Input";
@@ -7,7 +7,7 @@ import Button from "../../components/Button/Button";
 
 function RegPage() {
   /* ===============================
-     1. 상태 관리 (DB 명세 반영)
+     1. 상태 관리 (더미 데이터 포함)
   =============================== */
   const [name, setName] = useState("");              
   const [description, setDescription] = useState(""); 
@@ -18,34 +18,26 @@ function RegPage() {
   const [editId, setEditId] = useState(null);         
 
   /* ===============================
-     2. 데이터 불러오기 (Read)
-     인증 헤더(Bearer Token)는 api.js 인터셉터에서 자동 주입됩니다.
+     2. 데이터 불러오기 (시연용 로컬 데이터)
   =============================== */
   const fetchIngredients = async () => {
-    try {
-      setLoading(true);
-      // 서버에서 전체 식재료 목록 조회
-      const response = await api.get("/ingredients");
-      
-      console.log("목록 응답 확인:", response.data);
+    setLoading(true);
+    // 0.5초 로딩 시뮬레이션
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      /** * 서버 응답 데이터 구조 최적화
-       * 1. response.data가 배열인 경우
-       * 2. response.data.data가 배열인 경우 (표준 JSON API)
-       */
-      const rawData = response.data;
-      const finalData = Array.isArray(rawData) 
-        ? rawData 
-        : (rawData && Array.isArray(rawData.data) ? rawData.data : []);
-
-      setIngredients(finalData);
-    } catch (err) {
-      console.error("데이터 로딩 실패:", err);
-      // 401 에러(토큰 만료)는 api.js 인터셉터가 처리하지만, 여기서도 상태를 비워줍니다.
-      setIngredients([]); 
-    } finally {
-      setLoading(false);
+    const savedData = localStorage.getItem("mock_ingredients");
+    if (savedData) {
+      setIngredients(JSON.parse(savedData));
+    } else {
+      // 초기 시연용 더미 데이터
+      const initialData = [
+        { id: Date.now(), name: "방울토마토", description: "스테비아 공법으로 달콤한 토마토", image_url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200", created_at: new Date().toISOString() },
+        { id: Date.now() + 1, name: "스팸", description: "냉장고 필수템 짭조름한 통조림 햄", image_url: "https://images.unsplash.com/photo-1629450646251-50e322301c27?w=200", created_at: new Date().toISOString() }
+      ];
+      setIngredients(initialData);
+      localStorage.setItem("mock_ingredients", JSON.stringify(initialData));
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -53,61 +45,61 @@ function RegPage() {
   }, []);
 
   /* ===============================
-     3. 재료 등록 및 수정 (Create / Update)
+     3. 재료 등록 및 수정 (시연용)
   =============================== */
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
     if (!name) return alert("식재료명을 입력하세요.");
 
-    // DB 컬럼 명세 준수
-    const payload = {
-      name: name,
-      description: description,
-      image_url: imageUrl,
-      normalized_name: name // 필요 시 서버에서 처리하도록 전달
-    };
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 800)); // 0.8초 저장 시뮬레이션
 
-    try {
-      setLoading(true);
-      if (editId) {
-        // 수정 요청
-        await api.put(`/ingredients/${editId}`, payload);
-        alert("수정되었습니다.");
-      } else {
-        // 신규 등록 요청
-        await api.post("/ingredients", payload);
-        alert("등록되었습니다.");
-      }
-
-      // 입력 필드 초기화
-      setName("");
-      setDescription("");
-      setImageUrl("");
-      setEditId(null);
-      
-      // 즉시 목록 새로고침 (이 부분이 없으면 등록 후 리스트가 안 보입니다)
-      await fetchIngredients();
-    } catch (err) {
-      console.error("저장 오류:", err);
-      const errorMsg = err.response?.data?.message || "이미 등록된 이름이거나 서버 오류가 발생했습니다.";
-      alert(errorMsg);
-    } finally {
-      setLoading(false);
+    let updatedList;
+    if (editId) {
+      // 수정 로직
+      updatedList = ingredients.map(item => 
+        item.id === editId 
+          ? { ...item, name, description, image_url: imageUrl } 
+          : item
+      );
+      alert("정보가 수정되었습니다.");
+    } else {
+      // 등록 로직
+      const newIngredient = {
+        id: Date.now(),
+        name,
+        description,
+        image_url: imageUrl || "https://placehold.jp/150x150.png?text=No+Image",
+        created_at: new Date().toISOString()
+      };
+      updatedList = [newIngredient, ...ingredients];
+      alert("새로운 식재료가 등록되었습니다.");
     }
+
+    setIngredients(updatedList);
+    localStorage.setItem("mock_ingredients", JSON.stringify(updatedList));
+
+    // 초기화
+    setName("");
+    setDescription("");
+    setImageUrl("");
+    setEditId(null);
+    setLoading(false);
   };
 
   /* ===============================
-     4. 삭제 (Delete)
+     4. 삭제 (시연용)
   =============================== */
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    try {
-      await api.delete(`/ingredients/${id}`);
-      await fetchIngredients(); // 삭제 후 동기화
-    } catch (err) {
-      console.error("삭제 실패:", err);
-      alert("삭제 중 오류가 발생했습니다.");
-    }
+    
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const updatedList = ingredients.filter(item => item.id !== id);
+    setIngredients(updatedList);
+    localStorage.setItem("mock_ingredients", JSON.stringify(updatedList));
+    setLoading(false);
   };
 
   /* ===============================
@@ -118,8 +110,10 @@ function RegPage() {
     setDescription(item.description || "");
     setImageUrl(item.image_url || "");
     setEditId(item.id);
-    // 입력창으로 스크롤 이동
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    
+    // 모바일 프레임 내부 스크롤 상단 이동
+    const mainElement = document.querySelector('main');
+    if (mainElement) mainElement.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -127,80 +121,81 @@ function RegPage() {
       <div className="reg_box">
         <div className="reg_header">
           <h2>식재료 마스터 관리</h2>
-          <p>식재료 정보를 등록하고 최신 상태로 유지하세요.</p>
+          <p>냉장고 속 재료를 등록해보세요.</p>
         </div>
 
         {/* 등록/수정 폼 */}
         <form className="reg_input_section" onSubmit={handleRegister}>
-          <Input
-            label="식재료명"
-            placeholder="예: 방울토마토"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <Input
-            label="식재료 설명"
-            placeholder="예: 유기농 농장에서 직송된 토마토"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <Input
-            label="이미지 URL"
-            placeholder="http://..."
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
-          <Button type="submit" disabled={loading}>
-            {loading ? "처리 중..." : editId ? "정보 수정 완료" : "+ 새 식재료 등록"}
-          </Button>
-          {editId && (
-            <button 
-              type="button" 
-              className="cancel_btn" 
-              onClick={() => { setEditId(null); setName(""); setDescription(""); setImageUrl(""); }}
-            >
-              수정 취소
-            </button>
-          )}
+          <div className="input_group">
+            <Input
+              placeholder="식재료명 (예: 계란)"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="input_group">
+            <Input
+              placeholder="설명 (예: 무항생제 1등급)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="input_group">
+            <Input
+              placeholder="이미지 URL (선택)"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+            />
+          </div>
+          
+          <div className="button_group">
+            <Button type="submit" disabled={loading} variant="primary">
+              {loading ? "처리 중..." : editId ? "수정 완료" : "+ 새 식재료 등록"}
+            </Button>
+            {editId && (
+              <button 
+                type="button" 
+                className="cancel_btn" 
+                onClick={() => { setEditId(null); setName(""); setDescription(""); setImageUrl(""); }}
+              >
+                취소
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="divider"></div>
 
         {/* 결과 리스트 영역 */}
         <div className="ingredient_list">
+          <h3 className="list_title">현재 등록된 재료 ({ingredients.length})</h3>
           {loading && ingredients.length === 0 ? (
-            <p className="empty_text">데이터를 불러오는 중입니다...</p>
+            <p className="empty_text">불러오는 중...</p>
           ) : ingredients.length > 0 ? (
             ingredients.map((item) => (
               <div key={item.id} className="ingredient_card">
-                {item.image_url ? (
-                  <img 
-                    src={item.image_url} 
-                    alt={item.name} 
-                    className="card_img" 
-                    onError={(e) => { e.target.src = "https://placehold.jp/150x150.png?text=No+Image"; }}
-                  />
-                ) : (
-                  <div className="card_img_placeholder">이미지 없음</div>
-                )}
+                <img 
+                  src={item.image_url} 
+                  alt={item.name} 
+                  className="card_img" 
+                  onError={(e) => { e.target.src = "https://placehold.jp/150x150.png?text=No+Image"; }}
+                />
                 <div className="card_content">
-                  <h3>{item.name}</h3>
-                  <p className="item_desc">{item.description || "설명이 등록되지 않았습니다."}</p>
-                  <span className="item_date">
-                    등록일: {item.created_at ? new Date(item.created_at).toLocaleDateString() : "일자 미상"}
-                  </span>
-                </div>
-                <div className="card_buttons">
-                  <button className="edit_btn" onClick={() => handleEdit(item)}>수정</button>
-                  <button className="delete_btn" onClick={() => handleDelete(item.id)}>삭제</button>
+                  <div className="card_text">
+                    <span className="item_name">{item.name}</span>
+                    <p className="item_desc">{item.description}</p>
+                  </div>
+                  <div className="card_buttons">
+                    <button className="edit_link" onClick={() => handleEdit(item)}>수정</button>
+                    <button className="delete_link" onClick={() => handleDelete(item.id)}>삭제</button>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
             <div className="no_data">
               <p className="empty_text">등록된 식재료가 없습니다.</p>
-              <p className="sub_text">상단 폼에서 첫 번째 재료를 등록해보세요!</p>
             </div>
           )}
         </div>
