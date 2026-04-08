@@ -1,0 +1,341 @@
+/* ==========================================================
+   1. 기본 레이아웃 및 스크롤 설정
+   ========================================================== */
+.expense_page_wrapper {
+  width: 100%;
+  max-width: 402px;
+  min-height: 874px;
+  margin: 0 auto;
+  background-color: #fcfaff;
+  font-family: 'Pretendard', sans-serif;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.expense_container {
+  padding: 0 20px 120px; /* 하단 버튼 및 가이드 여백 */
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 스크롤바 숨기기 (깔끔한 UI용) */
+.expense_container::-webkit-scrollbar {
+  width: 0;
+}
+
+/* ==========================================================
+   2. 네비게이션 및 인터랙티브 버튼
+   ========================================================== */
+.page_nav_header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0 16px;
+}
+
+.icon_button_back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 14px;
+  background-color: white;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon_button_back:hover {
+  background-color: #f3f0ff;
+  color: #764ba2;
+  transform: translateY(-2px);
+}
+
+.icon_button_back:active {
+  transform: scale(0.92);
+  background-color: #e9e4ff;
+}
+
+.page_title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+
+/* ==========================================================
+   3. 요약 카드 및 섹션 공통
+   ========================================================== */
+.summary_card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 26px;
+  padding: 24px;
+  color: white;
+  box-shadow: 0 12px 24px rgba(118, 75, 162, 0.2);
+  margin-bottom: 20px;
+}
+
+.spent_total_text {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 12px 0 24px;
+}
+
+.chart_card_section, .recent_history_section {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #f1f3f7;
+}
+
+.section_title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================
+   4. 금액 시각화 달력 (Calendar)
+   ========================================================== */
+.cal_grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal_day {
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  border: 1px solid #f5f5f5;
+  transition: transform 0.2s;
+}
+
+.day_num { 
+  font-size: 12px; 
+  font-weight: 600; 
+  color: #444; 
+}
+
+.day_amount { 
+  font-size: 8px; 
+  font-weight: 800; 
+  color: #764ba2; 
+  margin-top: 2px; 
+}
+
+.cal_day.has_value { 
+  background-color: #f8f7ff; 
+  border-color: #e9e4ff; 
+}
+
+.cal_day.empty { 
+  background: transparent; 
+  border: none; 
+}
+
+/* ==========================================================
+   5. 구매 내역 리스트 (History)
+   ========================================================== */
+.history_stack { display: flex; flex-direction: column; gap: 12px; }
+
+.history_item_card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #f1f3f7;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history_item_card:hover {
+  transform: translateX(4px);
+  background-color: #faf9ff;
+}
+
+.history_item_card:active {
+  background-color: #fff0f0; /* 삭제 예고 피드백 */
+}
+
+.item_icon_bg {
+  width: 44px; height: 44px;
+  background: #f3f0ff;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 14px;
+}
+
+.item_name { 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: #222; 
+}
+
+.item_date { 
+  font-size: 11px; 
+  color: #aaa; 
+  margin-left: 5px; 
+}
+
+.item_price { 
+  margin-left: auto; 
+  font-size: 15px; 
+  font-weight: 800; 
+}
+
+/* ==========================================================
+   6. 입력 폼 (Bottom Sheet) & 오버레이
+   ========================================================== */
+.form_overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.form_sheet {
+  width: 100%;
+  max-width: 402px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 30px 30px 0 0;
+  padding: 24px 24px 40px;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.input_group { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  margin-bottom: 20px; 
+}
+
+.input_group input, .input_group select {
+  padding: 14px; 
+  border-radius: 12px; 
+  border: 1px solid #eee; 
+  background: #fbfbfb;
+}
+
+.submit_btn {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  color: white; border: none; border-radius: 16px; font-weight: 700;
+  cursor: pointer;
+}
+
+/* ==========================================================
+   7. 플로팅 버튼 (FAB)
+   ========================================================== */
+.fab_add_btn {
+  position: fixed;
+  bottom: 110px; /* 플로팅 가이드 위 */
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3);
+  cursor: pointer;
+  z-index: 99;
+  transition: all 0.2s;
+}
+
+.fab_add_btn:hover { 
+  transform: scale(1.1);
+}
+.fab_add_btn:active { 
+  transform: scale(0.9); 
+}
+
+
+/* ... 상단 기본 레이아웃 동일 ... */
+
+.donut_chart_layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 15px;
+}
+
+.donut_graphic {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.5s ease; /* 데이터 변경 시 부드러운 전환 */
+}
+
+.donut_center_hole {
+  width: 85px;
+  height: 85px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.hole_value { 
+    font-size: 18px; 
+    font-weight: 800; 
+    color: #333; 
+}
+
+.chart_legend_list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend_row { 
+    display: flex; 
+    align-items: center; 
+    font-size: 13px; 
+}
+
+.legend_dot { 
+    width: 10px; 
+    height: 10px; 
+    border-radius: 3px; 
+    margin-right: 8px; 
+}
+
+.legend_name { 
+    color: #666; 
+    flex: 1;
+}
+
+.legend_percent { 
+    font-weight: 700; 
+    color: #333; 
+}

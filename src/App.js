@@ -13,6 +13,8 @@ import RecipeRegPage from "./pages/RecipeReg/RecipeRegPage";
 import FindId from "./pages/Find/FindId/FindId";
 import FindPw from "./pages/Find/FindPw/FindPw";
 import SignUpPage from "./pages/SignUp/SignUpPage";
+// src/App.js 상단에 추가
+import ExpensePage from "./pages/Expense/ExpensePage";
 
 // src/App.js 수정 버전
 function App() {
@@ -31,6 +33,7 @@ function App() {
             <Route path="/find-pw" element={<Layout><FindPw /></Layout>} />
             <Route path="/recipe-reg" element={<Layout><RecipeRegPage /></Layout>}/>
             <Route path="/join" element={<SignUpPage />} /> {/* 여기도 프레임 안으로 들어갑니다 */}
+            <Route path="/expense" element={<ExpensePage />} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
         </main>
