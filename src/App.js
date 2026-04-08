@@ -23,7 +23,7 @@ function App() {
         <main>
           <Routes>
             {/* 공통 Layout 적용 */}
-            <Route path="/" element={<Layout><Main /></Layout>} />
+            <Route path="/main" element={<Layout><Main /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/search" element={<Layout><SearchPage /></Layout>} />
             <Route path="/reg" element={<Layout><RegPage /></Layout>} />

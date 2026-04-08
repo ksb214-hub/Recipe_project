@@ -1,55 +1,81 @@
 /* 카드 */
+/* 카드 전체 컨테이너 */
 .card {
+  display: flex; /* 가로 배치를 위한 flex */
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 15px; /* 성빈님 제안 수치 */
+  padding: 12px; /* 성빈님 제안 수치 */
   background: white;
-  border-radius: 10px;
+  border: 1px solid #f0f0f0; /* 성빈님 제안 수치 */
+  border-radius: 12px; /* 성빈님 제안 수치 (10px -> 12px로 조정) */
+  margin-bottom: 12px; /* 성빈님 제안 수치 */
+  
   overflow: hidden;
   cursor: pointer;
-
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04); /* 가로형은 그림자를 살짝 연하게 하는게 깔끔해요 */
+  transition: all 0.2s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
+  /* 가로형 리스트는 위로 뜨는 것보다 오른쪽으로 살짝 움직이는 게 더 직관적입니다 */
+  transform: translateX(4px); 
+  border-color: #667eea; /* 포인트 컬러로 강조 */
 }
 
-/* 이미지 */
+/* 이미지 (썸네일) 영역 */
+.card_thumb {
+  width: 80px; /* 가로형에 맞는 고정 너비 */
+  height: 80px; /* 정사각형 비율 */
+  flex-shrink: 0; /* 이미지 크기 보존 */
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .card_thumb img {
   width: 100%;
-  height: 120px;
+  height: 100%;
   object-fit: cover;
 }
 
-/* 내용 */
+/* 내용 영역 */
 .card_body {
-  padding: 10px;
+  padding: 0; /* flex gap이 여백을 대신하므로 0으로 조정 */
+  flex: 1; /* 남은 공간 모두 차지 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* 제목 */
 .card_title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
+  font-size: 15px; /* 제목 가독성을 위해 살짝 키움 */
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
 }
 
 /* 설명 */
 .card_desc {
-  font-size: 12px;
+  font-size: 13px;
   color: #777;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  /* 설명이 너무 길어지면 한 줄로 생략 처리 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
-/* 정보 */
+/* 정보 (시간, 난이도 등) */
 .card_info {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   font-size: 12px;
-  color: #666;
+  color: #999;
 }
 
-/* 메타 정보 */
 .card_meta {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
 }

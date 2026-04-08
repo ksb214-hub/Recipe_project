@@ -1,58 +1,67 @@
 /* 헤더 전체 */
+/* Header.css */
+/* Header.css */
 .header {
   width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background: #222;
-  z-index: 1000;
-}
-
-/* nav */
-.nav {
+  max-width: 402px; /* 성빈님 앱 규격 */
   height: 60px;
+  margin: 0 auto;
+  /* 로그인/회원가입 페이지와 통일된 그라데이션 */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
 }
 
-/* 내부 정렬 */
-.inner {
+.header_container {
   width: 100%;
-  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px; /* 좌우 적절한 여백 */
+}
 
+.logo {
   display: flex;
   align-items: center;
-}
-
-/* 로고 */
-.logo_link {
-  color: white;
+  gap: 8px;
   text-decoration: none;
-  font-size: 20px;
-  font-weight: bold;
 }
 
-/* 오른쪽 메뉴 */
-.menu {
-  margin-left: auto;
+.logo_text {
+  font-size: 19px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.5px;
+}
+
+.nav_menu {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 6px; /* 아이콘 간의 촘촘한 간격 */
 }
 
-/* 버튼 */
-.nav_btn {
+.nav_item {
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav_item:hover {
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  text-decoration: none;
-  font-size: 14px;
-
-  padding: 6px 12px;
-  border: 1px solid white;
-  border-radius: 6px;
-
-  transition: 0.2s;
 }
 
-.nav_btn:hover {
-  background: white;
-  color: #222;
+/* 로그아웃 버튼만 강조하고 싶을 때 */
+.logout_btn {
+  margin-left: 2px;
 }
