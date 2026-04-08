@@ -1,54 +1,62 @@
 /* src/pages/Main/Main.css */
 
 /* 메인 영역 */
-.con {
+/* Main.css */
+
+.main_page_container {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 80px; /* header 높이 보정 */
+  padding-top: 20px;
+  max-width: 402px;
+  min-height: 874px;
+  margin: 0 auto;
+  background: #f8f9fa; /* 배경은 눈이 편한 밝은 회색 */
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-/* 카드 영역 */
-.home_cont_cate {
-  width: 1240px;
-  background: #fff;
-  border: 1px solid #e9e9e9;
-  padding: 28px;
-  margin-bottom: 8px;
-  border-radius: 12px;
+.con {
+  padding: 20px;
 }
 
-/* 제목 */
-.home_cont_cate h3 {
+/* Section 타이틀 스타일 (보라색 포인트) */
+.con h2, .section_title { 
+  font-size: 22px;
+  font-weight: 800;
+  color: #333;
+  border-bottom: 4px solid #667eea; /* 보라색 포인트 라인 */
+  display: inline-block;
   margin-bottom: 20px;
 }
 
-.home_cont_cate h3 a {
-  text-decoration: none;
-  color: #000;
-  font-size: 20px;
-  font-weight: bold;
+/* 상단 버튼 그룹 정렬 */
+.main_actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
-/* 카드 리스트 */
+.action_btn {
+  flex: 1; /* 버튼 너비를 동일하게 배분 */
+  font-size: 13px !important;
+  height: 40px !important;
+  padding: 0 10px !important;
+}
+
+/* 카드 리스트 그리드 */
 .card-wrapper {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr; /* 모바일은 무조건 1열 */
   gap: 20px;
-  overflow-x: auto;
-}
-/* 제목 + 버튼 영역 */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-top: 10px;
 }
 
-/* 버튼 영역 */
-.header-buttons {
-  display: flex;
-  gap: 10px;
+/* 카드 컴포넌트가 Hover될 때 효과 (Card.css가 따로 없다면 여기에 추가) */
+.card-wrapper > div:hover {
+  transform: translateY(-5px);
+  transition: transform 0.2s ease;
 }
 
-.section-header h3{
-  font-size: 20px;
+/* 스크롤바 숨기기 (선택 사항: 깔끔한 시연용) */
+.main_page_container::-webkit-scrollbar {
+  display: none;
 }

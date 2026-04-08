@@ -1,99 +1,160 @@
-/* 전체 컨테이너 */
+/* Login.css */
+
+/* 전체 컨테이너: 배경 그라데이션 및 규격 고정 */
 .login_container {
   width: 100%;
+  max-width: 402px; /* 모바일 프레임 규격 */
+  min-height: 874px; /* 모바일 프레임 높이 */
+  margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 회원가입과 동일 */
   display: flex;
   justify-content: center;
-  min-height: 80vh; /* 화면 중앙 배치를 위해 추가 */
   align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* 메인 */
+/* 메인 및 로그인 박스 */
 .login_main {
-  width: 90%; /* 모바일 대응을 위해 % 추가 */
-  max-width: 400px;
+  width: 100%;
+  max-width: 340px;
 }
 
-/* 로그인 박스 */
 .login_form {
   background: white;
-  padding: 32px; /* 패딩을 조금 더 넉넉히 */
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 그림자를 조금 더 부드럽게 */
+  padding: 40px 30px;
+  border-radius: 20px; /* 조금 더 둥글게 */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); /* 깊이감 있는 그림자 */
 }
 
 /* 제목 */
 .login_title {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 24px;
-  font-weight: 700;
+  margin-bottom: 35px;
+  font-size: 26px;
+  font-weight: 800;
   color: #333;
 }
 
-/* hint text (에러 메시지) */
+/* Input 그룹 간격 */
+.input_group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input_group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  margin-left: 4px;
+}
+
+/* Input 컴포넌트 강제 스타일링 (컴포넌트 내부 스타일 덮어쓰기) */
+.input_group input {
+  width: 100%;
+  padding: 14px 16px !important;
+  border: 1px solid #eee !important;
+  border-radius: 12px !important;
+  background-color: #f9fafb !important;
+  font-size: 15px;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.input_group input:focus {
+  border-color: #667eea !important;
+  background-color: #fff !important;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.input_error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* 에러 메시지 */
 .hint_text_error {
   font-size: 12px;
-  color: #ff4d4f;
-  margin-top: 4px;
+  color: #ef4444;
+  margin-top: 6px;
   margin-left: 4px;
-  text-align: left;
 }
 
-/* 비밀번호 영역 */
+/* 비밀번호 영역 및 아이콘 */
 .password_wrapper {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
-/* Input 컴포넌트 내부의 여백 확보 */
-/* 만약 Input 컴포넌트에 직접 스타일을 줄 수 없다면, 여기서 강제로 패딩을 줍니다 */
 .password_wrapper input {
-    padding-right: 45px !important; 
+  padding-right: 45px !important; /* 아이콘 공간 확보 */
 }
 
-/* 👁 아이콘 위치 조정 */
 .password_toggle {
   position: absolute;
   right: 14px;
   top: 50%;
-  transform: translateY(-50%); /* 세로 중앙 정렬 */
+  transform: translateY(-50%);
   cursor: pointer;
-  font-size: 18px; /* 아이콘 크기를 살짝 키움 */
-  color: #999;
-  z-index: 10; /* 인풋 위에 보이도록 */
+  font-size: 18px;
+  color: #bbb;
+  z-index: 10;
   transition: color 0.2s;
 }
 
 .password_toggle:hover {
-  color: #666;
+  color: #667eea;
 }
 
-/* form 간격 조정 */
-.login_form form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* 요소 간의 간격을 조금 더 넓힘 */
+/* 로그인 버튼 (Button 컴포넌트 스타일 오버라이드) */
+.login_form button {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 15px;
 }
 
-/* footer */
+.login_form button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.login_form button:disabled {
+  background: #ccc !important;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 푸터 링크 */
 .login_footer {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #eee; /* 푸터 경계선 추가 */
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .login_footer a {
   font-size: 13px;
-  color: #888;
+  color: #999;
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .login_footer a:hover {
-  color: #ff6b6b; /* 제로냉 포인트 컬러(예시)로 변경 */
-  text-decoration: underline;
+  color: #667eea;
+  font-weight: 600;
 }
 
 .divider {

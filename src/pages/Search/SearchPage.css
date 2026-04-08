@@ -1,64 +1,108 @@
 /* src/pages/Search/SearchPage.css */
 
-.search-container {
+/* SearchPage.css */
+
+.search_page_wrapper {
   width: 100%;
-  max-width: 1200px;
-  margin: 100px auto 0;
-  padding: 20px;
+  max-width: 402px;
+  min-height: 874px;
+  margin: 0 auto;
+  background: #f8f9fa;
+  overflow-y: auto;
 }
 
-/* 검색 영역 */
-.search-area {
-  text-align: center;
-  margin-bottom: 40px;
+.search_content {
+  padding: 24px 20px;
 }
 
-.search-area h1 {
-  font-size: 28px;
+.search_title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #333;
   margin-bottom: 20px;
 }
 
-/* 검색 박스 */
-.search-box {
+/* 검색창 스타일링 */
+.search_box_inner {
+  position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+}
 
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  max-width: 400px;
-  margin: 0 auto;
+.search_icon {
+  position: absolute;
+  left: 16px;
+  color: #764ba2; /* 보라색 포인트 */
 }
-.search-box svg{
-  color: #ddd;
-}
-.search-box input {
-  border: none;
-  outline: none;
+
+.search_input {
   width: 100%;
+  height: 54px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 16px;
+  padding: 0 16px 0 48px; /* 아이콘 공간 확보 */
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-/* 결과 */
-.search-result {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
+.search_input:focus {
+  border-color: #667eea;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
 }
 
-/* 검색 결과 개수 */
-.result-info {
-  font-size: 13px;
+/* 결과 정보 안내 */
+.search_result_info {
+  margin: 20px 0;
+  font-size: 14px;
   color: #666;
-  margin-bottom: 12px;
   padding-left: 4px;
 }
+.search_result_list{
+  padding: 10px;
+}
 
-/* 결과 없음 */
-.no-result {
+.query_text {
+  color: #764ba2;
+  font-weight: 700;
+}
+
+.count_text {
+  font-weight: 700;
+}
+
+/* 카드 리스트 */
+.card_wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* 결과 없을 때 UI */
+.no_result_box {
   text-align: center;
-  margin-top: 40px;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.no_result_emoji {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no_result_text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.no_result_hint {
   font-size: 14px;
   color: #999;
 }
