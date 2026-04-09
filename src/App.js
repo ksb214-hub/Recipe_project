@@ -15,6 +15,7 @@ import FindPw from "./pages/Find/FindPw/FindPw";
 import SignUpPage from "./pages/SignUp/SignUpPage";
 // src/App.js 상단에 추가
 import ExpensePage from "./pages/Expense/ExpensePage";
+import SettingsPage from "./pages/Setting/SettingPage";
 
 // src/App.js 수정 버전
 function App() {
@@ -34,6 +35,12 @@ function App() {
             <Route path="/recipe-reg" element={<Layout><RecipeRegPage /></Layout>}/>
             <Route path="/join" element={<SignUpPage />} /> {/* 여기도 프레임 안으로 들어갑니다 */}
             <Route path="/expense" element={<ExpensePage />} />
+            {/**
+           * [추가된 경로]
+           * 주소창에 http://localhost:3000/settings 라고 입력하거나
+           * Header에서 톱니바퀴를 눌렀을 때 SettingsPage가 나타나게 합니다.
+           */}
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
         </main>

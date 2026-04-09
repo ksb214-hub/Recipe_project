@@ -106,3 +106,70 @@
   font-size: 14px;
   color: #999;
 }
+/* 카테고리 필터 섹션 */
+.category_filter_area {
+  margin: 10px 0 20px;
+}
+
+.filter_label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+.category_chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto; /* 가로 스크롤 */
+  white-space: nowrap;
+  padding-bottom: 8px; /* 스크롤바 공간 */
+}
+
+/* 스크롤바 숨기기 */
+.category_chips::-webkit-scrollbar { display: none; }
+.category_chips { -ms-overflow-style: none; scrollbar-width: none; }
+
+.chip {
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: white;
+  border: 1px solid #eee;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chip:hover {
+  background: #f8f7ff;
+  border-color: #764ba2;
+}
+
+.chip.active {
+  background: #764ba2;
+  border-color: #764ba2;
+  color: white;
+  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.2);
+}
+
+/* 결과 정보 텍스트 */
+.search_result_info {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #444;
+}
+
+.query_text {
+  font-weight: 700;
+  color: #764ba2;
+}
+
+.count_text {
+  font-weight: 700;
+}
