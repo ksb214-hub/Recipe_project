@@ -5,21 +5,38 @@ import "./SettingsPage.css";
 
 export default function SettingsPage() {
   /**
-   * [흐름 설명: 다크 모드 제어]
-   * isDarkMode라는 변수가 스위치 역할을 합니다.
-   * false면 일반 모드, true면 다크 모드입니다.
+   * [상태 관리: 다크 모드]
+   * false: 라이트 모드 / true: 다크 모드
    */
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // 스위치를 딸깍거릴 때마다 상태를 반대로(true <-> false) 바꿔줍니다.
+  /**
+   * [상태 관리: 소비기한 알림] - Sprint 2 핵심 기반
+   * false: 알림 끔 / true: 알림 켬
+   * 이 상태값은 나중에 useEffect 등에서 백엔드 API를 호출할지 결정하는 기준이 됩니다.
+   */
+  const [isNotificationOn, setIsNotificationOn] = useState(false);
+
+  // 다크모드 스위치 핸들러
   const handleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    // 나중에 여기에 다크모드 전용 CSS를 입히는 코드가 들어갈 예정입니다.
+  };
+
+  // 알림 스위치 핸들러
+  const handleNotification = () => {
+    const newState = !isNotificationOn;
+    setIsNotificationOn(newState);
+    
+    // 알림을 켰을 때와 껐을 때 간단한 피드백을 줍니다.
+    if (newState) {
+      console.log("알림 기능이 활성화되었습니다. 소비기한을 체크합니다.");
+    } else {
+      console.log("알림 기능이 비활성화되었습니다.");
+    }
   };
 
   return (
     <div className="settings_page">
-      {/* 상단 공통 헤더를 불러옵니다. */}
       <Header />
       
       <main className="settings_container">
@@ -27,21 +44,33 @@ export default function SettingsPage() {
           <h2>설정</h2>
         </div>
 
-        {/* 1. 일반 설정 섹션: 알림과 언어, 테마를 관리합니다. */}
+        {/* 1. 일반 설정 섹션 */}
         <section className="settings_section">
           <h3 className="settings_section_title">일반</h3>
           
           <div className="settings_list">
-            {/* 알림 설정: 추후 유통기한 알림 기능을 여기에서 켜고 끌 수 있게 확장합니다. */}
-            <button className="setting_item" onClick={() => alert("알림 설정 페이지는 준비 중입니다!")}>
+            {/* [수정] 알림 설정: 버튼에서 토글 스위치 방식으로 변경 */}
+            <div className="setting_item">
               <div className="setting_left">
                 <div className="setting_icon"><Bell size={20} /></div>
-                <span className="setting_label">알림 설정</span>
+                <div className="setting_text_group">
+                  <span className="setting_label">소비기한 알림</span>
+                  {/* 작은 부연 설명을 추가하면 사용자가 더 이해하기 쉽습니다. */}
+                  <p className="setting_sub_label">유통기한 임박 재료 알림 받기</p>
+                </div>
               </div>
-              <ChevronRight size={20} className="setting_arrow" />
-            </button>
+              <div className="setting_toggle">
+                <input 
+                  type="checkbox" 
+                  id="notification_toggle" 
+                  checked={isNotificationOn} 
+                  onChange={handleNotification} 
+                />
+                <label htmlFor="notification_toggle" className="toggle_switch"></label>
+              </div>
+            </div>
 
-            {/* 언어 설정 섹션 */}
+            {/* 언어 설정 */}
             <button className="setting_item">
               <div className="setting_left">
                 <div className="setting_icon"><Globe size={20} /></div>
@@ -53,14 +82,13 @@ export default function SettingsPage() {
               </div>
             </button>
 
-            {/* 다크 모드 스위치: 눈을 편안하게 하기 위한 기능입니다. */}
+            {/* 다크 모드 스위치 */}
             <div className="setting_item">
               <div className="setting_left">
                 <div className="setting_icon"><Moon size={20} /></div>
                 <span className="setting_label">다크 모드</span>
               </div>
               <div className="setting_toggle">
-                {/* 체크박스가 체크되면 handleDarkMode 함수가 실행됩니다. */}
                 <input 
                   type="checkbox" 
                   id="dark_mode" 
@@ -73,7 +101,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* 2. 보안 설정 섹션: 개인정보와 비밀번호를 관리합니다. */}
+        {/* 2. 보안 설정 섹션 */}
         <section className="settings_section">
           <h3 className="settings_section_title">보안</h3>
           <div className="settings_list">
@@ -94,7 +122,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* 3. 지원 섹션: 도움이 필요할 때 찾는 곳입니다. */}
+        {/* 3. 지원 섹션 */}
         <section className="settings_section">
           <h3 className="settings_section_title">지원</h3>
           <div className="settings_list">
@@ -108,7 +136,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* 하단 버전 정보 표시 */}
         <div className="app_version">
           <p>제로냉 버전 1.0.0</p>
         </div>

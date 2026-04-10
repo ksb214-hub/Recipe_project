@@ -1,62 +1,74 @@
-/* 전체 페이지 */
-
+/* 전체 컨테이너 설정 */
 .reg_container {
+  width: 100%;
+  max-width: 402px; /* 성빈님의 표준 너비 고정 */
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 메인 컨텐츠 영역 */
+.reg_main_content {
   padding: 20px;
-  background-color: #fff;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .reg_header h2 {
-  font-size: 20px;
-  margin-bottom: 5px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
 }
 
 .reg_header p {
-  font-size: 13px;
+  font-size: 14px;
   color: #888;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
+/* 입력 폼 스타일 */
 .reg_input_section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px; /* 입력창 사이 간격 */
+  margin-bottom: 20px;
 }
 
 .button_group {
   display: flex;
-  gap: 10px;
-  margin-top: 5px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .cancel_btn {
-  background: #eee;
+  background: #e9ecef;
   border: none;
-  padding: 0 15px;
   border-radius: 8px;
+  padding: 0 16px;
+  color: #495057;
   cursor: pointer;
-  font-size: 13px;
+  font-weight: 500;
 }
 
 .divider {
   height: 1px;
-  background: #eee;
-  margin: 25px 0;
+  background-color: #eee;
+  margin: 24px 0;
 }
 
-.list_title {
-  font-size: 15px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
+/* 식재료 카드 스타일 */
 .ingredient_card {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 12px;
-  border: 1px solid #f0f0f0;
+  background: white;
   border-radius: 12px;
+  display: flex;
+  padding: 12px;
+  gap: 12px;
   margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .card_img {
@@ -69,39 +81,55 @@
 .card_content {
   flex: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
 }
 
 .item_name {
   font-weight: 600;
-  font-size: 15px;
-  display: block;
+  font-size: 16px;
+  color: #333;
 }
 
 .item_desc {
-  font-size: 12px;
+  font-size: 13px;
   color: #777;
-  margin: 2px 0 0 0;
+  margin: 2px 0 8px 0;
 }
 
 .card_buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
-.edit_link, .delete_link {
+.card_buttons button {
   background: none;
   border: none;
-  font-size: 12px;
+  padding: 0;
+  font-size: 13px;
+  color: #667eea;
   cursor: pointer;
 }
 
-.edit_link { color: #555; }
-.delete_link { color: #ff4d4f; }
+.card_buttons .del_text {
+  color: #ff6b6b;
+}
 
-.empty_text {
-  text-align: center;
-  color: #ccc;
-  padding: 20px 0;
+.input_group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input_label {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.item_expiry {
+  font-size: 12px;
+  color: #ff6b6b; /* 소비기한은 눈에 잘 띄게 빨간색 계열 */
+  font-weight: 500;
+  margin-bottom: 8px;
 }

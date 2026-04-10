@@ -6,41 +6,29 @@
 
 .recipe_reg_container {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 100px;
+  max-width: 402px; /* 402px 고정 */
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  box-sizing: border-box;
 }
 
-/* ============================= */
-/* 메인 박스 */
-/* ============================= */
-
-.recipe_reg_box {
-  width: 354px;
-}
-
-/* ============================= */
-/* Header */
-/* ============================= */
-
-.recipe_header {
-  margin-bottom: 24px;
+.recipe_main_content {
+  padding: 20px;
 }
 
 .recipe_header h2 {
-  font-size: 24px;
-  margin-bottom: 6px;
-  color: #222;
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
 }
 
 .recipe_header p {
   font-size: 14px;
-  color: #777;
+  color: #888;
+  margin-bottom: 24px;
 }
-
-/* ============================= */
-/* 입력 영역 */
-/* ============================= */
 
 .recipe_input_section {
   display: flex;
@@ -48,89 +36,108 @@
   gap: 12px;
 }
 
-/* ============================= */
-/* Divider */
-/* ============================= */
+/* 조리시간과 난이도를 한 줄에 배치 */
+.input_row {
+  display: flex;
+  gap: 10px;
+}
+
+.button_group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cancel_btn {
+  background: #e9ecef;
+  border: none;
+  border-radius: 8px;
+  padding: 0 15px;
+  cursor: pointer;
+}
 
 .divider {
-  margin: 24px 0;
   height: 1px;
-  background: #E5E5E5;
+  background-color: #eee;
+  margin: 24px 0;
 }
 
-/* ============================= */
-/* 레시피 리스트 */
-/* ============================= */
-
-.recipe_list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+/* 리스트 아이템 스타일 */
+.recipe_list_item {
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  padding: 12px;
+  gap: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
-/* ============================= */
-/* 카드 wrapper */
-/* ============================= */
+.list_item_img {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  object-fit: cover;
+}
 
-.recipe_card {
+.list_item_info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
 }
 
-/* ============================= */
-/* 카드 버튼 영역 */
-/* ============================= */
-
-.card_buttons {
+.info_top {
   display: flex;
   justify-content: space-between;
-  gap: 6px;
+  align-items: center;
 }
 
-/* ============================= */
-/* 수정 버튼 */
-/* ============================= */
+.info_title {
+  font-weight: 600;
+  font-size: 16px;
+}
 
-.edit_btn {
-  border: none;
-  background: #1677ff;
-  color: white;
+.info_badge {
+  font-size: 11px;
+  background: #f1f3f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #666;
+}
+
+.info_desc {
+  font-size: 13px;
+  color: #777;
+  margin: 4px 0;
+  /* 두 줄 이상이면 생략 처리 (말줄임) */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.info_bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.info_time {
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  color: #999;
+}
+
+.info_buttons button {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #667eea;
+  margin-left: 10px;
   cursor: pointer;
 }
 
-.edit_btn:hover {
-  opacity: 0.9;
-}
-
-/* ============================= */
-/* 삭제 버튼 */
-/* ============================= */
-
-.delete_btn {
-  border: none;
-  background: #ff4d4f;
-  color: white;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.delete_btn:hover {
-  opacity: 0.9;
-}
-
-/* ============================= */
-/* 빈 상태 UI */
-/* ============================= */
-
-.empty_text {
-  grid-column: 1 / 3;
-  text-align: center;
-  font-size: 14px;
-  color: #888;
+.info_buttons .del_text {
+  color: #ff6b6b;
 }

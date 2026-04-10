@@ -119,7 +119,8 @@
    다크 모드 토글 스위치 디자인
    ========================================================== */
 .setting_toggle {
-  position: relative;
+    position: relative;
+    right: 10%;
 }
 
 .setting_toggle input[type="checkbox"] {
@@ -171,4 +172,15 @@
 .app_version p {
   font-size: 13px;
   color: #ced4da;
+}
+/* 설정 항목 안의 서브 텍스트 스타일 */
+.setting_text_group {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting_sub_label {
+  font-size: 11px;
+  color: #999;
+  margin: 2px 0 0 0;
 }
