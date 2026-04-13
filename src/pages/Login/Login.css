@@ -137,27 +137,27 @@
 
 /* 푸터 링크 */
 .login_footer {
-  margin-top: 28px;
+  margin-top: 30px;
+  text-align: center;
+  border-top: 1px solid #eee; /* 구분선 */
   padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
 }
 
-.login_footer a {
+.login_footer p {
   font-size: 13px;
-  color: #999;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.signup_link {
+  font-size: 14px;
+  color: #667eea; /* 포인트 컬러 */
+  font-weight: 600;
   text-decoration: none;
   transition: color 0.2s;
 }
 
-.login_footer a:hover {
-  color: #667eea;
-  font-weight: 600;
-}
-
-.divider {
-  color: #eee;
-  font-size: 12px;
+.signup_link:hover {
+  color: #4b61d1;
+  text-decoration: underline;
 }

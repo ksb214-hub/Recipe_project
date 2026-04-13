@@ -1,25 +1,35 @@
 import axios from "axios";
 
-// 백엔드 서버의 기본 주소입니다.
 const API_BASE = "http://localhost:8081/"; 
 
-// axios 인스턴스를 만듭니다. (반복되는 설정을 미리 해두는 것)
 const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
 });
 
+// [메모리 주입 함수]
+export const setClientToken = (token) => {
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    console.log("💉 [Memory] 토큰 메모리 주입 완료");
+  }
+};
+
 /**
  * [요청 인터셉터]
- * 서버로 요청을 보내기 '직전'에 가로채서 실행됩니다.
  */
 api.interceptors.request.use(
   (config) => {
-    // 로컬 스토리지에서 로그인할 때 저장해둔 토큰을 꺼냅니다.
     const token = localStorage.getItem("accessToken");
+    
+    console.log(`🚀 [Request] ${config.method?.toUpperCase()} ${config.url}`);
+    
     if (token) {
-      // 서버가 "누구세요?"라고 물을 때 쓸 수 있도록 헤더에 토큰을 넣어줍니다.
+      // Bearer와 토큰 사이에 공백이 있는지, 토큰이 문자열 "null"이 아닌지 확인
       config.headers["Authorization"] = `Bearer ${token}`; 
+      console.log("✅ [Request] Authorization 헤더 부착 성공");
+    } else {
+      console.log("⚠️ [Request] 토큰 없음 (LocalStorage is empty)");
     }
     return config;
   },
@@ -28,25 +38,42 @@ api.interceptors.request.use(
 
 /**
  * [응답 인터셉터]
- * 서버에서 응답이 온 '직후'에 실행됩니다.
  */
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    console.log(`✨ [Response] Success: ${res.config.url}`);
+    return res;
+  },
   (err) => {
-    // 만약 서버에서 401(인증 만료) 에러를 보냈다면
-    if (err.response?.status === 401) {
-      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-      localStorage.clear(); // 낡은 정보는 다 지우고
-      window.location.href = "/login"; // 로그인 페이지로 쫓아냅니다.
+    const { config, response } = err;
+    const requestUrl = config?.url || "";
+    
+    // 로그인, 회원가입, 레시피 목록(로그인 없이 보는 경우 등) 예외처리 확인 필요
+    const isAuthPath = requestUrl.includes("/api/auth/login") || requestUrl.includes("/api/auth/signup");
+
+    if (response?.status === 401) {
+      console.error("🚫 [Response] 401 Unauthorized 발생!");
+      console.error("실패한 URL:", requestUrl);
+      console.error("보냈던 토큰:", config.headers["Authorization"]);
+
+      if (!isAuthPath) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        // 세션/로컬스토리지 완전 초기화
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("userNickname");
+        
+        window.location.href = "/login";
+      }
     }
+    
     return Promise.reject(err);
   }
 );
 
-// Orval이라는 도구와 호환되기 위한 설정 (성공 시 데이터만 쏙 빼서 줌)
 export default function customInstance({ url, method, params, data, headers, responseType }) {
+  // api 인스턴스를 직접 사용하여 호출
   return api({ url, method, params, data, headers, responseType }).then((res) => res.data);
 }
 
-// 우리가 직접 Login.js 등에서 쓸 수 있게 api를 내보냅니다.
 export { api };

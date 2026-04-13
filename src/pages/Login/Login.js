@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom"; // useNavigate 제거
 import Button from "../../components/Button/Button";
 import Input from "../../components/Input/Input";
-import { api } from "../../api/api"; 
+import { api, setClientToken } from "../../api/api"; 
 import "./Login.css";
 
 function Login() {
-  const navigate = useNavigate();
-
-  // 사용자가 입력할 값들을 저장하는 '상태(State)'
   const [loginId, setLoginId] = useState("");
   const [pw, setPw] = useState("");
   const [idError, setIdError] = useState("");
@@ -16,13 +13,11 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 아이디가 비었는지 검사하는 함수
   const validateId = (value) => {
     if (!value) setIdError("아이디를 입력해주세요.");
     else setIdError("");
   };
 
-  // 비밀번호가 8자 이상인지 검사하는 함수
   const validatePassword = (value) => {
     if (value.length > 0 && value.length < 8) {
       setPwError("비밀번호는 8자 이상이어야 합니다.");
@@ -32,44 +27,47 @@ function Login() {
       setPwError("");
     }
   };
-
-  // 로그인 버튼을 눌렀을 때 실행되는 메인 함수
+  
   const handleSubmit = async (e) => {
-    e.preventDefault(); // 폼 제출 시 페이지가 새로고침되는 기본 동작을 막음
-    
+    e.preventDefault();
     validateId(loginId);
     validatePassword(pw);
 
-    // 에러가 있다면 서버에 요청을 보내지 않고 중단함
     if (!loginId || pw.length < 8 || idError || pwError) return;
 
-    setIsLoading(true); // 로딩 중 상태로 변경
+    setIsLoading(true);
 
     try {
-      // [흐름 1] 서버에 로그인 정보를 보냄
-      const res = await api.post("", {
+      const res = await api.post("/api/auth/login", {
         loginId: loginId,
         password: pw,
       });
-
-      // [흐름 2] 서버에서 준 데이터(토큰, 닉네임)를 변수에 담음
-      const { accessToken, refreshToken, nickname } = res.data;
-
-      // [흐름 3] 브라우저 로컬 스토리지에 저장 (컴퓨터를 꺼도 유지됨)
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("userNickname", nickname || "사용자");
-
-      alert(`${nickname || "사용자"}님, 환영합니다!`);
       
-      // [흐름 4] 헤더의 상태를 갱신하기 위해 '페이지를 새로고침하며 이동'
-      window.location.href = "/main";
+      const serverResponse = res.data; 
+      const innerData = serverResponse.data; 
+      const parsedData = typeof innerData === 'string' ? JSON.parse(innerData) : innerData;
+
+      const token = parsedData?.accessToken || parsedData?.token;
+      const nickname = parsedData?.nickname || "사용자";
+
+      if (!token) throw new Error("토큰 추출 실패");
+
+      localStorage.setItem("accessToken", token);
+      localStorage.setItem("userNickname", nickname);
+
+      setClientToken(token);
+      
+      alert(`${nickname}님, 환영합니다!`);
+      
+      setTimeout(() => {
+        window.location.href = "/main";
+      }, 100);
 
     } catch (err) {
-      console.error("로그인 실패:", err);
-      alert("로그인 정보가 올바르지 않습니다.");
+      const errorMsg = err.response?.data?.message || "아이디 또는 비밀번호를 확인해주세요.";
+      alert(errorMsg);
     } finally {
-      setIsLoading(false); // 로딩 상태 해제
+      setIsLoading(false);
     }
   };
 
@@ -97,12 +95,15 @@ function Login() {
                 <Input
                   id="input-password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password" // 크롬 자동완성 경고 해결용
+                  autoComplete="current-password"
                   placeholder="비밀번호 입력"
                   value={pw}
                   onChange={(e) => { setPw(e.target.value); validatePassword(e.target.value); }}
                 />
-                <span onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
+                <span 
+                  onClick={() => setShowPassword(!showPassword)} 
+                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '18px' }}
+                >
                   {showPassword ? "🙈" : "👁"}
                 </span>
               </div>
@@ -113,6 +114,10 @@ function Login() {
               {isLoading ? "로그인 중..." : "로그인"}
             </Button>
           </form>
+          <footer className="login_footer">
+            <p>아직 계정이 없으신가요?</p>
+            <Link to="/join" className="signup_link">회원가입 하러가기</Link>
+          </footer>
         </div>
       </main>
     </div>
