@@ -2,152 +2,147 @@ import React, { useState, useEffect } from "react";
 import "./RecipeRegPage.css";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
-// Card 컴포넌트 대신 커스텀 리스트 레이아웃을 사용합니다.
+import customInstance from "../../api/api"; 
 
 function RecipeRegPage() {
-  /* ===============================
-     1. 상태 관리 (State)
-  =============================== */
   const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [time, setTime] = useState("");
-  const [difficulty, setDifficulty] = useState("");
-  const [image, setImage] = useState("");
-
-  const [recipes, setRecipes] = useState([]);
-  const [editId, setEditId] = useState(null);
-
-  /* ===============================
-     2. 데이터 보존 (LocalStorage)
-     - 브라우저를 새로고침해도 데이터가 유지되도록 로직을 구성합니다.
-  =============================== */
-  useEffect(() => {
-    const saved = localStorage.getItem("recipes");
-    if (saved) {
-      setRecipes(JSON.parse(saved));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("recipes", JSON.stringify(recipes));
-  }, [recipes]);
-
-  /* ===============================
-     3. 비즈니스 로직 (CRUD)
-  =============================== */
+  const [description, setDescription] = useState("");
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState("");
+  const [ingredients, setIngredients] = useState([{ ingredientId: "", amount: "" }]);
+  const [steps, setSteps] = useState([{ stepNo: 1, description: "", cookingImageUrl: "" }]);
   
-  // 등록 및 수정 실행
-  const handleRegister = () => {
-    if (!title) return alert("레시피 이름을 입력해주세요.");
+  const [recipes, setRecipes] = useState([]); 
+  const [availableIngredients, setAvailableIngredients] = useState([]); 
+  const [loading, setLoading] = useState(false);
 
-    if (editId) {
-      // (U) 수정: 기존 배열에서 동일 ID만 교체
-      const updated = recipes.map((item) =>
-        item.id === editId
-          ? { ...item, title, desc, time, difficulty, image }
-          : item
-      );
-      setRecipes(updated);
-      setEditId(null);
-    } else {
-      // (C) 등록: 새 레시피 객체 생성 후 배열 앞에 추가
-      const newRecipe = {
-        id: Date.now(),
-        title,
-        desc,
-        time,
-        difficulty,
-        image: image || "https://placehold.jp/150x150.png?text=No+Image"
+  const fetchData = async () => {
+    try {
+      const recipeRes = await customInstance({ url: "/api/recipes", method: "GET" });
+      setRecipes(recipeRes.data?.data?.content || []);
+
+      const ingRes = await customInstance({ url: "/api/ingredients", method: "GET" });
+      setAvailableIngredients(ingRes.data?.data || []);
+    } catch (err) {
+      console.error("데이터 로드 실패:", err);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const addIngredient = () => setIngredients([...ingredients, { ingredientId: "", amount: "" }]);
+  const handleIngredientChange = (index, field, value) => {
+    const newIng = [...ingredients];
+    newIng[index][field] = value;
+    setIngredients(newIng);
+  };
+
+  const addStep = () => setSteps([...steps, { stepNo: steps.length + 1, description: "", cookingImageUrl: "" }]);
+  const handleStepChange = (index, field, value) => {
+    const newSteps = [...steps];
+    newSteps[index][field] = value;
+    setSteps(newSteps);
+  };
+
+  const handleRegister = async (e) => {
+    if (e) e.preventDefault();
+    
+    const validIngredients = ingredients
+      .filter(ing => ing.ingredientId !== "" && ing.amount.trim() !== "")
+      .map(ing => ({ ingredientId: Number(ing.ingredientId), amount: String(ing.amount) }));
+
+    if (!title.trim() || validIngredients.length === 0) {
+      return alert("제목과 재료를 입력해주세요.");
+    }
+
+    setLoading(true);
+    try {
+      const recipeData = {
+        title: title.trim(),
+        description: description.trim(),
+        thumbnailImageUrl: thumbnailImageUrl.trim() || null,
+        ingredients: validIngredients,
+        steps: steps.filter(s => s.description.trim() !== "").map((s, i) => ({ ...s, stepNo: i + 1 }))
       };
-      setRecipes([newRecipe, ...recipes]);
+
+      await customInstance({ url: "/api/recipes", method: "POST", data: recipeData });
+      alert("🎉 등록 성공!");
+      
+      setTitle(""); setDescription(""); setThumbnailImageUrl("");
+      setIngredients([{ ingredientId: "", amount: "" }]);
+      setSteps([{ stepNo: 1, description: "", cookingImageUrl: "" }]);
+      fetchData();
+    } catch (err) {
+      console.error("등록 실패 응답:", err.response?.data);
+      alert(`등록 실패: ${err.response?.data?.message || "서버 응답 에러"}`);
+    } finally {
+      setLoading(false);
     }
-
-    // 입력 필드 초기화
-    setTitle(""); setDesc(""); setTime(""); setDifficulty(""); setImage("");
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleRegister();
-  };
-
-  // 삭제 실행
-  const handleDelete = (id) => {
-    if (window.confirm("레시피를 삭제할까요?")) {
-      setRecipes(recipes.filter((item) => item.id !== id));
-    }
-  };
-
-  // 수정 모드 진입
-  const handleEdit = (item) => {
-    setTitle(item.title);
-    setDesc(item.desc);
-    setTime(item.time);
-    setDifficulty(item.difficulty);
-    setImage(item.image);
-    setEditId(item.id);
   };
 
   return (
     <div className="recipe_reg_container">
-      {/* Header는 App.js에서 공통으로 나오므로 여기선 제외했습니다. */}
-      
       <main className="recipe_main_content">
-        <div className="recipe_header">
-          <h2>레시피 마스터 관리</h2>
-          <p>나만의 요리 비법을 리스트로 관리하세요.</p>
-        </div>
+        <h2>레시피 등록</h2>
+        <form className="recipe_input_section" onSubmit={handleRegister}>
+          <section className="form_group">
+            <Input label="제목" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input label="설명" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Input label="대표 이미지 URL" value={thumbnailImageUrl} onChange={(e) => setThumbnailImageUrl(e.target.value)} />
+          </section>
 
-        {/* 입력 폼 섹션 */}
-        <form className="recipe_input_section" onSubmit={handleSubmit}>
-          <Input label="레시피 이름" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Input label="요약 설명" value={desc} onChange={(e) => setDesc(e.target.value)} />
-          <div className="input_row">
-            <Input label="조리 시간" value={time} onChange={(e) => setTime(e.target.value)} />
-            <Input label="난이도" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} />
-          </div>
-          <Input label="이미지 URL" value={image} onChange={(e) => setImage(e.target.value)} />
-
-          <div className="button_group">
-            <Button type="submit" variant="primary">
-              {editId ? "수정 완료" : "+ 레시피 등록"}
-            </Button>
-            {editId && (
-              <button className="cancel_btn" onClick={() => setEditId(null)}>취소</button>
+          <section className="form_group">
+            <h3>재료 설정</h3>
+            {ingredients.map((ing, index) => (
+              <div key={index} className="input_row">
+                <select 
+                  className="ingredient_select"
+                  value={ing.ingredientId}
+                  onChange={(e) => handleIngredientChange(index, "ingredientId", e.target.value)}
+                >
+                  <option value="">재료 선택</option>
+                  {availableIngredients.map(item => (
+                    <option key={item.id} value={item.id}>{item.name}</option>
+                  ))}
+                </select>
+                <Input placeholder="양" value={ing.amount} onChange={(e) => handleIngredientChange(index, "amount", e.target.value)} />
+              </div>
+            ))}
+            <button type="button" onClick={addIngredient}>+ 재료 추가</button>
+            {availableIngredients.length === 0 && (
+              <p style={{ color: "red", fontSize: "12px", marginTop: "5px" }}>
+                ⚠️ 서버 DB에 등록된 재료가 없습니다. 재료를 먼저 등록해야 레시피 작성이 가능합니다.
+              </p>
             )}
-          </div>
+          </section>
+
+          <section className="form_group">
+            <h3>조리 순서</h3>
+            {steps.map((step, index) => (
+              <div key={index} className="step_input_box">
+                <h4>Step {step.stepNo}</h4>
+                <Input placeholder="설명" value={step.description} onChange={(e) => handleStepChange(index, "description", e.target.value)} />
+              </div>
+            ))}
+            <button type="button" onClick={addStep}>+ 단계 추가</button>
+          </section>
+
+          <Button type="submit" variant="primary" disabled={loading} style={{ width: "100%" }}>
+            {loading ? "등록 중..." : "등록 완료"}
+          </Button>
         </form>
 
         <div className="divider"></div>
 
-        {/* [변경] 레시피 리스트 섹션 */}
-        <div className="recipe_list">
-          <h3 className="list_title">저장된 레시피 ({recipes.length})</h3>
-          {recipes.map((recipe) => (
-            <div key={recipe.id} className="recipe_list_item">
-              <img 
-                src={recipe.image} 
-                className="list_item_img" 
-                alt={recipe.title} 
-                onError={(e) => e.target.src="https://placehold.jp/150x150.png?text=No+Image"}
-              />
-              <div className="list_item_info">
-                <div className="info_top">
-                  <span className="info_title">{recipe.title}</span>
-                  <span className="info_badge">{recipe.difficulty}</span>
-                </div>
-                <p className="info_desc">{recipe.desc}</p>
-                <div className="info_bottom">
-                  <span className="info_time">⏱ {recipe.time}</span>
-                  <div className="info_buttons">
-                    <button onClick={() => handleEdit(recipe)}>수정</button>
-                    <button onClick={() => handleDelete(recipe.id)} className="del_text">삭제</button>
-                  </div>
-                </div>
+        <section className="recipe_list_section">
+          <h3>현재 등록된 레시피 ({recipes.length})</h3>
+          <div className="recipe_grid">
+            {recipes.map((r, idx) => (
+              <div key={r.id || idx} className="recipe_card">
+                <strong>{r.title}</strong>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );

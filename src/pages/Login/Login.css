@@ -135,29 +135,72 @@
   transform: none;
 }
 
-/* 푸터 링크 */
+/* 푸터 영역 전체 컨테이너 */
 .login_footer {
   margin-top: 30px;
-  text-align: center;
-  border-top: 1px solid #eee; /* 구분선 */
-  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px; /* 각 섹션 사이의 간격 */
 }
 
-.login_footer p {
-  font-size: 13px;
+/* 아이디 찾기 | 비밀번호 찾기 영역 */
+.find_account_links {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
   color: #888;
-  margin-bottom: 8px;
+}
+
+.footer_link {
+  text-decoration: none;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.footer_link:hover {
+  color: #333; /* 마우스 올렸을 때 더 진하게 */
+}
+
+.footer_divider {
+  margin: 0 12px;
+  color: #eee;
+  font-size: 12px;
+  user-select: none; /* 구분선은 선택되지 않게 */
+}
+
+/* 회원가입 유도 영역 */
+.signup_info {
+  width: 100%;
+  padding-top: 15px;
+  border-top: 1px solid #f5f5f5; /* 위쪽과 구분되는 얇은 선 */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+  color: #999;
+  text-align: center;
 }
 
 .signup_link {
-  font-size: 14px;
-  color: #667eea; /* 포인트 컬러 */
+  color: #ff6b6b; /* 제로냉 포인트 컬러 (코랄/레드 계열) */
   font-weight: 600;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: opacity 0.2s;
 }
 
 .signup_link:hover {
-  color: #4b61d1;
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* (참고) 테스트 로그아웃 버튼 스타일링 */
+.logout_text_btn {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #bbb;
+  background: none;
+  border: none;
+  cursor: pointer;
   text-decoration: underline;
 }
