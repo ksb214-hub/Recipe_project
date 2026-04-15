@@ -23,7 +23,7 @@ RegPage는 사용자가 냉장고에 보유한 재료를 등록하고 관리할 
 # 2. 개발 환경
 
 | 항목 | 내용 |
-|-----|-----|
+| ----- | ----- |
 | Framework | React |
 | Language | JavaScript |
 | Routing | React Router |
@@ -33,6 +33,7 @@ RegPage는 사용자가 냉장고에 보유한 재료를 등록하고 관리할 
 ---
 
 # 3. 폴더 구조
+
 ```mermaid
 flowchart TD
     A[src]
@@ -42,6 +43,7 @@ flowchart TD
     C --> D[RegPage.js]
     C --> E[RegPage.css]
 ```
+
 ### 구성 요소
 
 | 파일 | 역할 |
@@ -78,6 +80,7 @@ RegPage는 다음 기능을 제공한다.
 ---
 
 # 6. 등록 기능 흐름
+
 ```mermaid
 flowchart TD
     A[사용자 재료 입력]
@@ -96,9 +99,11 @@ flowchart TD
 
     G --> H[등록 결과 화면 출력]
 ```
+
 ---
 
 # 7. UI 구조
+
 ```mermaid
 flowchart LR
     RegPage --> reg_container
@@ -120,7 +125,8 @@ flowchart LR
 ---
 
 # 8. 컴포넌트 구조
-```mermaid 
+
+```mermaid
 flowchart TD
     A[RegPage]
 
@@ -132,9 +138,11 @@ flowchart TD
     C --> F[등록 실행]
     D --> G[등록된 재료 출력]
 ```
+
 ---
 
 # 9. 데이터 흐름
+
 ```mermaid
 flowchart TD
     A[사용자 입력]
@@ -148,6 +156,7 @@ flowchart TD
 
     E --> F[Card UI 출력]
 ```
+
 ---
 
 # 10. 상태 관리
@@ -174,8 +183,8 @@ flowchart LR
     reg_results --> CardList[Card 반복]
 ```
 
-
 # 12. DOM 구조
+
 ```mermaid
 flowchart TD
     A[User] --> B[RegPage]
@@ -197,6 +206,7 @@ flowchart TD
 ```
 
 # 13. 전체 프로젝트 구조에서 위치
+
 ```mermaid
 flowchart TD
     A[App]
@@ -209,4 +219,5 @@ flowchart TD
 ```
 
 # 한 줄 핵심
-	RegPage는 사용자의 냉장고 재료를 등록하고 관리하는 페이지이다.
+
+RegPage는 사용자의 냉장고 재료를 등록하고 관리하는 페이지이다.

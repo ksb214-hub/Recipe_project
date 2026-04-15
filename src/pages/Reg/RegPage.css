@@ -133,3 +133,81 @@
   font-weight: 500;
   margin-bottom: 8px;
 }
+
+/* 컨테이너 전체 배경색 추가 (카드들이 잘 보이게) */
+.reg_container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* 그리드 레이아웃 */
+.ingredient_grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 카드 사이 간격 */
+    margin-top: 20px;
+}
+
+/* 성빈님이 주신 카드 스타일 적용 */
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 양쪽 끝으로 배치 */
+    gap: 15px;
+    padding: 16px 20px; /* 여백을 조금 더 넉넉히 */
+    background: white;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #e0e0e0;
+}
+
+/* 카드 내부 텍스트 영역 */
+.card_info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.item_name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.item_days {
+    font-size: 14px;
+    color: #888;
+    background: #f1f3f5;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+/* 삭제 버튼 스타일 */
+.del_btn {
+    background: #fff5f5;
+    color: #ff6b6b;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.del_btn:hover {
+    background: #ff6b6b;
+    color: white;
+}
