@@ -213,3 +213,121 @@
   font-weight: 600;
   color: #667eea;
 }
+/* 컨테이너 및 배경 */
+.search_page_wrapper {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* 검색창 영역 */
+.search_box_container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 24px;
+}
+
+.search_box_inner {
+    /* 주신 스타일 가이드 적용 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 20px;
+    background: white;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.search_input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+}
+
+/* 자동완성 목록 컨테이너 */
+.suggestion_list {
+    position: absolute;
+    top: 65px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    list-style: none;
+    padding: 0;
+}
+
+/* 자동완성 개별 항목 (성빈님 카드 스타일 적용) */
+.suggestion_item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 20px;
+    background: white;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    margin-bottom: 8px; /* 카드 사이 간격 */
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.suggestion_item:hover {
+    transform: translateY(-2px);
+    border-color: #ff6b6b;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 필터 섹션 */
+.filter_section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 24px;
+}
+
+/* 카테고리 칩 스타일 */
+.category_chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chip.active {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+/* 결과 그리드 */
+.recipe_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* 리셋 버튼 */
+.reset_btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}

@@ -1,44 +1,80 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import "./SearchPage.css";
 import Card from "../../components/Card/Card";
-import { Search, Filter, Clock, BarChart3 } from "lucide-react"; // 아이콘 추가
+import { Search, Filter, Clock, BarChart3, X } from "lucide-react"; 
 import { recipes } from "../../data/recipes";
 
 function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("전체");
-  
-  // [추가] 필터 상태 관리
-  const [maxTime, setMaxTime] = useState("전체"); // 전체, 15분, 30분, 60분
-  const [difficulty, setDifficulty] = useState("전체"); // 전체, 쉬움, 보통, 어려움
+  const [maxTime, setMaxTime] = useState("전체");
+  const [difficulty, setDifficulty] = useState("전체");
+
+  // 자동완성 관련 상태
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionRef = useRef(null);
 
   const categories = ["전체", "육류", "채소", "가공식품", "기타"];
   const times = ["전체", "15분", "30분", "60분"];
   const levels = ["전체", "쉬움", "보통", "어려움"];
 
   /* ===============================
-     필터링 핵심 로직 (useMemo)
-     - 검색어 + 카테고리 + 시간 + 난이도를 동시에 체크합니다.
+     1. 자동완성 로직 (Debounce)
+  =============================== */
+  useEffect(() => {
+    if (searchQuery.trim().length === 0) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const filtered = recipes
+        .filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        .slice(0, 5);
+      setSuggestions(filtered);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  /* ===============================
+     2. 바깥 클릭 시 닫기
+  =============================== */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* ===============================
+     3. 통합 필터링 로직
   =============================== */
   const filteredRecipes = useMemo(() => {
     return recipes.filter((recipe) => {
-      // 1. 이름 검색
       const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // 2. 카테고리 체크
       const matchesCategory = activeCategory === "전체" || recipe.category === activeCategory;
       
-      // 3. 조리 시간 체크 (숫자 비교를 위해 "15분" -> 15로 변환)
       const recipeTime = parseInt(recipe.time); 
       const selectedTime = maxTime === "전체" ? Infinity : parseInt(maxTime);
       const matchesTime = maxTime === "전체" || recipeTime <= selectedTime;
 
-      // 4. 난이도 체크
       const matchesDifficulty = difficulty === "전체" || recipe.difficulty === difficulty;
 
       return matchesSearch && matchesCategory && matchesTime && matchesDifficulty;
     });
   }, [searchQuery, activeCategory, maxTime, difficulty]);
+
+  const handleReset = () => {
+    setSearchQuery("");
+    setActiveCategory("전체");
+    setMaxTime("전체");
+    setDifficulty("전체");
+  };
 
   return (
     <div className="search_page_wrapper">
@@ -46,21 +82,49 @@ function SearchPage() {
         {/* 검색창 영역 */}
         <section className="search_header_area">
           <h2 className="search_title">레시피 검색</h2>
-          <div className="search_box_inner">
-            <Search size={20} className="search_icon" />
-            <input
-              type="text"
-              placeholder="요리 이름 또는 재료 입력"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search_input"
-            />
+          <div className="search_box_container" ref={suggestionRef}>
+            <div className="search_box_inner">
+              <Search size={20} className="search_icon" />
+              <input
+                type="text"
+                placeholder="요리 이름 또는 재료 입력"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                className="search_input"
+              />
+              {searchQuery && (
+                <X size={18} className="clear_icon" onClick={() => setSearchQuery("")} />
+              )}
+            </div>
+
+            {/* 자동완성 목록 */}
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="suggestion_list">
+                {suggestions.map((s) => (
+                  <li 
+                    key={s.id} 
+                    className="suggestion_item"
+                    onClick={() => {
+                      setSearchQuery(s.title);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <Search size={14} />
+                    <span>{s.title}</span>
+                    <small className="suggest_cate">{s.category}</small>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </section>
 
-        {/* [확장] 필터링 상세 영역 */}
+        {/* 필터 상세 영역 - 이제 경고가 사라집니다! */}
         <section className="filter_section">
-          {/* 1. 카테고리 칩 */}
           <div className="filter_group">
             <div className="filter_label"><Filter size={14} /> <span>카테고리</span></div>
             <div className="category_chips">
@@ -74,7 +138,6 @@ function SearchPage() {
             </div>
           </div>
 
-          {/* 2. 시간 & 난이도 드롭다운 (병렬 배치) */}
           <div className="filter_row">
             <div className="filter_item">
               <div className="filter_label"><Clock size={14} /> <span>조리 시간</span></div>
@@ -92,12 +155,10 @@ function SearchPage() {
           </div>
         </section>
 
-        {/* 결과 정보 영역 */}
         <div className="search_result_info">
-          <p>총 <strong>{filteredRecipes.length}</strong>개의 맛있는 레시피가 있어요!</p>
+          <p>총 <strong>{filteredRecipes.length}</strong>개의 레시피가 있습니다.</p>
         </div>
 
-        {/* 레시피 리스트 시각화 영역 */}
         <div className="search_result_list">
           {filteredRecipes.length > 0 ? (
             <div className="recipe_grid">
@@ -107,8 +168,8 @@ function SearchPage() {
             </div>
           ) : (
             <div className="no_result">
-              <p>찾으시는 조건의 레시피가 없네요 ㅠㅠ</p>
-              <button onClick={() => {setSearchQuery(""); setActiveCategory("전체");}}>필터 초기화</button>
+              <p>조건에 맞는 레시피가 없네요!</p>
+              <button onClick={handleReset} className="reset_btn">필터 초기화</button>
             </div>
           )}
         </div>
