@@ -1,0 +1,166 @@
+/* 설계 문서 11번: 모바일 중심 UI 설계 */
+.recipe_detail_page {
+  max-width: 402px; /* 모바일 기준 레이아웃 */
+  margin: 0 auto;
+  background-color: #fff;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* Header */
+.detail_header {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  border-bottom: 1px solid #eee;
+}
+
+.back_button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.detail_header h2 {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  margin-right: 34px; /* 버튼과의 균형을 위해 */
+}
+
+/* Thumbnail */
+.detail_thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+}
+
+.thumbnail_image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail_badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: #ff6b6b;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Content */
+.detail_content {
+  padding: 20px;
+}
+
+.detail_title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.detail_description {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* Info Cards */
+.detail_info_cards {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.info_card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  margin: 0 4px;
+  font-size: 13px;
+  color: #444;
+}
+
+/* 재료 리스트 */
+.ingredients_section h3, .steps_section h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  border-left: 4px solid #ff6b6b;
+  padding-left: 10px;
+}
+
+.ingredients_list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+
+.ingredient_item {
+  background-color: #fff1f1;
+  color: #ff6b6b;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* 조리 순서 */
+.step_item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.step_number {
+  width: 24px;
+  height: 24px;
+  background-color: #333;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.step_content {
+  flex: 1;
+}
+
+.step_description {
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.step_image {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+.error_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}

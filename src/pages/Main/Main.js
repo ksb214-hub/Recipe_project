@@ -1,105 +1,143 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Main.css";
+import "../../pages/Main/recipeMatch.css";
 
-// 공통 UI 컴포넌트 임포트
+// 컴포넌트 임포트
 import Card from "../../components/Card/Card";
 import Button from "../../components/Button/Button";
-import Section from "../../components/Section/Section";
+import Section from "../../components/Section/Section"; 
+import MatchedRecipeCard from "../../components/MatchedRecipeCard/MatchedRecipeCard";
 
-// ✅ 1. 크롤링으로 생성된 로컬 데이터 임포트
-import { recipes as localRecipes } from "../../data/recipes";
+// 데이터 및 로직
+import { recipes as recipesData } from "../../data/recipes";
+import { recipes2 } from "../../data/recipes2";
+import { matchRecipesWithIngredients } from "../../utils/recipeMatch";
 
-// 백엔드 연동을 위한 인스턴스 (현재는 주석 처리하여 유지)
-// import customInstance from "../../api/api"; 
+// 아이콘
+import { ChefHat, Package, Plus } from "lucide-react";
 
-function Main() {
+export default function Main() {
   const navigate = useNavigate();
-
-  // 상태 관리
-  const [recipeList, setRecipeList] = useState([]);
+  const [myIngredients, setMyIngredients] = useState([]);
+  const [recommendedRecipes, setRecommendedRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * [Side Effect] 데이터 로드 로직
-   */
   useEffect(() => {
-    const fetchMainRecipes = async () => {
+    const initMain = () => {
       try {
         setIsLoading(true);
+        const saved = localStorage.getItem("myIngredients");
+        if (saved) {
+          const ingredients = JSON.parse(saved);
+          const ingredientNames = ingredients.map((ing) => 
+            typeof ing === 'string' ? ing : ing.name
+          );
+          setMyIngredients(ingredientNames);
 
-        /* ==========================================================
-           [백엔드 연동 시 아래 주석을 해제하세요]
-           ----------------------------------------------------------
-           const token = localStorage.getItem("accessToken");
-           if (!token) {
-             setRecipeList([]);
-             setIsLoading(false);
-             return;
-           }
-
-           const data = await customInstance({ url: "/api/recipes", method: "GET" });
-           setRecipeList(data || []); 
-           ========================================================== */
-
-        // ✅ 2. 현재는 로컬 recipes.js 데이터를 사용
-        // 크롤링 데이터가 바로 반영되도록 설정
-        setRecipeList(localRecipes || []);
-        
+          const matched = matchRecipesWithIngredients(recipes2, ingredientNames);
+          const recommended = matched
+            .filter((mr) => mr.matchPercentage >= 30)
+            .slice(0, 3);
+          setRecommendedRecipes(recommended);
+        }
       } catch (err) {
-        console.error("📍 [Main] 레시피 로드 중 오류 발생:", err);
-        setRecipeList([]);
+        console.error("📍 [Main] 로드 오류:", err);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchMainRecipes();
-  }, []); 
-
-  const goRegPage = () => navigate("/reg");
-  const goRecipeReg = () => navigate("/recipe-reg");
+    initMain();
+  }, []);
 
   return (
     <div className="main_page_container">
       <main className="con">
+        
+        {/* 1. 내 냉장고 현황 섹션 (Section 내부에 스타일 div 배치) */}
+        <Section title="냉장고 관리">
+          <div className="fridge_status_card">
+            <div className="fridge_status_header">
+              <Package className="fridge_icon" />
+              <div className="fridge_status_text">
+                <h4>내 냉장고 현황</h4>
+                <p>
+                  {myIngredients.length > 0 
+                    ? `${myIngredients.length}개의 재료 보유 중`
+                    : "등록된 재료가 없습니다"
+                  }
+                </p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => navigate("/reg")} 
+              className="add_ingredient_btn"
+            >
+              <Plus size={16} /> 재료 관리
+            </Button>
+          </div>
+        </Section>
+
+        {/* 2. 맞춤 추천 레시피 섹션 */}
+        {myIngredients.length > 0 && recommendedRecipes.length > 0 && (
+          <Section 
+            title={
+              <div className="section_header">
+                <ChefHat className="section_icon" />
+                <h3>맞춤 추천 레시피</h3>
+              </div>
+            }
+          >
+            <p className="section_description">
+              보유 재료 기반 매칭 결과입니다.
+            </p>
+            <div className="card-wrapper">
+              {recommendedRecipes.map((matchedRecipe) => (
+                <MatchedRecipeCard 
+                  key={`match-${matchedRecipe.recipe.id}`} 
+                  matchedRecipe={matchedRecipe} 
+                />
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* 3. 매칭 결과가 없을 때 안내 섹션 */}
+        {myIngredients.length > 0 && recommendedRecipes.length === 0 && !isLoading && (
+          <Section title="추천 결과">
+            <div className="no_match_card">
+              <Package className="no_match_icon" />
+              <h4>추천 레시피가 없습니다</h4>
+              <p>더 많은 재료를 등록해보세요!</p>
+              <Button onClick={() => navigate("/reg")}>재료 추가하기</Button>
+            </div>
+          </Section>
+        )}
+
+        {/* 4. BEST 요리모음 섹션 */}
         <Section
           title="BEST 요리모음"
           actions={
-            <div className="main_actions">
-              <Button onClick={goRegPage} className="action_btn">
-                + 재료 등록
-              </Button>
-              <Button
-                variant="outline"
-                onClick={goRecipeReg}
-                className="action_btn"
-              >
-                레시피 등록
-              </Button>
-            </div>
+            <Button variant="outline" onClick={() => navigate("/recipe-reg")} className="action_btn">
+              레시피 등록
+            </Button>
           }
         >
           <div className="card-wrapper">
             {isLoading ? (
-              <p className="loading_msg">맛있는 레시피를 불러오는 중...</p>
-            ) : recipeList.length > 0 ? (
-              recipeList.map((recipe, index) => (
+              <p className="loading_msg">불러오는 중...</p>
+            ) : (
+              recipesData.slice(0, 6).map((recipe) => (
                 <Card
-                  // 로컬 데이터는 id가 없을 수 있으므로 index와 조합
-                  key={recipe.id || index} 
+                  key={recipe.id}
                   title={recipe.title}
-                  // ✅ 크롤링 데이터의 'image' 필드를 사용 (백엔드 연동 시 thumbnailImageUrl로 변경 가능)
-                  image={recipe.image || recipe.thumbnailImageUrl} 
-                  
-                  // 로컬 데이터에 없는 값들은 기본값으로 처리
-                  time={recipe.time || "15분"} 
-                  difficulty={recipe.difficulty || "쉬움"}
+                  image={recipe.image || recipe.thumbnailImageUrl}
+                  time={recipe.time || "20분"}
+                  difficulty={recipe.difficulty || "보통"}
                   servings={recipe.servings || "1인분"}
+                  onClick={() => navigate(`/recipe/${encodeURIComponent(recipe.title)}`)}
                 />
               ))
-            ) : (
-              <p className="empty_msg">등록된 레시피가 없습니다. 첫 레시피를 등록해보세요!</p>
             )}
           </div>
         </Section>
@@ -107,5 +145,3 @@ function Main() {
     </div>
   );
 }
-
-export default Main;

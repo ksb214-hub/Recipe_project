@@ -16,6 +16,7 @@ import SignUpPage from "./pages/SignUp/SignUpPage";
 // src/App.js 상단에 추가
 import ExpensePage from "./pages/Expense/ExpensePage";
 import SettingsPage from "./pages/Setting/SettingPage";
+import RecipeDetail from './pages/RecipeDetail/RecipeDetail';
 
 // src/App.js 수정 버전
 function App() {
@@ -41,6 +42,10 @@ function App() {
            * Header에서 톱니바퀴를 눌렀을 때 SettingsPage가 나타나게 합니다.
            */}
             <Route path="/settings" element={<SettingsPage />} />
+            {/* ✅ 레시피 상세 페이지 (설계 문서 반영) */}
+            
+            {/* :title을 통해 URL 파라미터를 넘겨줍니다 */}
+            <Route path="/recipe/:title" element={<RecipeDetail />} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
         </main>

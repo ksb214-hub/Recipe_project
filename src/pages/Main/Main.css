@@ -60,3 +60,87 @@
 .main_page_container::-webkit-scrollbar {
   display: none;
 }
+/* Fridge Status Card */
+.fridge_status_card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.fridge_status_header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.fridge_icon {
+  width: 32px;
+  height: 32px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.fridge_status_text h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 4px 0;
+}
+
+.fridge_status_text p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+.add_ingredient_btn {
+  background: white !important;
+  color: #667eea !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.add_ingredient_btn:hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* No Match Card */
+.no_match_card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.no_match_icon {
+  width: 48px;
+  height: 48px;
+  color: #cbd5e0;
+  margin: 0 auto 16px;
+}
+
+.no_match_card h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.no_match_card p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
