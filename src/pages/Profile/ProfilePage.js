@@ -17,7 +17,10 @@ export default function ProfilePage() {
     const fetchUserData = async () => {
       try {
         // 서버에서 유저 정보 및 통계 데이터 호출
-        const response = await customInstance.get("/api/user/profile"); 
+        const response = await customInstance({ 
+            url: "/api/auth/me", 
+            method: "GET" 
+        });
         const data = response.data?.data;
         
         if (data) {
