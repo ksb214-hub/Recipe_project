@@ -18,6 +18,8 @@ import ExpensePage from "./pages/Expense/ExpensePage";
 import SettingsPage from "./pages/Setting/SettingPage";
 import RecipeDetail from './pages/RecipeDetail/RecipeDetail';
 
+import ProfilePage from "./pages/Profile/ProfilePage";
+
 // src/App.js 수정 버전
 function App() {
   return (
@@ -46,6 +48,7 @@ function App() {
             
             {/* :title을 통해 URL 파라미터를 넘겨줍니다 */}
             <Route path="/recipe/:title" element={<RecipeDetail />} />
+            <Route path="/profile" element = {<ProfilePage/>} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
         </main>

@@ -1,56 +1,52 @@
 /**
- * 냉장고 재료와 레시피를 매칭하는 함수
- * @param {Array} recipes - 레시피 상세 데이터 배열 (recipes2)
- * @param {Array} myIngredients - 내 냉장고 재료 이름 배열 (string[])
+ * 냉장고 재료(다중 배열)와 레시피를 매칭하는 함수
+ * @param {Array} recipes - 레시피 상세 데이터 배열
+ * @param {Array} myIngredients - 사용자가 선택한 재료들 (string[])
  * @returns {Array} 매칭 정보가 포함된 레시피 배열
  */
 export function matchRecipesWithIngredients(recipes, myIngredients) {
+  // 1. 검색할 재료가 없으면 초기값 반환
   if (!myIngredients || myIngredients.length === 0) {
     return recipes.map(recipe => ({
       recipe,
       matchedCount: 0,
       totalCount: recipe.ingredients.length,
       matchPercentage: 0,
-      missingIngredients: recipe.ingredients.map(ing => ing.amount)
+      missingIngredients: recipe.ingredients.map(ing => ing.name || ing.amount)
     }));
   }
+
+  // 2. 검색 효율을 위해 재료를 소문자 Set으로 변환
+  const myIngSet = new Set(myIngredients.map(ing => ing.toLowerCase().trim()));
 
   const matchedRecipes = recipes.map((recipe) => {
     let matchedCount = 0;
     const missingIngredients = [];
     const totalCount = recipe.ingredients.length;
 
-    // 각 레시피 재료를 냉장고 재료와 비교
     recipe.ingredients.forEach((ingredient) => {
-      // ingredient.amount 또는 ingredient.name 등 데이터 구조에 맞춰 조정 필요
-      const ingredientName = (ingredient.amount || ingredient.name || "").toLowerCase();
+      const rawName = (ingredient.name || ingredient.amount || "").toLowerCase();
       
-      // 냉장고에 해당 재료가 있는지 확인 (부분 매칭)
-      const hasIngredient = myIngredients.some((myIng) => {
-        const lowerMyIng = myIng.toLowerCase();
-        return (
-          ingredientName.includes(lowerMyIng) || 
-          lowerMyIng.includes(ingredientName.split(" ")[0])
-        );
-      });
+      // 재료명 단순화 (예: "양파 1개" -> "양파")
+      const cleanedName = rawName.replace(/[0-9]|개|g|ml|스푼|큰술/g, '').trim();
+
+      // [핵심] 다중 매칭 로직: 사용자가 입력한 재료가 레시피 재료명에 포함되는지 확인
+      // 예: "삼겹살"이 "냉동 삼겹살"에 포함되는지 체크
+      const hasIngredient = Array.from(myIngSet).some((myIng) => 
+        cleanedName.includes(myIng) || myIng.includes(cleanedName)
+      );
 
       if (hasIngredient) {
         matchedCount++;
       } else {
-        // 재료명만 추출 시도 (예: "2개 양파" -> "양파")
-        const parts = ingredientName.split(" ");
-        const ingredientOnly = parts.length > 1 ? parts.slice(1).join(" ") : ingredientName;
-        missingIngredients.push(ingredientOnly);
+        missingIngredients.push(cleanedName);
       }
     });
 
     const matchPercentage = Math.round((matchedCount / totalCount) * 100);
 
     return {
-      recipe: {
-        ...recipe,
-        cookTime: recipe.time || "15분" // 카드 컴포넌트와 필드명 통일
-      },
+      recipe: { ...recipe, cookTime: recipe.time || "15분" },
       matchedCount,
       totalCount,
       matchPercentage,
@@ -58,6 +54,6 @@ export function matchRecipesWithIngredients(recipes, myIngredients) {
     };
   });
 
-  // 매칭률 높은 순으로 정렬
+  // 3. 매칭률이 0보다 큰 레시피를 우선 정렬
   return matchedRecipes.sort((a, b) => b.matchPercentage - a.matchPercentage);
 }

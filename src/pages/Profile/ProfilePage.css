@@ -1,0 +1,169 @@
+.profile_page {
+  width: 100%;
+  max-width: 402px;
+  min-height: 874px;
+  margin: 0 auto;
+  background: #f8f9fa;
+}
+
+.profile_container {
+  padding: 24px 20px;
+}
+
+.profile_header {
+  margin-bottom: 24px;
+}
+
+.profile_header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Profile Card */
+.profile_card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.profile_avatar {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: white;
+}
+
+.profile_name {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+}
+
+.profile_subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* Profile Info Section */
+.profile_info_section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.section_title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.info_list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info_item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.info_icon {
+  width: 44px;
+  height: 44px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.info_content {
+  flex: 1;
+}
+
+.info_label {
+  font-size: 13px;
+  color: #999;
+  margin: 0 0 4px 0;
+}
+
+.info_value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* Stats Section */
+.profile_stats_section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stats_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat_card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat_value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0 0 8px 0;
+}
+
+.stat_label {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+/* Stats Section 개선 */
+.stat_card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.stat_card:hover {
+  transform: translateY(-2px);
+  border-color: #667eea;
+}
+
+.stat_value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #333;
+  margin: 0 0 4px 0;
+}
