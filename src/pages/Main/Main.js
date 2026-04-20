@@ -10,78 +10,87 @@ import Section from "../../components/Section/Section";
 import MatchedRecipeCard from "../../components/MatchedRecipeCard/MatchedRecipeCard";
 import customInstance from "../../api/api"; 
 
-// 데이터
+// 데이터 및 유틸
 import { recipes as recipesData } from "../../data/recipes";
 import { recipes2 } from "../../data/recipes2";
 import { matchRecipesWithIngredients } from "../../utils/recipeMatch";
-import { ChefHat, Package, Plus } from "lucide-react";
+import { ChefHat, Search, X } from "lucide-react"; // 사용 중인 아이콘만 유지
 
 export default function Main() {
   const navigate = useNavigate();
-  const [myIngredients, setMyIngredients] = useState([]);
+  
+  // 상태 관리
+  const [activeIngredients, setActiveIngredients] = useState([]); 
+  const [searchTerm, setSearchTerm] = useState("");
   const [recommendedRecipes, setRecommendedRecipes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // 1. 데이터 로드 로직
+  // 1. 서버에서 재료 데이터 불러오기
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
       try {
         const response = await customInstance({ url: "/api/ingredients", method: "GET" });
         const content = response.data?.data?.content || [];
         
-        console.log("📍 [Main] 로드된 재료 데이터:", content);
-        
-        if (content && content.length > 0) {
-          const names = content.map(item => item.name);
-          setMyIngredients(names);
-
-          // 레시피 매칭
-          const matched = matchRecipesWithIngredients(recipes2, names);
-          const recommended = matched.filter(mr => mr.matchPercentage >= 30).slice(0, 3);
-          setRecommendedRecipes(recommended);
-        } else {
-          setMyIngredients([]);
-          setRecommendedRecipes([]);
+        if (content.length > 0) {
+          setActiveIngredients(content.map(item => item.name));
         }
       } catch (err) {
-        console.error("📍 [Main] 에러 발생:", err);
-      } finally {
-        setIsLoading(false);
+        console.error("📍 [Main] 데이터 로드 실패:", err);
       }
     };
     fetchData();
   }, []);
 
-  // 2. 화면 렌더링
+  // 2. 재료 변경 시 레시피 재매칭
+  useEffect(() => {
+    const matched = matchRecipesWithIngredients(recipes2, activeIngredients);
+    setRecommendedRecipes(matched.filter(mr => mr.matchPercentage >= 30));
+  }, [activeIngredients]);
+
+  // 재료 추가 핸들러
+  const handleAddIngredient = () => {
+    const trimmed = searchTerm.trim();
+    if (trimmed && !activeIngredients.includes(trimmed)) {
+      setActiveIngredients([...activeIngredients, trimmed]);
+      setSearchTerm("");
+    }
+  };
+
   return (
     <div className="main_page_container">
       <main className="con">
         
-        <Section title="냉장고 관리">
-          <div className="fridge_status_card">
-            <div className="fridge_status_header">
-              <Package className="fridge_icon" />
-              <div className="fridge_status_text">
-                <h4>내 냉장고 현황</h4>
-                {/* 데이터 상태에 따라 확실히 텍스트 출력 */}
-                <p style={{ fontWeight: 'bold', color: myIngredients.length > 0 ? '#2c3e50' : '#95a5a6' }}>
-                  {isLoading 
-                    ? "데이터를 불러오는 중..." 
-                    : (myIngredients.length > 0 
-                        ? `${myIngredients.length}개의 재료 보유 중: ${myIngredients.join(", ")}` 
-                        : "등록된 재료가 없습니다")
-                  }
-                </p>
-              </div>
-            </div>
-            <Button onClick={() => navigate("/reg")} className="add_ingredient_btn">
-              <Plus size={16} /> 재료 관리
-            </Button>
+        {/* 검색 및 태그 영역 */}
+        <Section title="재료 검색 및 관리">
+          <div className="search_box" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <input 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="재료 입력 (예: 양파)"
+            />
+            <Button onClick={handleAddIngredient}><Search size={16} /></Button>
+          </div>
+          
+          <div className="tags_container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {activeIngredients.map((ing) => (
+              <span 
+                key={ing} 
+                className="ingredient_tag" 
+                style={{ background: '#eee', padding: '5px 10px', borderRadius: '15px', display: 'flex', alignItems: 'center' }}
+              >
+                {ing} 
+                <X 
+                  size={14} 
+                  onClick={() => setActiveIngredients(activeIngredients.filter(i => i !== ing))} 
+                  style={{ marginLeft: '5px', cursor: 'pointer' }} 
+                />
+              </span>
+            ))}
           </div>
         </Section>
 
-        {!isLoading && myIngredients.length > 0 && (
+        {/* 추천 결과 영역 */}
+        {recommendedRecipes.length > 0 && (
           <Section title={<div className="section_header"><ChefHat className="section_icon" /><h3>맞춤 추천 레시피</h3></div>}>
             <div className="card-wrapper">
               {recommendedRecipes.map((matchedRecipe) => (
@@ -96,7 +105,7 @@ export default function Main() {
 
         <Section title="BEST 요리모음">
           <div className="card-wrapper">
-            {recipesData.slice(0, 6).map((recipe) => (
+            {recipesData.slice(0, 10).map((recipe) => (
               <Card
                 key={recipe.id}
                 title={recipe.title}
