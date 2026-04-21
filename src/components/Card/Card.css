@@ -79,3 +79,22 @@
   align-items: center;
   gap: 3px;
 }
+
+/* 북마크 버튼 스타일 추가 */
+.bookmark_btn {
+  position: absolute; /* .card 기준으로 위치 결정 */
+  top: 12px;
+  right: 12px; /* 우측 끝으로 고정 */
+  background: transparent !important; /* 배경 투명 처리 */
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.bookmark_btn:hover {
+  transform: scale(1.1); /* 살짝 커지는 효과 */
+}

@@ -1,6 +1,5 @@
-// src/components/Card/Card.js
-
 import React from "react";
+import { Bookmark } from "lucide-react"; // 아이콘 import
 import "./Card.css";
 
 function Card({
@@ -11,68 +10,69 @@ function Card({
   difficulty,
   servings,
   onClick,
+  isBookmarked,       // [추가] 북마크 여부
+  onToggleBookmark,   // [추가] 북마크 클릭 핸들러
 }) {
   
-  // 1. 더 안정적인 대체 이미지 서비스 (placehold.jp는 via.placeholder보다 안정적입니다)
   const fallbackImage = "https://placehold.jp/150x150.png?text=No+Image";
 
-  // 2. 문제가 발생하는 via.placeholder.com 주소를 사전에 차단하거나 교체하는 함수
   const getSafeImage = (src) => {
     if (!src || src.includes("via.placeholder.com")) {
-      return fallbackImage; // 에러가 자주 나는 도메인이면 처음부터 대체 이미지 사용
+      return fallbackImage;
     }
     return src;
   };
 
   return (
-    <div className="card" onClick={onClick}>
-
+    <div className="card" onClick={onClick} style={{ position: "relative" }}>
       {/* 썸네일 */}
       <div className="card_thumb">
         <img 
-          // 처음부터 안전한 주소로 렌더링하여 콘솔 에러 발생 빈도를 낮춤
           src={getSafeImage(image)} 
           alt={title || "Recipe Image"} 
-          
-          // 네트워크 에러(ERR_CONNECTION_CLOSED 등) 발생 시 최종 방어
           onError={(e) => {
             if (e.target.src !== fallbackImage) {
-              e.target.onerror = null; // 무한 루프 방지
+              e.target.onerror = null;
               e.target.src = fallbackImage;
             }
           }}
         />
       </div>
 
+      {/* [추가] 북마크 버튼: 카드 우측 상단 배치 */}
+      <button 
+        type="button"
+        className="bookmark_btn"
+        onClick={onToggleBookmark} // e.stopPropagation()은 부모인 Card.js 호출부(Main.js)에서 처리되므로 여기선 호출만 함
+        style={{ 
+          position: "absolute", 
+          top: "10px", 
+          right: "10px", 
+          background: "rgba(255, 255, 255, 0.8)", 
+          border: "none", 
+          borderRadius: "50%",
+          padding: "6px",
+          cursor: "pointer",
+          zIndex: 10 // 카드 이미지 위로 버튼 노출
+        }}
+        aria-label="북마크"
+      >
+        <Bookmark 
+          size={20} 
+          fill={isBookmarked ? "#f1c40f" : "none"} 
+          color={isBookmarked ? "#f1c40f" : "#333"} 
+        />
+      </button>
+
       {/* 내용 */}
       <div className="card_body">
-        {/* 제목 */}
         <h3 className="card_title">{title || "제목 없음"}</h3>
+        {description && <p className="card_desc">{description}</p>}
 
-        {/* 설명 */}
-        {description && (
-          <p className="card_desc">{description}</p>
-        )}
-
-        {/* 🔥 레시피 정보 */}
         <div className="card_info">
-          {time && (
-            <span className="card_meta">
-              ⏱ {time}
-            </span>
-          )}
-
-          {difficulty && (
-            <span className="card_meta">
-              ⭐ {difficulty}
-            </span>
-          )}
-
-          {servings && (
-            <span className="card_meta">
-              👤 {servings}
-            </span>
-          )}
+          {time && <span className="card_meta">⏱ {time}</span>}
+          {difficulty && <span className="card_meta">⭐ {difficulty}</span>}
+          {servings && <span className="card_meta">👤 {servings}</span>}
         </div>
       </div>
     </div>

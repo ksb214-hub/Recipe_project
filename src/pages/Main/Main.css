@@ -34,7 +34,23 @@
   gap: 8px;
   margin-bottom: 15px;
 }
-
+.search_box{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  background: white;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+#ingredient-search{
+  flex: 1 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
 .action_btn {
   flex: 1; /* 버튼 너비를 동일하게 배분 */
   font-size: 13px !important;
@@ -56,6 +72,12 @@
   transition: transform 0.2s ease;
 }
 
+.drop_nav {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100%;
+}
 /* 스크롤바 숨기기 (선택 사항: 깔끔한 시연용) */
 .main_page_container::-webkit-scrollbar {
   display: none;
