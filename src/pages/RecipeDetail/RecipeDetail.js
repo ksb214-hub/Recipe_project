@@ -90,7 +90,7 @@ export default function RecipeDetail() {
           <h3 className="section_title">🥕 재료 목록</h3>
           <div className="ingredients_list">
             {recipe.ingredients && recipe.ingredients.map((ing, idx) => (
-              <div key={idx} className="ingredient_item">
+              <div key={idx} className="detail_ingredient_item">
                 <div className="ingredient_bullet"></div>
                 <span className="ingredient_text">{ing.amount}</span>
               </div>

@@ -1,43 +1,32 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware # CORS 허용을 위해 필수
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+# 추천 로직이 담긴 엔진을 가져옴
 from recommender_engine import *
 
 app = FastAPI()
 
-# 프론트엔드와 통신하기 위해 CORS 설정 추가 (필수!)
+# 프론트엔드(React 등)에서 보내는 요청을 허용하기 위한 CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # 보안상 운영환경에서는 특정 도메인으로 제한 권장
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class InputData(BaseModel):
-    # Main.js에서 보내는 데이터가 {ingredients: [...]} 형태라면:
-    ingredients: list[str] 
-
-# 2. 재료 검색을 위한 데이터 모델 (여기서 정의가 필요합니다!)
+# 클라이언트로부터 받을 재료 리스트의 형태를 정의 (데이터 유효성 검사)
 class IngredientData(BaseModel):
     ingredients: list[str]
 
-@app.post("/recommend")
-def recommend(data: InputData):
-    # 예시: 재료 리스트를 합쳐서 엔진에 전달하거나 로직 수정 필요
-    # 성빈님의 get_recommendations가 제목을 받는지 재료를 받는지 확인하세요!
-    query = " ".join(data.ingredients)
-    results = get_recommendations(query)
-    # 리스트를 직접 반환해야 프론트엔드와 매칭이 쉽습니다.
-    return [{"title": title} for title in results]
-
-
-# main.py 추가 부분
-# 수정 전
-# return {"recommendations": results} 
-
-# 수정 후: 이렇게 하면 res.data가 바로 배열이 됩니다.
 @app.post("/recommend/ingredients")
 def recommend_by_ingredients(data: IngredientData):
+    # 엔진에서 결과 리스트를 받아옴
     results = get_recommendations_by_ingredients(data.ingredients)
-    # results가 리스트라면 바로 반환
-    return [{"title": title} for title in results]
+    
+    # 🔍 서버 터미널에 상세 데이터 구조 출력
+    print("--- [디버깅] 추천 엔진 반환값 확인 ---")
+    for i, item in enumerate(results):
+        print(f"Index {i}: {item}")
+    print("-----------------------------------")
+    
+    return results

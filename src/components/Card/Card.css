@@ -80,21 +80,46 @@
   gap: 3px;
 }
 
-/* 북마크 버튼 스타일 추가 */
+/* 북마크 버튼 전체 스타일 */
 .bookmark_btn {
-  position: absolute; /* .card 기준으로 위치 결정 */
-  top: 12px;
-  right: 12px; /* 우측 끝으로 고정 */
-  background: transparent !important; /* 배경 투명 처리 */
-  border: none;
-  cursor: pointer;
-  padding: 5px;
+  transition: all 0.2s ease-in-out; /* 부드러운 움직임 */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 약간의 입체감 추가 */
 }
 
+/* 마우스를 올렸을 때 효과 */
 .bookmark_btn:hover {
-  transform: scale(1.1); /* 살짝 커지는 효과 */
+  transform: scale(1.1); /* 살짝 커지게 */
+  background: rgba(255, 255, 255, 1) !important; /* 배경을 더 하얗게 */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
 }
+
+/* 클릭 시 효과 */
+.bookmark_btn:active {
+  transform: scale(0.95);
+}
+
+.card_category {
+  display: inline-block;
+  font-size: 0.75rem;          /* 글씨 크기 */
+  color: #3498db;              /* 텍스트 색상 */
+  background: #ebf5fb;         /* 배경 색상 */
+  
+  /* 핵심: 글씨 크기에 맞춘 여백 */
+  padding: 0.25rem 0.6rem; 
+  
+  border-radius: 999px;        /* 완전한 알약 모양 */
+  margin-bottom: 8px;
+  font-weight: 600;
+  
+  /* 글씨가 길어져도 레이아웃을 깨지 않게 함 */
+  white-space: nowrap; 
+}
+
+/* 제목 스타일이 카테고리 아래에서 예쁘게 보이도록 여백 조정
+.card_title {
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+} */

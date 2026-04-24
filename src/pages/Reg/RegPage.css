@@ -1,213 +1,107 @@
-/* 전체 컨테이너 설정 */
+/* =========================================================
+   1. 컨테이너 및 레이아웃 구조
+   ========================================================= */
 .reg_container {
   width: 100%;
-  max-width: 402px; /* 성빈님의 표준 너비 고정 */
+  max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
   background-color: #f8f9fa;
-  box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+  padding: 20px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
-/* 메인 컨텐츠 영역 */
 .reg_main_content {
-  padding: 20px;
+  padding: 20px 0;
   flex: 1;
-  overflow-y: auto;
 }
 
-.reg_header h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 4px;
+.reg_header h2 { font-size: 22px; font-weight: 700; color: #333; margin-bottom: 4px; }
+.reg_header p { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+/* =========================================================
+   2. 입력 폼 스타일
+   ========================================================= */
+.reg_input_section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+/* =========================================================
+   3. 식재료 카드 스타일 (통합 및 최적화)
+   ========================================================= */
+.ingredient_grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.reg_header p {
+/* 카드 전체: 수직(Column) 구조로 고정하여 레이아웃 붕괴 방지 */
+.ingredient_card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+/* 상단 영역: 이름, 기한, 삭제 버튼 (고정) */
+.card_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.info_area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item_name { font-size: 16px; font-weight: 600; color: #333; }
+.item_days {
   font-size: 14px;
   color: #888;
-  margin-bottom: 24px;
+  background: #f1f3f5;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
-/* 입력 폼 스타일 */
-.reg_input_section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px; /* 입력창 사이 간격 */
-  margin-bottom: 20px;
-}
-
-.button_group {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.cancel_btn {
-  background: #e9ecef;
-  border: none;
-  border-radius: 8px;
-  padding: 0 16px;
-  color: #495057;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.divider {
-  height: 1px;
-  background-color: #eee;
-  margin: 24px 0;
-}
-
-/* 식재료 카드 스타일 */
-.ingredient_card {
-  background: white;
-  border-radius: 12px;
-  display: flex;
-  padding: 12px;
-  gap: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-.card_img {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.card_content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.item_name {
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
-}
-
-.item_desc {
-  font-size: 13px;
-  color: #777;
-  margin: 2px 0 8px 0;
-}
-
-.card_buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.card_buttons button {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 13px;
-  color: #667eea;
-  cursor: pointer;
-}
-
-.card_buttons .del_text {
-  color: #ff6b6b;
-}
-
-.input_group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.input_label {
-  font-size: 12px;
-  color: #667eea;
-  font-weight: 600;
-  margin-left: 4px;
-}
-
-.item_expiry {
-  font-size: 12px;
-  color: #ff6b6b; /* 소비기한은 눈에 잘 띄게 빨간색 계열 */
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-/* 컨테이너 전체 배경색 추가 (카드들이 잘 보이게) */
-.reg_container {
-    background-color: #f8f9fa;
-    min-height: 100vh;
-    padding: 20px;
-}
-
-/* 그리드 레이아웃 */
-.ingredient_grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px; /* 카드 사이 간격 */
-    margin-top: 20px;
-}
-
-/* 성빈님이 주신 카드 스타일 적용 */
-.card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* 양쪽 끝으로 배치 */
-    gap: 15px;
-    padding: 16px 20px; /* 여백을 조금 더 넉넉히 */
-    background: white;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-color: #e0e0e0;
-}
-
-/* 카드 내부 텍스트 영역 */
-.card_info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-}
-
-.item_name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-}
-
-.item_days {
-    font-size: 14px;
-    color: #888;
-    background: #f1f3f5;
-    padding: 2px 8px;
-    border-radius: 6px;
-}
-
-/* 삭제 버튼 스타일 */
+/* 삭제 버튼 스타일 (요청하신 스타일) */
 .del_btn {
-    background: #fff5f5;
-    color: #ff6b6b;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
+  background: #fff5f5;
+  color: #ff6b6b;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
 }
 
 .del_btn:hover {
-    background: #ff6b6b;
-    color: white;
+  background: #ff6b6b;
+  color: white;
+}
+
+/* 하단 독립적 영양성분 드롭다운 */
+.card_nutrition_dropdown {
+  padding: 15px 20px;
+  background: #fafafa;
+  border-top: 2px dashed #eee;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.nutrition_content {
+  display: flex;
+  justify-content: space-around;
+  font-weight: 500;
 }
