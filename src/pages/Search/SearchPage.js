@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Link } from "react-router-dom"; // 상세 페이지 이동을 위한 Link import
 import "./SearchPage.css";
 import Card from "../../components/Card/Card";
 import { Search, Filter, Clock, BarChart3, X } from "lucide-react"; 
 import { recipes } from "../../data/recipes";
 
 function SearchPage() {
+  // 상태 관리
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("전체");
   const [maxTime, setMaxTime] = useState("전체");
@@ -15,12 +17,13 @@ function SearchPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionRef = useRef(null);
 
+  // 필터 옵션 배열
   const categories = ["전체", "육류", "채소", "가공식품", "기타"];
   const times = ["전체", "15분", "30분", "60분"];
   const levels = ["전체", "쉬움", "보통", "어려움"];
 
   /* ===============================
-     1. 자동완성 로직 (Debounce)
+     1. 자동완성 로직 (Debounce 적용)
   =============================== */
   useEffect(() => {
     if (searchQuery.trim().length === 0) {
@@ -39,7 +42,7 @@ function SearchPage() {
   }, [searchQuery]);
 
   /* ===============================
-     2. 바깥 클릭 시 닫기
+     2. 바깥 클릭 시 자동완성 닫기
   =============================== */
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -52,7 +55,7 @@ function SearchPage() {
   }, []);
 
   /* ===============================
-     3. 통합 필터링 로직
+     3. 검색어 및 필터링 통합 로직
   =============================== */
   const filteredRecipes = useMemo(() => {
     return recipes.filter((recipe) => {
@@ -69,6 +72,7 @@ function SearchPage() {
     });
   }, [searchQuery, activeCategory, maxTime, difficulty]);
 
+  // 필터 초기화 함수
   const handleReset = () => {
     setSearchQuery("");
     setActiveCategory("전체");
@@ -123,7 +127,7 @@ function SearchPage() {
           </div>
         </section>
 
-        {/* 필터 상세 영역 - 이제 경고가 사라집니다! */}
+        {/* 필터 상세 영역 */}
         <section className="filter_section">
           <div className="filter_group">
             <div className="filter_label"><Filter size={14} /> <span>카테고리</span></div>
@@ -159,11 +163,19 @@ function SearchPage() {
           <p>총 <strong>{filteredRecipes.length}</strong>개의 레시피가 있습니다.</p>
         </div>
 
+        {/* 결과 리스트 영역 */}
         <div className="search_result_list">
           {filteredRecipes.length > 0 ? (
             <div className="recipe_grid">
               {filteredRecipes.map((recipe) => (
-                <Card key={recipe.id} {...recipe} />
+                // 카드를 클릭하면 /recipe/:id 상세 페이지로 이동하도록 Link로 래핑
+                <Link 
+                  key={recipe.id} 
+                  to={`/recipe/${encodeURIComponent(recipe.title)}`} // 제목을 URL 안전하게 인코딩하여 전달
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Card {...recipe} />
+                </Link>
               ))}
             </div>
           ) : (

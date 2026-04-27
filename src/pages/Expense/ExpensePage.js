@@ -77,17 +77,27 @@ function ExpensePage() {
      ========================================================== */
   
   // 총 지출액 합산
+  // 3. 실시간 통계 계산 (useMemo 활용) - 안전하게 수정된 버전
+  
+  // 총 지출액 합산
   const totalSpent = useMemo(() => 
-    expenseRecords.reduce((acc, cur) => acc + cur.totalAmount, 0), [expenseRecords]
+    (expenseRecords || []).reduce((acc, cur) => acc + (cur.totalAmount || 0), 0), 
+    [expenseRecords]
   );
 
-  // 카테고리별 비중 계산 (상세 품목 데이터 활용)
+  // 카테고리별 비중 계산 (안전한 순회 적용)
   const categorySummary = useMemo(() => {
     const summary = { "육류": 0, "채소": 0, "가공식품": 0, "기타": 0 };
-    expenseRecords.forEach(record => {
-      record.items.forEach(item => {
-        if(summary[item.category] !== undefined) summary[item.category] += item.price;
-        else summary["기타"] += item.price;
+    
+    // 1. expenseRecords가 배열인지 확인하고 순회
+    (expenseRecords || []).forEach(record => {
+      // 2. record.items가 있는지 확인 후 순회
+      (record.items || []).forEach(item => {
+        if(summary.hasOwnProperty(item.category)) {
+          summary[item.category] += (item.price || 0);
+        } else {
+          summary["기타"] += (item.price || 0);
+        }
       });
     });
     return summary;
@@ -103,11 +113,17 @@ function ExpensePage() {
   }, [categorySummary, totalSpent]);
 
   // 달력 표시용 날짜별 합계
+  // 달력 표시용 날짜별 합계 (안전하게 수정된 버전)
   const dailySummary = useMemo(() => {
     const summary = {};
-    expenseRecords.forEach(record => {
-      const day = parseInt(record.purchaseDate.split("-")[2]);
-      summary[day] = (summary[day] || 0) + record.totalAmount;
+    (expenseRecords || []).forEach(record => {
+      // purchaseDate가 존재하는지 확인하고, 값이 있는 경우에만 처리
+      if (record?.purchaseDate && typeof record.purchaseDate === 'string') {
+        const day = parseInt(record.purchaseDate.split("-")[2]);
+        if (!isNaN(day)) {
+          summary[day] = (summary[day] || 0) + (record.totalAmount || 0);
+        }
+      }
     });
     return summary;
   }, [expenseRecords]);
@@ -115,8 +131,19 @@ function ExpensePage() {
   /* ==========================================================
      4. 이벤트 핸들러
      ========================================================== */
-  const handleAddRecord = (newRecord) => setExpenseRecords([newRecord, ...expenseRecords]);
-
+  // ExpensePage.js의 handleAddRecord 확인
+  const handleAddRecord = (newRecord) => {
+    console.log("입력된 데이터:", newRecord); // 이 콘솔을 찍어서 구조를 확인하세요!
+    // 입력받은 데이터를 기존 데이터 구조에 맞게 변환 (Mapping)
+    const formattedRecord = {
+      id: newRecord.id,
+      storeName: newRecord.name,      // 'name'을 'storeName'으로 매핑
+      totalAmount: newRecord.price,   // 'price'를 'totalAmount'로 매핑
+      purchaseDate: newRecord.date.replaceAll('.', '-'), // '2026.04.08'을 '2026-04-08'로 변환
+      items: [{ name: newRecord.name, price: newRecord.price, category: newRecord.category }]
+    };
+    setExpenseRecords([formattedRecord, ...expenseRecords]);
+  };
   const handleDeleteRecord = (id) => {
     if(window.confirm("이 장보기 내역을 전체 삭제하시겠습니까?")) {
       setExpenseRecords(expenseRecords.filter(r => r.id !== id));
@@ -191,18 +218,26 @@ function ExpensePage() {
           </div>
         </section>
 
-        {/* 4. 장보기 내역 리스트 */}
+        {/* 4. 장보기 내역 리스트 (안전하게 수정된 버전) */}
         <section className="recent_history_section">
           <h3 className="section_title">장보기 내역</h3>
           <div className="history_stack">
-            {expenseRecords.map(record => (
+            {(expenseRecords || []).map(record => (
               <div key={record.id} className="history_item_card" onClick={() => handleDeleteRecord(record.id)}>
                 <div className="item_icon_bg"><ShoppingCart size={16} color="#764ba2" /></div>
                 <div className="item_info_text">
-                  <p className="item_name">{record.storeName} <span className="item_date">{record.purchaseDate.slice(5)}</span></p>
-                  <p className="item_cat">{record.items.length}개 품목</p>
+                  <p className="item_name">
+                    {record.storeName || "정보 없음"} 
+                    {/* 날짜가 있을 때만 slice(5)를 수행하도록 조건부 처리 */}
+                    <span className="item_date">
+                      {record.purchaseDate && typeof record.purchaseDate === 'string' 
+                        ? record.purchaseDate.slice(5) 
+                        : ""}
+                    </span>
+                  </p>
+                  <p className="item_cat">{record.items?.length || 0}개 품목</p>
                 </div>
-                <p className="item_price">-{record.totalAmount.toLocaleString()}원</p>
+                <p className="item_price">-{record.totalAmount?.toLocaleString() || 0}원</p>
               </div>
             ))}
           </div>

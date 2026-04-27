@@ -1,19 +1,21 @@
 import React from "react";
-import { Bookmark } from "lucide-react"; // 아이콘 import
+import { Bookmark } from "lucide-react"; // [라이브러리] 아이콘 import
 import "./Card.css";
 
 function Card({
   title,
   description,
+  category,        // [추가] 카테고리 정보
   image,
   time,
   difficulty,
   servings,
   onClick,
-  isBookmarked,       // [추가] 북마크 여부
-  onToggleBookmark,   // [추가] 북마크 클릭 핸들러
+  isBookmarked,    // [상태] 북마크 여부
+  onToggleBookmark,// [함수] 북마크 클릭 핸들러
 }) {
   
+  // [이미지] 이미지 없을 시 사용할 대체 이미지
   const fallbackImage = "https://placehold.jp/150x150.png?text=No+Image";
 
   const getSafeImage = (src) => {
@@ -25,7 +27,7 @@ function Card({
 
   return (
     <div className="card" onClick={onClick} style={{ position: "relative" }}>
-      {/* 썸네일 */}
+      {/* 썸네일 섹션 */}
       <div className="card_thumb">
         <img 
           src={getSafeImage(image)} 
@@ -39,11 +41,11 @@ function Card({
         />
       </div>
 
-      {/* [추가] 북마크 버튼: 카드 우측 상단 배치 */}
+      {/* 북마크 버튼: 카드 우측 상단 배치 */}
       <button 
         type="button"
         className="bookmark_btn"
-        onClick={onToggleBookmark} // e.stopPropagation()은 부모인 Card.js 호출부(Main.js)에서 처리되므로 여기선 호출만 함
+        onClick={onToggleBookmark} 
         style={{ 
           position: "absolute", 
           top: "10px", 
@@ -53,7 +55,7 @@ function Card({
           borderRadius: "50%",
           padding: "6px",
           cursor: "pointer",
-          zIndex: 10 // 카드 이미지 위로 버튼 노출
+          zIndex: 10 
         }}
         aria-label="북마크"
       >
@@ -64,9 +66,13 @@ function Card({
         />
       </button>
 
-      {/* 내용 */}
+      {/* 내용 섹션 */}
       <div className="card_body">
+        {/* [수정] 제목 위로 카테고리 이동 및 클래스 적용 */}
+        {category && <span className="card_category">{category}</span>}
+        
         <h3 className="card_title">{title || "제목 없음"}</h3>
+        
         {description && <p className="card_desc">{description}</p>}
 
         <div className="card_info">
@@ -77,6 +83,6 @@ function Card({
       </div>
     </div>
   );
-}
+} 
 
 export default Card;
