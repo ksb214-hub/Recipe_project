@@ -35,7 +35,7 @@ export default function Main() {
         const ingRes = await customInstance({ url: "/api/ingredients", method: "GET" });
         setActiveIngredients(ingRes.data?.data?.content.map(item => item.name) || []);
         try {
-          const bookmarkRes = await customInstance({ url: "/api/bookmarks", method: "GET" });
+          const bookmarkRes = await customInstance({ url: "/api/recipe/bookmarks", method: "GET" });
           setBookmarkedIds(bookmarkRes.data || []);
         } catch (err) { console.warn("북마크 데이터 없음"); }
       } catch (err) { console.error("📍 초기 데이터 로드 실패:", err); }
@@ -60,17 +60,27 @@ export default function Main() {
     fetchRecommendations();
   }, [activeIngredients]);
 
-  const toggleBookmark = async (e, recipeTitle) => {
+const toggleBookmark = async (e, recipeId) => { // title 대신 id를 인자로 받습니다.
     e.stopPropagation();
-    const isBookmarked = bookmarkedIds.includes(recipeTitle);
+    const isBookmarked = bookmarkedIds.includes(recipeId);
+    
     try {
       await customInstance({
-        url: "/api/bookmarks",
-        method: isBookmarked ? "DELETE" : "POST",
-        params: { title: recipeTitle }
+        // 백틱(`)을 사용하여 {id}를 실제 recipeId 값으로 치환합니다.
+        url: `/api/recipes/${recipeId}/bookmark`, 
+        method: isBookmarked ? "DELETE" : "POST"
+        // params는 필요 없다면 제거해도 됩니다.
       });
-      setBookmarkedIds(prev => isBookmarked ? prev.filter(id => id !== recipeTitle) : [...prev, recipeTitle]);
-    } catch (err) { alert("북마크 처리 중 오류 발생"); }
+      
+      setBookmarkedIds(prev => 
+        isBookmarked 
+          ? prev.filter(id => id !== recipeId) 
+          : [...prev, recipeId]
+      );
+    } catch (err) { 
+      console.error(err);
+      alert("북마크 처리 중 오류 발생"); 
+    }
   };
 
   const handleAddIngredient = () => {
