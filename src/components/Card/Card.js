@@ -1,23 +1,29 @@
 import React from "react";
-import { Bookmark } from "lucide-react"; // [라이브러리] 아이콘 import
+import { Bookmark } from "lucide-react"; 
 import "./Card.css";
 
+/**
+ * Card 컴포넌트
+ * - 레시피 상세 정보를 표시하며 북마크 기능을 포함합니다.
+ * - @param {string} thumbnailImageUrl - 이미지 경로 (SearchPage와 이름 통일)
+ */
 function Card({
   title,
   description,
-  category,        // [추가] 카테고리 정보
-  image,
+  category,
+  thumbnailImageUrl, // [수정] image에서 thumbnailImageUrl로 이름 통일
   time,
   difficulty,
   servings,
   onClick,
-  isBookmarked,    // [상태] 북마크 여부
-  onToggleBookmark,// [함수] 북마크 클릭 핸들러
+  isBookmarked,
+  onToggleBookmark,
 }) {
   
-  // [이미지] 이미지 없을 시 사용할 대체 이미지
+  // 이미지가 없을 때 사용할 기본 이미지 경로
   const fallbackImage = "https://placehold.jp/150x150.png?text=No+Image";
 
+  // 이미지 유효성 검사 및 기본 이미지 반환 로직
   const getSafeImage = (src) => {
     if (!src || src.includes("via.placeholder.com")) {
       return fallbackImage;
@@ -30,9 +36,10 @@ function Card({
       {/* 썸네일 섹션 */}
       <div className="card_thumb">
         <img 
-          src={getSafeImage(image)} 
+          src={getSafeImage(thumbnailImageUrl)} 
           alt={title || "Recipe Image"} 
           onError={(e) => {
+            // 이미지 로드 실패 시 fallback 이미지로 자동 교체
             if (e.target.src !== fallbackImage) {
               e.target.onerror = null;
               e.target.src = fallbackImage;
@@ -41,11 +48,14 @@ function Card({
         />
       </div>
 
-      {/* 북마크 버튼: 카드 우측 상단 배치 */}
+      {/* 북마크 버튼 */}
       <button 
         type="button"
         className="bookmark_btn"
-        onClick={onToggleBookmark} 
+        onClick={(e) => {
+          e.stopPropagation(); // 카드 클릭 이벤트와 충돌 방지
+          onToggleBookmark?.(e);
+        }}
         style={{ 
           position: "absolute", 
           top: "10px", 
@@ -68,7 +78,6 @@ function Card({
 
       {/* 내용 섹션 */}
       <div className="card_body">
-        {/* [수정] 제목 위로 카테고리 이동 및 클래스 적용 */}
         {category && <span className="card_category">{category}</span>}
         
         <h3 className="card_title">{title || "제목 없음"}</h3>

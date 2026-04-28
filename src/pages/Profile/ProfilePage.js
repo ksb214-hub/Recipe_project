@@ -7,6 +7,7 @@ import "./ProfilePage.css";
 export default function ProfilePage() {
   const [userInfo, setUserInfo] = useState({
     username: "불러오는 중...",
+    loginId: "-",
     createdAt: "-",
     grade: "일반 회원",
     recipeCount: 0,
@@ -16,24 +17,27 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // 서버에서 유저 정보 및 통계 데이터 호출
         const response = await customInstance({ 
             url: "/api/auth/me", 
             method: "GET" 
         });
-        const data = response.data?.data;
+
+        // 서버 응답이 바로 객체인 경우 (콘솔 로그 확인 결과에 맞춤)
+        const data = response.data; 
+        console.log("서버 응답 확인:", data);
         
         if (data) {
           setUserInfo({
-            username: data.username,
-            createdAt: data.createdAt,
-            grade: data.grade,
-            recipeCount: data.recipeCount,
-            ingredientCount: data.ingredientCount
+            username: data.nickname || "이름 없음",
+            loginId: data.loginId || "아이디 없음",
+            createdAt: data.createdAt || "정보 없음",
+            grade: data.grade || "일반 회원",
+            recipeCount: data.recipeCount || 0,
+            ingredientCount: data.ingredientCount || 0
           });
         }
       } catch (err) {
-        console.error("프로필 데이터 로드 실패:", err);
+        console.error("데이터 로드 실패:", err);
       }
     };
     fetchUserData();
@@ -54,7 +58,8 @@ export default function ProfilePage() {
         <section className="profile_info_section">
           <h3 className="section_title">계정 정보</h3>
           <div className="info_list">
-            <InfoItem icon={<Mail size={20}/>} label="아이디" value={userInfo.username} />
+            <InfoItem icon={<Mail size={20}/>} label="아이디" value={userInfo.loginId} />
+            <InfoItem icon={<User size={20}/>} label="닉네임" value={userInfo.username} />
             <InfoItem icon={<Calendar size={20}/>} label="가입일" value={userInfo.createdAt} />
             <InfoItem icon={<Award size={20}/>} label="등급" value={userInfo.grade} />
           </div>
@@ -72,7 +77,6 @@ export default function ProfilePage() {
   );
 }
 
-// 재사용 컴포넌트
 const InfoItem = ({ icon, label, value }) => (
   <div className="info_item">
     <div className="info_icon">{icon}</div>

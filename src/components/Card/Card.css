@@ -38,12 +38,16 @@
 }
 
 /* 내용 영역 */
+/* 수정된 부분 */
 .card_body {
-  padding: 0; /* flex gap이 여백을 대신하므로 0으로 조정 */
-  flex: 1; /* 남은 공간 모두 차지 */
+  padding: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* 핵심: 아래 설정을 추가하여 카테고리가 제목과 자연스럽게 배치되도록 함 */
+  align-items: flex-start; 
+  min-width: 0; /* 제목이 너무 길어질 때 카드가 밖으로 튀어나가는 것 방지 */
 }
 
 /* 제목 */
@@ -123,3 +127,9 @@
   margin: 0 0 10px 0;
   line-height: 1.4;
 } */
+
+@media (max-width: 480px) {
+  .card_desc {
+    max-width: 140px; /* 모바일에서는 더 짧게 줄임 */
+  }
+}

@@ -6,7 +6,7 @@ import Header from '../../components/Header/Header';
 import './RecipeDetail.css';
 
 // [수정] 두 데이터 소스를 모두 불러옵니다.
-import { recipes2 } from '../../data/recipes2'; 
+import { recipes2 } from '../../data/collection/recipes2'; 
 import { recipes3 as crawledRecipes } from '../../data/collection/recipes3'; 
 
 export default function RecipeDetail() {

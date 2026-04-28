@@ -1,104 +1,111 @@
-import React, { useState, useEffect } from "react";
-// [라이브러리] React Router: 페이지 전환 및 경로 관리
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-// [라이브러리] Axios: 서버와 데이터 통신
 import axios from "axios";
 import "./Main.css";
 import "../../pages/Main/recipeMatch.css";
 
-// [컴포넌트] 화면 구성 UI
 import Card from "../../components/Card/Card";
 import Button from "../../components/Button/Button";
 import Section from "../../components/Section/Section";
-import customInstance from "../../api/api"; 
+import customInstance from "../../api/api";
 
 import { recipes3 as crawledRecipes } from "../../data/collection/recipes3";
-// [라이브러리] Lucide React: 아이콘
-import { Search, X, Plus } from "lucide-react"; 
+import { Search, X, Plus } from "lucide-react";
+
+// 인기 검색어 더미 데이터
+const DUMMY_POPULAR_INGREDIENTS = [
+  { name: "양파" }, { name: "마늘" }, { name: "계란" }, { name: "대파" }, { name: "감자" }
+];
 
 export default function Main() {
   const navigate = useNavigate();
 
-  // [상태 관리]
   const [activeIngredients, setActiveIngredients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [bookmarkedIds, setBookmarkedIds] = useState([]); 
-  const [selectedCategory, setSelectedCategory] = useState("전체"); 
+  const [bookmarkedIds, setBookmarkedIds] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("전체");
   const [recommendedData, setRecommendedData] = useState([]);
+  
+  const [allIngredients, setAllIngredients] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const categories = ["전체", ...new Set(crawledRecipes.map(r => r.category))];
 
-  // [초기화] 데이터 로드
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const ingRes = await customInstance({ url: "/api/ingredients", method: "GET" });
-        setActiveIngredients(ingRes.data?.data?.content.map(item => item.name) || []);
-        try {
-          const bookmarkRes = await customInstance({ url: "/api/recipe/bookmarks", method: "GET" });
-          setBookmarkedIds(bookmarkRes.data || []);
-        } catch (err) { console.warn("북마크 데이터 없음"); }
-      } catch (err) { console.error("📍 초기 데이터 로드 실패:", err); }
+        const ingList = ingRes.data?.data?.content || [];
+        setAllIngredients(ingList); 
+        setActiveIngredients(ingList.map(item => item.name));
+        
+        // try {
+        //   const bookmarkRes = await customInstance({ url: "/api/recipe/bookmarks", method: "GET" });
+        //   setBookmarkedIds(bookmarkRes.data || []);
+        // } catch (err) { console.warn("북마크 데이터 없음"); }
+      } catch (err) { console.error("데이터 로드 실패:", err); }
     };
     fetchInitialData();
   }, []);
 
-  // [추천 엔진] 재료 변경 시 서버 호출
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (activeIngredients.length === 0) {
-        setRecommendedData([]);
-        return;
-      }
+      if (activeIngredients.length === 0) { setRecommendedData([]); return; }
       try {
-        const res = await axios.post("http://localhost:8001/recommend/ingredients", {
-          ingredients: activeIngredients
-        });
+        const res = await axios.post("http://localhost:8001/recommend/ingredients", { ingredients: activeIngredients });
         setRecommendedData(Array.isArray(res.data) ? res.data : []);
-      } catch (err) { console.error("📍 파이썬 추천 서버 연결 실패:", err); }
+      } catch (err) { console.error("추천 실패:", err); }
     };
     fetchRecommendations();
   }, [activeIngredients]);
 
-const toggleBookmark = async (e, recipeId) => { // title 대신 id를 인자로 받습니다.
+  const suggestions = useMemo(() => {
+    if (!searchTerm) return [];
+    return allIngredients.filter(item => item.name.includes(searchTerm)).slice(0, 5);
+  }, [searchTerm, allIngredients]);
+
+  // [기능] 조회수 증가 및 페이지 이동 시뮬레이션
+  const handleRecipeClick = async (recipeId, title) => {
+    console.log(`[시뮬레이션] ${recipeId}번 레시피 조회수 증가 API 호출 준비 완료.`);
+    // 나중에 백엔드 API가 준비되면 주석을 해제하세요.
+    /*
+    try {
+      await customInstance({ url: `/api/recipes/${recipeId}/view`, method: "POST" });
+    } catch (err) { console.error("조회수 증가 실패:", err); }
+    */
+    navigate(`/recipe/${encodeURIComponent(title)}`);
+  };
+
+  const toggleBookmark = async (e, recipeId) => {
     e.stopPropagation();
     const isBookmarked = bookmarkedIds.includes(recipeId);
-    
     try {
-      await customInstance({
-        // 백틱(`)을 사용하여 {id}를 실제 recipeId 값으로 치환합니다.
-        url: `/api/recipes/${recipeId}/bookmark`, 
-        method: isBookmarked ? "DELETE" : "POST"
-        // params는 필요 없다면 제거해도 됩니다.
-      });
-      
-      setBookmarkedIds(prev => 
-        isBookmarked 
-          ? prev.filter(id => id !== recipeId) 
-          : [...prev, recipeId]
-      );
-    } catch (err) { 
-      console.error(err);
-      alert("북마크 처리 중 오류 발생"); 
-    }
+      await customInstance({ url: `/api/recipes/${recipeId}/bookmark`, method: isBookmarked ? "DELETE" : "POST" });
+      setBookmarkedIds(prev => isBookmarked ? prev.filter(id => id !== recipeId) : [...prev, recipeId]);
+    } catch (err) { console.error(err); }
   };
 
-  const handleAddIngredient = () => {
-    const trimmed = searchTerm.trim();
-    if (trimmed && !activeIngredients.includes(trimmed)) {
-      setActiveIngredients(prev => [...prev, trimmed]);
+  const handleAddIngredient = (name) => {
+    const ingredientName = name || searchTerm.trim();
+    if (ingredientName && !activeIngredients.includes(ingredientName)) {
+      setActiveIngredients(prev => [...prev, ingredientName]);
       setSearchTerm("");
+      setShowSuggestions(false);
     }
   };
 
-  // [필터링 로직] 재료가 있을 땐 점수가 100점인 것만 필터링
-  const filteredRecipes = crawledRecipes.filter(recipe => {
-    if (activeIngredients.length > 0) {
-      const recInfo = recommendedData.find(rec => rec.title.trim() === recipe.title.trim());
-      return recInfo && recInfo.score === 100;
-    }
-    return true; 
-  }).filter(recipe => selectedCategory === "전체" || recipe.category === selectedCategory);
+  const recipesWithId = useMemo(() => {
+    return crawledRecipes
+      .filter(recipe => {
+        if (activeIngredients.length > 0) {
+          const recInfo = recommendedData.find(rec => rec.title.trim() === recipe.title.trim());
+          return recInfo && recInfo.score === 100;
+        }
+        return true;
+      })
+      .filter(recipe => selectedCategory === "전체" || recipe.category === selectedCategory)
+      .map((recipe, index) => ({ ...recipe, id: recipe.id || index }));
+  }, [activeIngredients, recommendedData, selectedCategory]);
 
   return (
     <div className="main_page_container">
@@ -107,10 +114,37 @@ const toggleBookmark = async (e, recipeId) => { // title 대신 id를 인자로 
           <div className="fridge_header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
             <Button onClick={() => navigate("/reg")}><Plus size={16} /> 재료 등록</Button>
           </div>
-          <div className="search_box">
-            <input id="ingredient-search" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="재료 입력" />
-            <Button onClick={handleAddIngredient}><Search size={16} /></Button>
+          
+          <div className="search_box" style={{ position: "relative" }}>
+            <input 
+              id="ingredient-search" 
+              value={searchTerm} 
+              onChange={(e) => { setSearchTerm(e.target.value); setShowSuggestions(true); }} 
+              placeholder="재료 입력" 
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="suggestion_list">
+                {suggestions.map((ing) => (
+                  <li key={ing.ingredientId} onClick={() => handleAddIngredient(ing.name)}>
+                    {ing.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Button onClick={() => handleAddIngredient()}><Search size={16} /></Button>
           </div>
+
+          <div className="popular_section" style={{ margin: "10px 0" }}>
+            <p style={{ fontSize: "0.8rem", color: "#888" }}>🔥 인기 재료</p>
+            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+              {DUMMY_POPULAR_INGREDIENTS.map((item) => (
+                <button key={item.name} className="popular_tag_btn" onClick={() => handleAddIngredient(item.name)}>
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="tags_container">
             {activeIngredients.map((ing) => (
               <span key={ing} className="ingredient_tag">
@@ -126,53 +160,38 @@ const toggleBookmark = async (e, recipeId) => { // title 대신 id를 인자로 
               {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
-
+          
           <div className="card-wrapper">
-            {filteredRecipes.length > 0 ? (
-              filteredRecipes.map((recipe) => {
-                const recInfo = recommendedData.find(item => item.title.trim() === recipe.title.trim());
-                
-                return (
-                  <div key={recipe.title} className="recipe-card-box">
-                    <Card
-                      title={recipe.title}
-                      category={recipe.category}
-                      image={recipe.thumbnailImageUrl}
-                      isBookmarked={bookmarkedIds.includes(recipe.title)}
-                      onToggleBookmark={(e) => toggleBookmark(e, recipe.title)}
-                      onClick={() => navigate(`/recipe/${encodeURIComponent(recipe.title)}`)}
-                    />
-                    
-                    {/* [보유 재료 강조] 100점인 레시피만 상세 정보 노출 */}
-                    {/* 보유 재료 하이라이트 로직 적용 부분 */}
-                    {activeIngredients.length > 0 && recInfo && recInfo.score === 100 ? (
-                      <div className="recipe_ingredients_box">
-                        {/* 보유 재료 하이라이트 로직 */}
-                        <p className="recipe_ingredients_text">재료: 
-                          {Array.isArray(recInfo.ingredients) ? recInfo.ingredients.map((ing, idx) => {
-                            // 사용자가 입력한(activeIngredients) 재료인지 확인
-                            // [수정 후: "포함" 여부를 확인하는 로직]
-                            // 성빈님이 입력한 재료(activeIngredients) 중 하나라도 
-                            // 레시피 재료명(ing)에 포함되어 있는지 확인합니다.
-                            const isOwned = activeIngredients.some(ownedIng => ing.includes(ownedIng));
-
-                            return (
-                              <span 
-                                key={idx} 
-                                // 보유 재료라면 'ingredient_owned' 클래스를 추가
-                                className={`ingredient_item ${isOwned ? 'ingredient_owned' : ''}`}
-                              >
-                                {ing}{idx < recInfo.ingredients.length - 1 ? ", " : ""}
-                              </span>
-                            );
-                          }) : "정보 없음"}
-                        </p>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })
-            ) : <p>해당 재료에 포함 되는 레시피가 없습니다.</p>}
+            {recipesWithId.map((recipe) => {
+              const recInfo = recommendedData.find(item => item.title.trim() === recipe.title.trim());
+              return (
+                <div key={recipe.id} className="recipe-card-box">
+                  <Card
+                    title={recipe.title}
+                    category={recipe.category}
+                    thumbnailImageUrl={recipe.thumbnailImageUrl} 
+                    isBookmarked={bookmarkedIds.includes(recipe.id)}
+                    onToggleBookmark={(e) => toggleBookmark(e, recipe.id)}
+                    onClick={() => handleRecipeClick(recipe.id, recipe.title)}
+                  />
+                  
+                  {activeIngredients.length > 0 && recInfo && recInfo.score === 100 ? (
+                    <div className="recipe_ingredients_box">
+                      <p className="recipe_ingredients_text">재료: 
+                        {Array.isArray(recInfo.ingredients) ? recInfo.ingredients.map((ing, idx) => {
+                          const isOwned = activeIngredients.some(ownedIng => ing.includes(ownedIng));
+                          return (
+                            <span key={idx} className={`ingredient_item ${isOwned ? 'ingredient_owned' : ''}`}>
+                              {ing}{idx < recInfo.ingredients.length - 1 ? ", " : ""}
+                            </span>
+                          );
+                        }) : "정보 없음"}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </Section>
       </main>
