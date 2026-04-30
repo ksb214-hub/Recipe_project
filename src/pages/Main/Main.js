@@ -12,7 +12,6 @@ import customInstance from "../../api/api";
 import { recipes3 as crawledRecipes } from "../../data/collection/recipes3";
 import { Search, X, Plus } from "lucide-react";
 
-// 인기 검색어 더미 데이터
 const DUMMY_POPULAR_INGREDIENTS = [
   { name: "양파" }, { name: "마늘" }, { name: "계란" }, { name: "대파" }, { name: "감자" }
 ];
@@ -22,15 +21,28 @@ export default function Main() {
 
   const [activeIngredients, setActiveIngredients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [bookmarkedIds, setBookmarkedIds] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [recommendedData, setRecommendedData] = useState([]);
   
+  const [recipes, setRecipes] = useState([]); 
   const [allIngredients, setAllIngredients] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const categories = ["전체", ...new Set(crawledRecipes.map(r => r.category))];
+  /* ---------------------------------------------------------
+     1. 북마크 상태 관리 (LocalStorage 활용)
+     --------------------------------------------------------- */
+  const [bookmarkedIds, setBookmarkedIds] = useState(() => {
+    const saved = localStorage.getItem("localBookmarks");
+    return saved ? JSON.parse(saved) : [];
+  });
 
+  useEffect(() => {
+    localStorage.setItem("localBookmarks", JSON.stringify(bookmarkedIds));
+  }, [bookmarkedIds]);
+
+  /* ---------------------------------------------------------
+     2. 데이터 로드
+     --------------------------------------------------------- */
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -39,11 +51,12 @@ export default function Main() {
         setAllIngredients(ingList); 
         setActiveIngredients(ingList.map(item => item.name));
         
-        // try {
-        //   const bookmarkRes = await customInstance({ url: "/api/recipe/bookmarks", method: "GET" });
-        //   setBookmarkedIds(bookmarkRes.data || []);
-        // } catch (err) { console.warn("북마크 데이터 없음"); }
-      } catch (err) { console.error("데이터 로드 실패:", err); }
+        const recipeRes = await customInstance({ url: "/api/recipes", method: "GET" });
+        const recipeList = recipeRes.data?.data?.content || [];
+        setRecipes(recipeList);
+      } catch (err) { 
+        console.warn("데이터 로드 실패"); 
+      }
     };
     fetchInitialData();
   }, []);
@@ -59,30 +72,19 @@ export default function Main() {
     fetchRecommendations();
   }, [activeIngredients]);
 
+  /* ---------------------------------------------------------
+     3. 핸들러
+     --------------------------------------------------------- */
   const suggestions = useMemo(() => {
     if (!searchTerm) return [];
     return allIngredients.filter(item => item.name.includes(searchTerm)).slice(0, 5);
   }, [searchTerm, allIngredients]);
 
-  // [기능] 조회수 증가 및 페이지 이동 시뮬레이션
-  const handleRecipeClick = async (recipeId, title) => {
-    console.log(`[시뮬레이션] ${recipeId}번 레시피 조회수 증가 API 호출 준비 완료.`);
-    // 나중에 백엔드 API가 준비되면 주석을 해제하세요.
-    /*
-    try {
-      await customInstance({ url: `/api/recipes/${recipeId}/view`, method: "POST" });
-    } catch (err) { console.error("조회수 증가 실패:", err); }
-    */
-    navigate(`/recipe/${encodeURIComponent(title)}`);
-  };
-
-  const toggleBookmark = async (e, recipeId) => {
-    e.stopPropagation();
-    const isBookmarked = bookmarkedIds.includes(recipeId);
-    try {
-      await customInstance({ url: `/api/recipes/${recipeId}/bookmark`, method: isBookmarked ? "DELETE" : "POST" });
-      setBookmarkedIds(prev => isBookmarked ? prev.filter(id => id !== recipeId) : [...prev, recipeId]);
-    } catch (err) { console.error(err); }
+  const toggleBookmark = (e, recipeId) => {
+    e.stopPropagation(); 
+    setBookmarkedIds((prev) => 
+      prev.includes(recipeId) ? prev.filter(id => id !== recipeId) : [...prev, recipeId]
+    );
   };
 
   const handleAddIngredient = (name) => {
@@ -94,8 +96,12 @@ export default function Main() {
     }
   };
 
+  /* ---------------------------------------------------------
+     4. 데이터 가공
+     --------------------------------------------------------- */
   const recipesWithId = useMemo(() => {
-    return crawledRecipes
+    const baseList = recipes.length > 0 ? recipes : crawledRecipes;
+    return baseList
       .filter(recipe => {
         if (activeIngredients.length > 0) {
           const recInfo = recommendedData.find(rec => rec.title.trim() === recipe.title.trim());
@@ -104,12 +110,19 @@ export default function Main() {
         return true;
       })
       .filter(recipe => selectedCategory === "전체" || recipe.category === selectedCategory)
-      .map((recipe, index) => ({ ...recipe, id: recipe.id || index }));
-  }, [activeIngredients, recommendedData, selectedCategory]);
+      .map((recipe, index) => ({
+        ...recipe,
+        id: recipe.id || index + 10000 
+      }));
+  }, [recipes, activeIngredients, recommendedData, selectedCategory]);
+
+  const categories = ["전체", ...new Set(crawledRecipes.map(r => r.category))];
 
   return (
     <div className="main_page_container">
       <main className="con">
+        
+        {/* 1. 재료 관리 섹션 */}
         <Section title="재료 검색 및 관리">
           <div className="fridge_header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
             <Button onClick={() => navigate("/reg")}><Plus size={16} /> 재료 등록</Button>
@@ -117,7 +130,7 @@ export default function Main() {
           
           <div className="search_box" style={{ position: "relative" }}>
             <input 
-              id="ingredient-search" 
+              id="ingredient-search"
               value={searchTerm} 
               onChange={(e) => { setSearchTerm(e.target.value); setShowSuggestions(true); }} 
               placeholder="재료 입력" 
@@ -125,24 +138,11 @@ export default function Main() {
             {showSuggestions && suggestions.length > 0 && (
               <ul className="suggestion_list">
                 {suggestions.map((ing) => (
-                  <li key={ing.ingredientId} onClick={() => handleAddIngredient(ing.name)}>
-                    {ing.name}
-                  </li>
+                  <li key={ing.ingredientId} onClick={() => handleAddIngredient(ing.name)}>{ing.name}</li>
                 ))}
               </ul>
             )}
             <Button onClick={() => handleAddIngredient()}><Search size={16} /></Button>
-          </div>
-
-          <div className="popular_section" style={{ margin: "10px 0" }}>
-            <p style={{ fontSize: "0.8rem", color: "#888" }}>🔥 인기 재료</p>
-            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-              {DUMMY_POPULAR_INGREDIENTS.map((item) => (
-                <button key={item.name} className="popular_tag_btn" onClick={() => handleAddIngredient(item.name)}>
-                  {item.name}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="tags_container">
@@ -154,11 +154,35 @@ export default function Main() {
           </div>
         </Section>
 
+        {/* 2. BEST 요리모음 섹션 (등록 버튼 추가) */}
         <Section title="BEST 요리모음">
-          <div className="filter_box">
-            <select value={selectedCategory} className="drop_nav" onChange={(e) => setSelectedCategory(e.target.value)}>
-              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
+          <div className="section_header_actions" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '20px' 
+          }}>
+            {/* 카테고리 필터 */}
+            <div className="filter_box">
+              <select 
+                value={selectedCategory} 
+                className="drop_nav" 
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+
+            {/* 첫 번째 코드와 동일한 레시피 등록 버튼 추가 */}
+            <Button
+              onClick={() => navigate("/recipe-reg")}
+              className="recipe_reg_btn"
+              variant="outline"
+              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              <Plus size={16} />
+              레시피 등록
+            </Button>
           </div>
           
           <div className="card-wrapper">
@@ -172,10 +196,10 @@ export default function Main() {
                     thumbnailImageUrl={recipe.thumbnailImageUrl} 
                     isBookmarked={bookmarkedIds.includes(recipe.id)}
                     onToggleBookmark={(e) => toggleBookmark(e, recipe.id)}
-                    onClick={() => handleRecipeClick(recipe.id, recipe.title)}
+                    onClick={() => navigate(`/recipe/${recipe.id}`)}
                   />
                   
-                  {activeIngredients.length > 0 && recInfo && recInfo.score === 100 ? (
+                  {activeIngredients.length > 0 && recInfo && recInfo.score === 100 && (
                     <div className="recipe_ingredients_box">
                       <p className="recipe_ingredients_text">재료: 
                         {Array.isArray(recInfo.ingredients) ? recInfo.ingredients.map((ing, idx) => {
@@ -188,7 +212,7 @@ export default function Main() {
                         }) : "정보 없음"}
                       </p>
                     </div>
-                  ) : null}
+                  )}
                 </div>
               );
             })}

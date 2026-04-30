@@ -1,49 +1,70 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import "./RecipeRegPage.css";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import customInstance from "../../api/api"; 
+import { Heart } from "lucide-react";
 
 function RecipeRegPage() {
+  const navigate = useNavigate();
+
   /* ---------------------------------------------------------
-     1. 상태 관리 (State)
+     1. 상태 관리
      --------------------------------------------------------- */
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState("");
-  // 선택된 재료 목록 (ID와 양)
   const [ingredients, setIngredients] = useState([{ ingredientId: "", amount: "" }]);
-  // 조리 단계 목록
   const [steps, setSteps] = useState([{ stepNo: 1, description: "", cookingImageUrl: "" }]);
   
-  const [recipes, setRecipes] = useState([]); // 등록된 레시피 목록
-  const [availableIngredients, setAvailableIngredients] = useState([]); // 서버에서 가져온 선택 가능한 재료들
+  const [recipes, setRecipes] = useState([]); 
+  const [availableIngredients, setAvailableIngredients] = useState([]); 
+  const [bookmarkedIds, setBookmarkedIds] = useState([]); // 정제된 숫자형 ID 배열 저장
   const [loading, setLoading] = useState(false);
 
   /* ---------------------------------------------------------
-     2. 서버 데이터 로드 (Fetch)
+     2. 서버 데이터 로드 (Fetch) - 북마크 파싱 강화
      --------------------------------------------------------- */
   const fetchData = useCallback(async () => {
     try {
-      // 레시피 목록 가져오기
+      // 1. 레시피 로드
       const recipeRes = await customInstance({ url: "/api/recipes", method: "GET" });
-      const recipeData = recipeRes.data?.data?.content || recipeRes.data?.content || [];
-      setRecipes(recipeData);
+      const recipeList = recipeRes.data?.data?.content || recipeRes.data?.content || [];
+      setRecipes(recipeList);
 
-      // ✅ [중요 수정] 재료 목록 가져오기 경로 수정
-      // 아까 RegPage에서 확인한 것처럼 서버는 'content' 키 안에 배열을 담아줍니다.
+      // 2. 재료 로드
       const ingRes = await customInstance({ url: "/api/ingredients", method: "GET" });
-      
-      console.log("📍 가져온 재료 원본 데이터:", ingRes.data);
-
       const rawIngData = ingRes.data;
-      const finalIngList = rawIngData.content || (rawIngData.data && rawIngData.data.content) || rawIngData.data || [];
-      
-      console.log("✅ 추출된 재료 배열:", finalIngList);
+      const finalIngList = rawIngData.content || rawIngData.data?.content || rawIngData.data || [];
       setAvailableIngredients(finalIngList);
 
+      // 3. 북마크 로드 및 정제
+      const bookmarkRes = await customInstance({ url: "/api/recipe/bookmarks", method: "GET" });
+      
+      console.log("🔍 서버 북마크 원본 응답:", bookmarkRes.data);
+
+      let rawBookmarks = [];
+      // 응답 형태에 따른 분기 처리
+      if (Array.isArray(bookmarkRes.data)) {
+        rawBookmarks = bookmarkRes.data;
+      } else if (bookmarkRes.data?.data) {
+        rawBookmarks = bookmarkRes.data.data;
+      } else if (bookmarkRes.data?.content) {
+        rawBookmarks = bookmarkRes.data.content;
+      }
+
+      // [핵심] 객체 배열이면 ID만 뽑고, 모든 ID를 '숫자' 타입으로 통일
+      const cleanedIds = rawBookmarks.map(item => {
+        if (typeof item === 'object' && item !== null) return Number(item.id || item.recipeId);
+        return Number(item);
+      }).filter(id => !isNaN(id));
+
+      console.log("✅ 정제된 북마크 ID 목록:", cleanedIds);
+      setBookmarkedIds(cleanedIds);
+
     } catch (err) {
-      console.error("데이터 로드 실패:", err);
+      console.error("❌ 데이터 로드 실패:", err);
     }
   }, []);
 
@@ -52,22 +73,51 @@ function RecipeRegPage() {
   }, [fetchData]);
 
   /* ---------------------------------------------------------
-     3. 사용자 입력 핸들러 (UI Logic)
+     3. 핸들러 (북마크, 등록 등)
      --------------------------------------------------------- */
-  // 재료 입력칸 추가
+  
+  const toggleBookmark = async (e, recipeId) => {
+    e.stopPropagation();
+    if (!recipeId) return;
+
+    const targetId = Number(recipeId); // 타입 통일
+    const isCurrentlyBookmarked = bookmarkedIds.includes(targetId);
+    
+    try {
+      const method = isCurrentlyBookmarked ? "DELETE" : "POST";
+      await customInstance({
+        url: `/api/recipes/${targetId}/bookmark`,
+        method: method
+      });
+
+      setBookmarkedIds(prev => 
+        isCurrentlyBookmarked 
+          ? prev.filter(id => id !== targetId) 
+          : [...prev, targetId]
+      );
+
+      console.log(`✅ ${targetId}번 북마크 ${isCurrentlyBookmarked ? '해제' : '등록'} 완료`);
+
+    } catch (err) {
+      if (err.response?.status === 409) {
+        console.warn("⚠️ 서버와 상태 불일치(409). 새로고침 실행.");
+        fetchData(); 
+      } else {
+        console.error("❌ 북마크 통신 에러:", err);
+      }
+    }
+  };
+
   const addIngredient = () => setIngredients([...ingredients, { ingredientId: "", amount: "" }]);
   
-  // 특정 인덱스의 재료 필드(ID 또는 양) 변경
   const handleIngredientChange = (index, field, value) => {
     const newIng = [...ingredients];
     newIng[index][field] = value;
     setIngredients(newIng);
   };
 
-  // 조리 단계 추가
   const addStep = () => setSteps([...steps, { stepNo: steps.length + 1, description: "", cookingImageUrl: "" }]);
   
-  // 조리 단계 설명 변경
   const handleStepChange = (index, field, value) => {
     const newSteps = [...steps];
     newSteps[index][field] = value;
@@ -75,12 +125,11 @@ function RecipeRegPage() {
   };
 
   /* ---------------------------------------------------------
-     4. 레시피 등록 실행 (POST)
+     4. 레시피 등록 실행
      --------------------------------------------------------- */
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
     
-    // 유효한 재료만 필터링 및 숫자 변환
     const validIngredients = ingredients
       .filter(ing => ing.ingredientId !== "" && ing.amount.trim() !== "")
       .map(ing => ({ 
@@ -99,24 +148,20 @@ function RecipeRegPage() {
         description: description.trim(),
         thumbnailImageUrl: thumbnailImageUrl.trim() || null,
         ingredients: validIngredients,
-        // 비어있는 단계는 제외하고 순번(stepNo) 재부여
         steps: steps
           .filter(s => s.description.trim() !== "")
           .map((s, i) => ({ ...s, stepNo: i + 1 }))
       };
 
       await customInstance({ url: "/api/recipes", method: "POST", data: recipeData });
-      
       alert("🎉 레시피가 등록되었습니다!");
       
-      // 입력 폼 초기화
       setTitle(""); setDescription(""); setThumbnailImageUrl("");
       setIngredients([{ ingredientId: "", amount: "" }]);
       setSteps([{ stepNo: 1, description: "", cookingImageUrl: "" }]);
       
-      fetchData(); // 등록 후 목록 새로고침
+      fetchData(); 
     } catch (err) {
-      console.error("등록 실패:", err.response?.data);
       alert(`등록 실패: ${err.response?.data?.message || "서버 에러"}`);
     } finally {
       setLoading(false);
@@ -129,14 +174,12 @@ function RecipeRegPage() {
         <h2>새 레시피 작성</h2>
         
         <form className="recipe_input_section" onSubmit={handleRegister}>
-          {/* 기본 정보 */}
           <section className="form_group">
             <Input label="레시피 제목" value={title} onChange={(e) => setTitle(e.target.value)} />
             <Input label="간략한 설명" value={description} onChange={(e) => setDescription(e.target.value)} />
             <Input label="대표 이미지 URL" value={thumbnailImageUrl} onChange={(e) => setThumbnailImageUrl(e.target.value)} />
           </section>
 
-          {/* 재료 설정 섹션 */}
           <section className="form_group">
             <h3>재료 설정</h3>
             {ingredients.map((ing, index) => (
@@ -148,7 +191,6 @@ function RecipeRegPage() {
                 >
                   <option value="">재료 선택</option>
                   {availableIngredients.map(item => (
-                    // 서버에서 가져온 availableIngredients가 정상적으로 로드되어야 출력됨
                     <option key={item.id} value={item.id}>{item.name}</option>
                   ))}
                 </select>
@@ -156,16 +198,8 @@ function RecipeRegPage() {
               </div>
             ))}
             <button type="button" className="add_btn" onClick={addIngredient}>+ 재료 추가</button>
-            
-            {/* ⚠️ 재료가 0개일 때만 경고 문구 표시 */}
-            {!loading && availableIngredients.length === 0 && (
-              <p className="error_text">
-                ⚠️ 서버에 등록된 재료가 없습니다. [식재료 관리] 페이지에서 재료를 먼저 등록해주세요.
-              </p>
-            )}
           </section>
 
-          {/* 조리 순서 섹션 */}
           <section className="form_group">
             <h3>조리 순서</h3>
             {steps.map((step, index) => (
@@ -177,21 +211,37 @@ function RecipeRegPage() {
             <button type="button" className="add_btn" onClick={addStep}>+ 단계 추가</button>
           </section>
 
-          <Button type="submit" variant="primary" disabled={loading || availableIngredients.length === 0} style={{ width: "100%", height: "50px", fontSize: "16px" }}>
+          <Button type="submit" variant="primary" disabled={loading} style={{ width: "100%", height: "50px", fontSize: "16px" }}>
             {loading ? "레시피 저장 중..." : "레시피 등록 완료"}
           </Button>
         </form>
 
         <div className="divider"></div>
 
-        {/* 하단 레시피 목록 미리보기 */}
         <section className="recipe_list_section">
           <h3>현재 등록된 레시피 ({recipes.length})</h3>
           <div className="recipe_grid">
             {recipes.length > 0 ? (
               recipes.map((r, idx) => (
-                <div key={r.id || idx} className="recipe_card">
-                  <strong>{r.title}</strong>
+                <div 
+                  key={r.id || idx} 
+                  className="recipe_card" 
+                  onClick={() => navigate(`/recipe/${r.id}`)}
+                  style={{ cursor: "pointer", position: "relative" }} 
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <strong>{r.title}</strong>
+                    <button 
+                      onClick={(e) => toggleBookmark(e, r.id)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
+                    >
+                      <Heart 
+                        size={20} 
+                        fill={bookmarkedIds.includes(Number(r.id)) ? "#ff4d4f" : "none"} 
+                        stroke={bookmarkedIds.includes(Number(r.id)) ? "#ff4d4f" : "#ccc"} 
+                      />
+                    </button>
+                  </div>
                   <p>{r.description}</p>
                 </div>
               ))

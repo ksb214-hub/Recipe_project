@@ -141,3 +141,23 @@
 .info_buttons .del_text {
   color: #ff6b6b;
 }
+.recipe_card {
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 12px;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.recipe_card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card_header {
+  margin-bottom: 8px;
+}
+
+.bookmark_icon_btn:hover {
+  transform: scale(1.1);
+}
