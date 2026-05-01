@@ -19,7 +19,7 @@ import SettingsPage from "./pages/Setting/SettingPage";
 import RecipeDetail from './pages/RecipeDetail/RecipeDetail';
 
 import ProfilePage from "./pages/Profile/ProfilePage";
-
+import RecipeRecommendPage from "./pages/RecipeRecommendPage/RecipeRecommendPage";
 // src/App.js 수정 버전
 function App() {
   return (
@@ -49,6 +49,8 @@ function App() {
             {/* :title을 통해 URL 파라미터를 넘겨줍니다 */}
             <Route path="/recipe/:title" element={<RecipeDetail />} />
             <Route path="/profile" element = {<ProfilePage/>} />
+            {/* ✅ 신규: 레시피 추천 페이지 연동 */}
+            <Route path="/recommend" element={<Layout><RecipeRecommendPage /></Layout>} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
         </main>
