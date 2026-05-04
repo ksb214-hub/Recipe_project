@@ -99,24 +99,29 @@ export default function Main() {
   /* ---------------------------------------------------------
      4. 데이터 가공
      --------------------------------------------------------- */
-  const recipesWithId = useMemo(() => {
-    const baseList = recipes.length > 0 ? recipes : crawledRecipes;
-    return baseList
-      .filter(recipe => {
-        if (activeIngredients.length > 0) {
-          const recInfo = recommendedData.find(rec => rec.title.trim() === recipe.title.trim());
-          return recInfo && recInfo.score === 100;
-        }
-        return true;
-      })
-      .filter(recipe => selectedCategory === "전체" || recipe.category === selectedCategory)
-      .map((recipe, index) => ({
-        ...recipe,
-        id: recipe.id || index + 10000 
-      }));
-  }, [recipes, activeIngredients, recommendedData, selectedCategory]);
+    const recipesWithId = useMemo(() => {
+        // 1. 기준 리스트 설정 (DB 데이터 우선, 없으면 크롤링 데이터)
+        const baseList = recipes.length > 0 ? recipes : crawledRecipes;
 
-  const categories = ["전체", ...new Set(crawledRecipes.map(r => r.category))];
+        return baseList
+          .filter(recipe => {
+            // 2. 재료 필터링 (추천 데이터와 타이틀 매칭)
+            if (activeIngredients.length > 0) {
+              const recInfo = recommendedData.find(rec => rec.title.trim() === recipe.title.trim());
+              return recInfo && recInfo.score === 100;
+            }
+            return true;
+          })
+          // 3. 카테고리 필터링
+          .filter(recipe => selectedCategory === "전체" || recipe.category === selectedCategory)
+          // 4. 데이터 가공 (id 대신 recipetitle 사용 및 고유값 부여)
+          .map((recipe, index) => ({
+            ...recipe,
+            recipetitle: recipe.title, // 상세 페이지 이동 시 사용할 파라미터
+            id: recipe.id || index + 10000 // 리스트 렌더링 key용 id는 유지하는 것이 좋습니다
+          }));
+      }, [recipes, activeIngredients, recommendedData, selectedCategory]);
+      const categories = ["전체", ...new Set(crawledRecipes.map(r => r.category))];
 
   return (
     <div className="main_page_container">
@@ -196,7 +201,8 @@ export default function Main() {
                     thumbnailImageUrl={recipe.thumbnailImageUrl} 
                     isBookmarked={bookmarkedIds.includes(recipe.id)}
                     onToggleBookmark={(e) => toggleBookmark(e, recipe.id)}
-                    onClick={() => navigate(`/recipe/${recipe.id}`)}
+                    // ✅ id 대신 recipe.recipetitle(또는 recipe.title)로 이동
+                    onClick={() => navigate(`/recipe/${encodeURIComponent(recipe.recipetitle)}`)}
                   />
                   
                   {activeIngredients.length > 0 && recInfo && recInfo.score === 100 && (
