@@ -5,6 +5,7 @@ const API_BASE = "http://localhost:8081/";
 const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true, // 👈 이 줄을 추가해 보세요!
 });
 
 // [메모리 주입 함수]
