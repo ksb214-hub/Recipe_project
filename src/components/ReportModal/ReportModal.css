@@ -1,0 +1,123 @@
+.modal_overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.report_modal {
+  background: #fff;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 20px;
+  overflow: hidden;
+  animation: modalPop 0.3s ease-out;
+}
+
+@keyframes modalPop {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal_header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.modal_header h2 { font-size: 1.2rem; font-weight: 700; margin: 0; }
+
+.modal_body { padding: 20px; }
+
+.target_info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fff9f0;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.report_types {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.type_btn {
+  flex: 1;
+  padding: 10px 5px;
+  border: 1px solid #eee;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type_btn.active {
+  background: #00B341;
+  color: #fff;
+  border-color: #00B341;
+}
+
+.input_group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.input_group textarea {
+  width: 100%;
+  height: 120px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  resize: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.submit_btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit_btn:disabled { background: #ccc; cursor: not-allowed; }
+
+.submission_success {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.submission_success p { color: #333; font-weight: 600; line-height: 1.5; }
