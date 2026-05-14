@@ -1,0 +1,76 @@
+.edit_header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+.edit_header h1 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+
+.edit_content { padding: 20px; padding-bottom: 100px; }
+
+.form_section { margin-bottom: 30px; }
+
+.section_title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section_title label { font-weight: 700; color: #333; }
+
+.input_group { margin-bottom: 15px; }
+.input_group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #666; }
+
+.input_group input, .input_group textarea, .dynamic_row input, .dynamic_row_col textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.dynamic_row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+.dynamic_row input { flex: 1; }
+
+.dynamic_row_col { position: relative; margin-bottom: 15px; }
+.step_number { 
+  width: 24px; height: 24px; background: #00B341; color: #fff; 
+  border-radius: 50%; display: flex; justify-content: center; 
+  align-items: center; font-size: 0.75rem; margin-bottom: 8px;
+}
+
+.add_btn {
+  display: flex; align-items: center; gap: 4px; padding: 5px 10px;
+  background: #f0fdf4; color: #00B341; border: none; border-radius: 6px;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+}
+
+.del_btn { background: none; border: none; color: #ff4d4f; cursor: pointer; }
+.step_del_btn {
+  position: absolute; right: 0; top: 0; font-size: 0.8rem; color: #999;
+  background: none; border: none; cursor: pointer;
+}
+
+.save_full_btn {
+  position: fixed; bottom: 20px; left: 20px; right: 20px;
+  padding: 16px; background: #333; color: #fff; border: none;
+  border-radius: 15px; display: flex; justify-content: center;
+  align-items: center; gap: 10px; font-weight: 700; font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.loading_full {
+  height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 10px; color: #666;
+}
+
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
