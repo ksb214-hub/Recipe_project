@@ -69,3 +69,26 @@
 .logout_btn {
   margin-left: 2px;
 }
+
+.user_profile_link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nickname_display {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  /* 모바일에서 닉네임이 너무 길면 숨기기 (선택사항) */
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .nickname_display {
+    display: none; /* 아주 작은 화면에선 아이콘만 표시 */
+  }
+}

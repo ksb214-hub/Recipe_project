@@ -1,5 +1,4 @@
-// src/App.js
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // 🔥 Layout (Header 포함)
 import Layout from "./layout/Layout";
@@ -8,54 +7,59 @@ import Layout from "./layout/Layout";
 import Main from "./pages/Main/Main";
 import Login from "./pages/Login/Login";
 import SearchPage from "./pages/Search/SearchPage";
-import RegPage from "./pages/Reg/RegPage";   // 🔥 추가
+import RegPage from "./pages/Reg/RegPage";
 import RecipeRegPage from "./pages/RecipeReg/RecipeRegPage";
 import FindId from "./pages/Find/FindId/FindId";
 import FindPw from "./pages/Find/FindPw/FindPw";
 import SignUpPage from "./pages/SignUp/SignUpPage";
-// src/App.js 상단에 추가
 import ExpensePage from "./pages/Expense/ExpensePage";
 import SettingsPage from "./pages/Setting/SettingPage";
 import RecipeDetail from './pages/RecipeDetail/RecipeDetail';
-
 import ProfilePage from "./pages/Profile/ProfilePage";
 import RecipeRecommendPage from "./pages/RecipeRecommendPage/RecipeRecommendPage";
-// src/App.js 수정 버전
+import MyIngredientsPage from "./pages/MyIngredients/MyIngredientsPage";
+import MyRecipePage from "./pages/MyRecipe/MyRecipePage";
+import RecipeEditPage from "./pages/RecipeEdit/RecipeEditPage";
+
 function App() {
   return (
     <BrowserRouter>
-      {/* 📱 모바일 프레임 컨테이너 시작 */}
       <div className="App"> 
         <main>
           <Routes>
-            {/* 공통 Layout 적용 */}
+            {/* 1. 기본 경로 처리 */}
+            <Route path="/" element={<Navigate to="/main" replace />} />
+
+            {/* 2. Layout(Header 포함)이 적용되는 페이지들 */}
             <Route path="/main" element={<Layout><Main /></Layout>} />
-            <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/search" element={<Layout><SearchPage /></Layout>} />
-            <Route path="/reg" element={<Layout><RegPage /></Layout>} />
-            <Route path="/find-id" element={<Layout><FindId /></Layout>} />
-            <Route path="/find-pw" element={<Layout><FindPw /></Layout>} />
-            <Route path="/recipe-reg" element={<Layout><RecipeRegPage /></Layout>}/>
-            <Route path="/join" element={<SignUpPage />} /> {/* 여기도 프레임 안으로 들어갑니다 */}
-            <Route path="/expense" element={<ExpensePage />} />
-            {/**
-           * [추가된 경로]
-           * 주소창에 http://localhost:3000/settings 라고 입력하거나
-           * Header에서 톱니바퀴를 눌렀을 때 SettingsPage가 나타나게 합니다.
-           */}
-            <Route path="/settings" element={<SettingsPage />} />
-            {/* ✅ 레시피 상세 페이지 (설계 문서 반영) */}
-            
-            {/* :title을 통해 URL 파라미터를 넘겨줍니다 */}
-            <Route path="/recipe/:title" element={<RecipeDetail />} />
-            <Route path="/profile" element = {<ProfilePage/>} />
-            {/* ✅ 신규: 레시피 추천 페이지 연동 */}
             <Route path="/recommend" element={<Layout><RecipeRecommendPage /></Layout>} />
-            <Route path="*" element={<div>404 Not Found</div>} />
+            <Route path="/reg" element={<Layout><RegPage /></Layout>} />
+            <Route path="/recipe-reg" element={<Layout><RecipeRegPage /></Layout>}/>
+            <Route path="/my-ingredients" element={<Layout><MyIngredientsPage /></Layout>} />
+            <Route path="/my-recipes" element={<Layout><MyRecipePage /></Layout>} />
+            
+            {/* 레시피 상세/등록/수정 (헤더가 필요한 경우 Layout으로 감싸기) */}
+            <Route path="/recipes/new" element={<Layout><RecipeEditPage /></Layout>} />
+            <Route path="/recipes/edit/:id" element={<Layout><RecipeEditPage /></Layout>} />
+            <Route path="/recipe/:id" element={<Layout><RecipeDetail /></Layout>} />
+
+            {/* 유저 관련 서비스 */}
+            <Route path="/expense" element={<Layout><ExpensePage /></Layout>} />
+            <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
+            <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
+
+            {/* 3. Layout(Header)이 필요 없는 페이지들 (로그인/가입 등) */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/join" element={<SignUpPage />} />
+            <Route path="/find-id" element={<FindId />} />
+            <Route path="/find-pw" element={<FindPw />} />
+
+            {/* 4. 404 페이지 */}
+            <Route path="*" element={<div className="p-20 text-center">404 Not Found</div>} />
           </Routes>
         </main>
       </div>
-      {/* 📱 모바일 프레임 컨테이너 끝 */}
     </BrowserRouter>
   );
 }

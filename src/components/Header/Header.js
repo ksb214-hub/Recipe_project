@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// 1. useNavigate 경고/에러 해결을 위해 Link만 남기고 제거했습니다.
 import { Link } from "react-router-dom"; 
 import { 
   User, 
@@ -7,7 +6,8 @@ import {
   LogOut, 
   Search, 
   Wallet, 
-  LogIn 
+  LogIn,
+  BookOpen 
 } from "lucide-react";
 import "./Header.css";
 
@@ -17,7 +17,6 @@ import "./Header.css";
  * - 로그인 상태(닉네임)를 감지하여 메뉴를 유동적으로 변경합니다.
  */
 export default function Header() {
-  // 2. 사용하지 않는 navigate 선언부를 삭제하여 ESLint 경고를 해결했습니다.
   const [nickname, setNickname] = useState(null);
 
   /* =========================================================
@@ -36,6 +35,10 @@ export default function Header() {
     };
 
     updateHeader();
+    
+    // 다른 탭에서 로그인/로그아웃 했을 때를 대비해 이벤트 리스너 추가 (선택사항)
+    window.addEventListener('storage', updateHeader);
+    return () => window.removeEventListener('storage', updateHeader);
   }, []);
 
   /* =========================================================
@@ -53,7 +56,7 @@ export default function Header() {
       
       alert("성공적으로 로그아웃되었습니다.");
       
-      // 3. 페이지 새로고침과 함께 메인으로 이동 (navigate 대신 사용하여 상태 완전 박멸)
+      // 3. 페이지 새로고침과 함께 메인으로 이동
       window.location.href = "/main";
     }
   };
@@ -76,6 +79,11 @@ export default function Header() {
           
           <Link to="/expense" className="nav_item" title="지출 관리">
             <Wallet className="size-5" />
+          </Link>
+
+          {/* 나의 레시피 메뉴 */}
+          <Link to="/my-recipes" className="nav_item" title="나의 레시피">
+            <BookOpen className="size-5" />
           </Link>
 
           {/* 로그인 상태에 따른 조건부 메뉴 */}
