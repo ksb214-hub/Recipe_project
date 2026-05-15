@@ -19,7 +19,7 @@ function SignUpPage() {
   const [errors, setErrors] = useState({});
   const [debouncedValue, setDebouncedValue] = useState("");
 
-  // [최적화] 타이핑이 멈춘 후 500ms 뒤에 중복 체크 실행
+  // [최적화] 타이핑 중단 500ms 후 중복 체크 대상값 업데이트
   useEffect(() => {
     const handler = setTimeout(() => {
       if (currentStep === 1) setDebouncedValue(form.loginId);
@@ -28,6 +28,7 @@ function SignUpPage() {
     return () => clearTimeout(handler);
   }, [form.loginId, form.nickname, currentStep]);
 
+  // [중복 체크 실행] 값이 4자 이상일 때만 API 호출
   useEffect(() => {
     if (debouncedValue.length >= 4) {
       if (currentStep === 1) checkDuplicate("id", debouncedValue);
@@ -35,38 +36,59 @@ function SignUpPage() {
     }
   }, [debouncedValue, currentStep]);
 
+  /**
+   * [중복 확인 API]
+   * 성빈님이 주신 CSS의 .error_text와 .input_error를 활용하도록 에러 상태를 제어합니다.
+   */
   const checkDuplicate = async (type, value) => {
     try {
-      const endpoint = type === "id" ? "/api/auth/check-id" : "/api/auth/check-nickname";
-      const paramKey = type === "id" ? "loginId" : "nickname";
+      const isId = type === "id";
+      const endpoint = isId ? "/api/auth/check-id" : "/api/auth/check-nickname";
+      const paramKey = isId ? "loginId" : "nickname";
 
       const response = await api.get(endpoint, { params: { [paramKey]: value } });
-      return response.data.isAvailable;
+      const isAvailable = response.data.isAvailable;
+
+      if (!isAvailable) {
+        setErrors((prev) => ({
+          ...prev,
+          [isId ? "loginId" : "nickname"]: `이미 사용 중인 ${isId ? "아이디" : "닉네임"}입니다.`
+        }));
+      } else {
+        // 중복이 아닐 경우 에러 제거
+        setErrors((prev) => ({ ...prev, [isId ? "loginId" : "nickname"]: "" }));
+      }
     } catch (error) {
-      // 서버 에러(500)일 때는 중복 체크 결과를 알 수 없으므로, 
-      // 아이디가 이미 사용 중이라는 메시지를 띄우지 않도록 처리
-      console.error("중복 확인 API 에러:", error);
-      return true; // 에러일 때는 일단 통과시키거나, 별도 에러 처리를 하는 것이 좋습니다.
+      console.error("중복 확인 중 에러 발생:", error);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    // 입력 중에는 즉시 해당 필드의 에러 메시지 초기화
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  /**
+   * [단계 이동] CSS의 에러 스타일을 트리거하기 위해 유효성 검사 포함
+   */
   const handleNext = async () => {
-    // 다음 단계로 넘어가기 전 최종 검증
-    if (currentStep === 1 && (!form.loginId || errors.loginId)) return;
-    if (currentStep === 2 && (!form.password || form.password !== form.passwordConfirm)) {
-      setErrors({ passwordConfirm: "비밀번호가 일치하지 않습니다." });
+    if (currentStep === 1) {
+      if (!form.loginId || errors.loginId) return; // 아이디 미입력 또는 중복 시 중단
+    }
+    if (currentStep === 2) {
+      if (!form.password || form.password !== form.passwordConfirm) {
+        setErrors({ passwordConfirm: "비밀번호가 일치하지 않습니다." });
+        return;
+      }
+    }
+    if (currentStep === 3) {
+      if (!form.nickname || errors.nickname) return;
+      handleSubmit(); // 마지막 단계는 가입 실행
       return;
     }
-    if (currentStep === 3 && (!form.nickname || errors.nickname)) return;
-
-    if (currentStep === 3) handleSubmit();
-    else setCurrentStep((prev) => prev + 1);
+    setCurrentStep((prev) => prev + 1);
   };
 
   const handleSubmit = async () => {
@@ -75,7 +97,7 @@ function SignUpPage() {
       await api.post("/api/auth/signup", {
         loginId: form.loginId,
         password: form.password,
-        nickname: form.nickname
+        nickname: form.nickname,
       });
       setCurrentStep(4);
     } catch (error) {
@@ -93,29 +115,47 @@ function SignUpPage() {
             <h2 className="signup_title">제로냉 회원가입</h2>
             <div className="progress_bar_container">
               <div className="progress_bar">
-                <motion.div className="progress_fill" animate={{ width: `${(currentStep / 3) * 100}%` }} />
+                <motion.div 
+                  className="progress_fill" 
+                  animate={{ width: `${(currentStep / 3) * 100}%` }} 
+                />
               </div>
             </div>
           </>
         )}
 
         <AnimatePresence mode="wait">
+          {/* STEP 1: 아이디 */}
           {currentStep === 1 && (
             <motion.div key="step1" className="step_content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <h3>아이디를 정해주세요</h3>
-              <input name="loginId" value={form.loginId} onChange={handleChange} placeholder="아이디 입력" 
-                     className={errors.loginId ? "input_error" : "input_field"} autoComplete="username" />
+              <h3 className="signup_subtitle">아이디를 정해주세요</h3>
+              <input 
+                name="loginId" 
+                value={form.loginId} 
+                onChange={handleChange} 
+                placeholder="아이디 입력 (4자 이상)" 
+                className={errors.loginId ? "input_error" : "input_field"} 
+              />
               {errors.loginId && <p className="error_text">{errors.loginId}</p>}
-              <button className="next_button" onClick={handleNext}>다음 단계 <ArrowRight size={18}/></button>
+              <button className="next_button" onClick={handleNext}>
+                다음 단계 <ArrowRight size={18} />
+              </button>
             </motion.div>
           )}
 
+          {/* STEP 2: 비밀번호 */}
           {currentStep === 2 && (
             <motion.div key="step2" className="step_content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <h3>비밀번호 설정</h3>
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="비밀번호" className="input_field" autoComplete="new-password" />
-              <input name="passwordConfirm" type="password" value={form.passwordConfirm} onChange={handleChange} placeholder="비밀번호 확인" 
-                     className={errors.passwordConfirm ? "input_error" : "input_field"} autoComplete="new-password" />
+              <h3 className="signup_subtitle">비밀번호 설정</h3>
+              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="비밀번호" className="input_field" />
+              <input 
+                name="passwordConfirm" 
+                type="password" 
+                value={form.passwordConfirm} 
+                onChange={handleChange} 
+                placeholder="비밀번호 확인" 
+                className={errors.passwordConfirm ? "input_error" : "input_field"} 
+              />
               {errors.passwordConfirm && <p className="error_text">{errors.passwordConfirm}</p>}
               <div className="button_group">
                 <button className="prev_button" onClick={() => setCurrentStep(1)}>이전</button>
@@ -124,23 +164,32 @@ function SignUpPage() {
             </motion.div>
           )}
 
+          {/* STEP 3: 닉네임 */}
           {currentStep === 3 && (
             <motion.div key="step3" className="step_content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <h3>거의 다 왔어요!</h3>
-              <input name="nickname" value={form.nickname} onChange={handleChange} placeholder="닉네임 입력" 
-                     className={errors.nickname ? "input_error" : "input_field"} autoComplete="nickname" />
+              <h3 className="signup_subtitle">거의 다 왔어요!</h3>
+              <input 
+                name="nickname" 
+                value={form.nickname} 
+                onChange={handleChange} 
+                placeholder="닉네임 입력" 
+                className={errors.nickname ? "input_error" : "input_field"} 
+              />
               {errors.nickname && <p className="error_text">{errors.nickname}</p>}
               <div className="button_group">
                 <button className="prev_button" onClick={() => setCurrentStep(2)}>이전</button>
-                <button className="submit_button" onClick={handleNext} disabled={loading}>{loading ? "가입 중..." : "가입 완료"}</button>
+                <button className="submit_button" onClick={handleNext} disabled={loading}>
+                  {loading ? "가입 중..." : "가입 완료"}
+                </button>
               </div>
             </motion.div>
           )}
 
+          {/* STEP 4: 완료 */}
           {currentStep === 4 && (
             <motion.div key="step4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="success_content">
-              <Check size={48} />
-              <h2>반가워요, {form.nickname}님!</h2>
+              <Check size={48} color="#764ba2" style={{ marginBottom: "20px" }} />
+              <h2 className="signup_title">반가워요, {form.nickname}님!</h2>
               <button className="login_redirect_button" onClick={() => navigate("/login")}>로그인하러 가기</button>
             </motion.div>
           )}

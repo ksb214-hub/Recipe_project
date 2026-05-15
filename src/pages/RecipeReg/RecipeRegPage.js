@@ -20,17 +20,17 @@ function RecipeRegPage() {
   
   const [recipes, setRecipes] = useState([]); 
   const [availableIngredients, setAvailableIngredients] = useState([]); 
-  const [bookmarkedIds, setBookmarkedIds] = useState([]); // 정제된 숫자형 ID 배열 저장
+  const [bookmarkedIds, setBookmarkedIds] = useState([]); // GET 제거 후 빈 배열로 초기화
   const [loading, setLoading] = useState(false);
 
   /* ---------------------------------------------------------
-     2. 서버 데이터 로드 (Fetch) - 북마크 파싱 강화
+     2. 서버 데이터 로드 (GET 요청 제거 및 수정)
      --------------------------------------------------------- */
   const fetchData = useCallback(async () => {
     try {
       // 1. 레시피 로드
       const recipeRes = await customInstance({ url: "/api/recipes", method: "GET" });
-      const recipeList = recipeRes.data?.data?.content || recipeRes.data?.content || [];
+      const recipeList = recipeRes.data?.data?.content || recipeRes.data?.content || recipeRes.data || [];
       setRecipes(recipeList);
 
       // 2. 재료 로드
@@ -39,29 +39,7 @@ function RecipeRegPage() {
       const finalIngList = rawIngData.content || rawIngData.data?.content || rawIngData.data || [];
       setAvailableIngredients(finalIngList);
 
-      // 3. 북마크 로드 및 정제
-      const bookmarkRes = await customInstance({ url: "/api/recipe/bookmarks", method: "GET" });
-      
-      console.log("🔍 서버 북마크 원본 응답:", bookmarkRes.data);
-
-      let rawBookmarks = [];
-      // 응답 형태에 따른 분기 처리
-      if (Array.isArray(bookmarkRes.data)) {
-        rawBookmarks = bookmarkRes.data;
-      } else if (bookmarkRes.data?.data) {
-        rawBookmarks = bookmarkRes.data.data;
-      } else if (bookmarkRes.data?.content) {
-        rawBookmarks = bookmarkRes.data.content;
-      }
-
-      // [핵심] 객체 배열이면 ID만 뽑고, 모든 ID를 '숫자' 타입으로 통일
-      const cleanedIds = rawBookmarks.map(item => {
-        if (typeof item === 'object' && item !== null) return Number(item.id || item.recipeId);
-        return Number(item);
-      }).filter(id => !isNaN(id));
-
-      console.log("✅ 정제된 북마크 ID 목록:", cleanedIds);
-      setBookmarkedIds(cleanedIds);
+      // ❌ 북마크 GET 요청 부분은 서버 에러 방지를 위해 삭제되었습니다.
 
     } catch (err) {
       console.error("❌ 데이터 로드 실패:", err);
@@ -73,38 +51,33 @@ function RecipeRegPage() {
   }, [fetchData]);
 
   /* ---------------------------------------------------------
-     3. 핸들러 (북마크, 등록 등)
+     3. 핸들러 (북마크 등록/해제 및 입력 관리)
      --------------------------------------------------------- */
   
   const toggleBookmark = async (e, recipeId) => {
     e.stopPropagation();
     if (!recipeId) return;
 
-    const targetId = Number(recipeId); // 타입 통일
+    const targetId = Number(recipeId);
     const isCurrentlyBookmarked = bookmarkedIds.includes(targetId);
     
     try {
+      // POST/DELETE 요청은 기존대로 유지
       const method = isCurrentlyBookmarked ? "DELETE" : "POST";
       await customInstance({
         url: `/api/recipes/${targetId}/bookmark`,
         method: method
       });
 
+      // 로컬 상태 업데이트
       setBookmarkedIds(prev => 
         isCurrentlyBookmarked 
           ? prev.filter(id => id !== targetId) 
           : [...prev, targetId]
       );
 
-      console.log(`✅ ${targetId}번 북마크 ${isCurrentlyBookmarked ? '해제' : '등록'} 완료`);
-
     } catch (err) {
-      if (err.response?.status === 409) {
-        console.warn("⚠️ 서버와 상태 불일치(409). 새로고침 실행.");
-        fetchData(); 
-      } else {
-        console.error("❌ 북마크 통신 에러:", err);
-      }
+      console.error("❌ 북마크 통신 에러:", err);
     }
   };
 
@@ -156,6 +129,7 @@ function RecipeRegPage() {
       await customInstance({ url: "/api/recipes", method: "POST", data: recipeData });
       alert("🎉 레시피가 등록되었습니다!");
       
+      // 폼 초기화
       setTitle(""); setDescription(""); setThumbnailImageUrl("");
       setIngredients([{ ingredientId: "", amount: "" }]);
       setSteps([{ stepNo: 1, description: "", cookingImageUrl: "" }]);

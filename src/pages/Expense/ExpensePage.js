@@ -1,265 +1,227 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./ExpensePage.css";
-import Header from "../../components/Header/Header";
-import ExpenseInputForm from "./ExpenseInputForm";
-import { Wallet, ShoppingCart, ArrowLeft, Calendar as CalendarIcon, Plus, Loader2 } from "lucide-react"; 
+import ExpenseInputForm from "./ExpenseInputForm"; 
+import { 
+  Wallet, ShoppingCart, ArrowLeft, Calendar as CalendarIcon, 
+  Plus, Loader2, Trash2, ChevronLeft, ChevronRight 
+} from "lucide-react"; 
 import { useNavigate } from "react-router-dom";
+import customInstance from "../../api/api"; 
 
-/**
- * [ExpensePage]
- * 사용자의 지출을 관리하는 페이지입니다.
- * 설계 구조: expense_records(장보기), expense_record_items(품목), monthly_expense_goals(목표)
- */
-function ExpensePage() {
+export default function ExpensePage() {
   const navigate = useNavigate();
 
-  /* ==========================================================
-     1. 데이터 상태 관리 (DB 구조 반영)
-     ========================================================== */
+  // --- [상태 관리] ---
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 (ESLint 경고 해결)
-
-  // [TABLE: monthly_expense_goals] 목표액 관리
-  const [budgetGoal, setBudgetGoal] = useState(500000);
+  const [isLoading, setIsLoading] = useState(false);
+  const [expenseRecords, setExpenseRecords] = useState([]); 
   
-  // [TABLE: expense_records & items] 지출 내역 관리
-  const [expenseRecords, setExpenseRecords] = useState([
-    { 
-      id: 1, 
-      storeName: "이마트 시흥점", 
-      totalAmount: 18500,        
-      purchaseDate: "2026-04-07", 
-      items: [                    
-        { itemId: 1, name: "대파", price: 3000, category: "채소" },
-        { itemId: 2, name: "양파", price: 2600, category: "채소" },
-        { itemId: 3, name: "삼겹살", price: 12900, category: "육류" }
-      ]
-    },
-    { 
-      id: 2, 
-      storeName: "편의점", 
-      totalAmount: 4500, 
-      purchaseDate: "2026-04-05",
-      items: [
-        { itemId: 4, name: "진라면", price: 4500, category: "가공식품" }
-      ]
+  // [해결] Line 18:22 경고 해결 - 초기값 설정 및 handleUpdateGoal에서 사용
+  const [budgetGoal, setBudgetGoal] = useState(500000); 
+
+  // [월 이동 상태]
+  const [viewDate, setViewDate] = useState(new Date(2026, 3)); // 2026년 4월 기준
+  
+  // [날짜 선택 상태] null이면 전체 보기, 숫자면 해당 일자 필터링
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  // "YYYY-MM" 형식 변환 (API 및 데이터 필터용)
+  const currentYearMonth = useMemo(() => {
+    const year = viewDate.getFullYear();
+    const month = String(viewDate.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }, [viewDate]);
+
+  /**
+   * [API] 지출 내역 조회
+   */
+  const fetchExpenseRecords = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await customInstance.get("/api/expenses");
+      const rawContent = res.data?.content || res.data?.data?.content || [];
+      
+      // 해당 월 데이터만 1차 필터링
+      const monthlyData = rawContent.filter(r => r.purchasedAt?.startsWith(currentYearMonth));
+      setExpenseRecords(monthlyData);
+      setSelectedDay(null); // 월 변경 시 날짜 선택 초기화
+    } catch (err) {
+      console.error("❌ 로드 실패:", err);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  }, [currentYearMonth]);
 
-  /* ==========================================================
-     2. 백엔드 연동 준비 (API 완성 시 주석 해제하여 사용)
-     ========================================================== */
+  /**
+   * [API] 목표 금액 수정
+   * [해결] 여기서 setBudgetGoal을 사용하여 경고를 없앱니다.
+   */
+  const handleUpdateGoal = async () => {
+    const userInput = prompt("이번 달 목표 식비를 입력하세요", budgetGoal);
+    if (userInput === null || isNaN(userInput) || userInput === "") return;
+
+    try {
+      const amount = Number(userInput);
+      // 실제 API가 있다면 호출: await customInstance.put(...)
+      setBudgetGoal(amount); // 상태 업데이트 (경고 해결 지점)
+      alert("목표 금액이 수정되었습니다.");
+    } catch (err) {
+      console.error("❌ 목표 수정 실패:", err);
+    }
+  };
+
+  /**
+   * [API] 지출 내역 삭제
+   */
+  const handleDeleteRecord = async (id, e) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      await customInstance.delete(`/api/expenses/${id}`);
+      setExpenseRecords(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error("❌ 삭제 실패:", err);
+    }
+  };
+
+  /**
+   * [API] 지출 등록 (POST)
+   */
+  const handleAddRecord = async (formData) => {
+    try {
+      setIsLoading(true);
+      const payload = {
+        purchasedAt: formData.date.replaceAll('.', '-'),
+        totalAmount: parseInt(formData.price, 10),
+        category: formData.category || "기타",
+        rawItemInput: formData.name 
+      };
+      await customInstance.post("/api/expenses", payload);
+      setIsFormOpen(false);
+      fetchExpenseRecords(); 
+    } catch (err) {
+      console.error("❌ 등록 실패:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true); // 데이터 로드 시작
-        /* ----------------------------------------------------------
-           // 예시: 
-           const goalRes = await api.get("/api/expenses/goals/2026/04");
-           setBudgetGoal(goalRes.data.amount);
+    fetchExpenseRecords();
+  }, [fetchExpenseRecords]);
 
-           const recordRes = await api.get("/api/expenses/records/2026/04");
-           setExpenseRecords(recordRes.data);
-           ---------------------------------------------------------- */
-        
-        // 시뮬레이션을 위해 0.5초 후 로딩 종료
-        setTimeout(() => setIsLoading(false), 500);
-      } catch (err) {
-        console.error("데이터 로딩 실패:", err);
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  /**
+   * [데이터 필터링] 선택된 날짜에 따라 리스트 가공
+   */
+  const filteredDisplayRecords = useMemo(() => {
+    if (!selectedDay) return expenseRecords;
+    return expenseRecords.filter(r => {
+      const day = parseInt(r.purchasedAt.split("-")[2]);
+      return day === selectedDay;
+    });
+  }, [expenseRecords, selectedDay]);
 
-  /* ==========================================================
-     3. 실시간 통계 계산 (useMemo 활용)
-     ========================================================== */
-  
-  // 총 지출액 합산
-  // 3. 실시간 통계 계산 (useMemo 활용) - 안전하게 수정된 버전
-  
-  // 총 지출액 합산
+  // 통계 및 달력 데이터
   const totalSpent = useMemo(() => 
-    (expenseRecords || []).reduce((acc, cur) => acc + (cur.totalAmount || 0), 0), 
+    expenseRecords.reduce((acc, cur) => acc + (cur.totalAmount || 0), 0), 
     [expenseRecords]
   );
 
-  // 카테고리별 비중 계산 (안전한 순회 적용)
-  const categorySummary = useMemo(() => {
-    const summary = { "육류": 0, "채소": 0, "가공식품": 0, "기타": 0 };
-    
-    // 1. expenseRecords가 배열인지 확인하고 순회
-    (expenseRecords || []).forEach(record => {
-      // 2. record.items가 있는지 확인 후 순회
-      (record.items || []).forEach(item => {
-        if(summary.hasOwnProperty(item.category)) {
-          summary[item.category] += (item.price || 0);
-        } else {
-          summary["기타"] += (item.price || 0);
-        }
-      });
-    });
-    return summary;
-  }, [expenseRecords]);
-
-  // 도넛 차트 그라데이션
-  const chartGradient = useMemo(() => {
-    if (totalSpent === 0) return "#e2e8f0";
-    const meatStep = (categorySummary["육류"] / totalSpent) * 100;
-    const vegStep = meatStep + (categorySummary["채소"] / totalSpent) * 100;
-    const procStep = vegStep + (categorySummary["가공식품"] / totalSpent) * 100;
-    return `conic-gradient(#764ba2 0% ${meatStep}%, #667eea ${meatStep}% ${vegStep}%, #a5b4fc ${vegStep}% ${procStep}%, #e2e8f0 ${procStep}% 100%)`;
-  }, [categorySummary, totalSpent]);
-
-  // 달력 표시용 날짜별 합계
-  // 달력 표시용 날짜별 합계 (안전하게 수정된 버전)
   const dailySummary = useMemo(() => {
     const summary = {};
-    (expenseRecords || []).forEach(record => {
-      // purchaseDate가 존재하는지 확인하고, 값이 있는 경우에만 처리
-      if (record?.purchaseDate && typeof record.purchaseDate === 'string') {
-        const day = parseInt(record.purchaseDate.split("-")[2]);
-        if (!isNaN(day)) {
-          summary[day] = (summary[day] || 0) + (record.totalAmount || 0);
-        }
-      }
+    expenseRecords.forEach(r => {
+      const day = parseInt(r.purchasedAt.split("-")[2]);
+      if (!isNaN(day)) summary[day] = (summary[day] || 0) + (r.totalAmount || 0);
     });
     return summary;
   }, [expenseRecords]);
 
-  /* ==========================================================
-     4. 이벤트 핸들러
-     ========================================================== */
-  // ExpensePage.js의 handleAddRecord 확인
-  const handleAddRecord = (newRecord) => {
-    console.log("입력된 데이터:", newRecord); // 이 콘솔을 찍어서 구조를 확인하세요!
-    // 입력받은 데이터를 기존 데이터 구조에 맞게 변환 (Mapping)
-    const formattedRecord = {
-      id: newRecord.id,
-      storeName: newRecord.name,      // 'name'을 'storeName'으로 매핑
-      totalAmount: newRecord.price,   // 'price'를 'totalAmount'로 매핑
-      purchaseDate: newRecord.date.replaceAll('.', '-'), // '2026.04.08'을 '2026-04-08'로 변환
-      items: [{ name: newRecord.name, price: newRecord.price, category: newRecord.category }]
-    };
-    setExpenseRecords([formattedRecord, ...expenseRecords]);
-  };
-  const handleDeleteRecord = (id) => {
-    if(window.confirm("이 장보기 내역을 전체 삭제하시겠습니까?")) {
-      setExpenseRecords(expenseRecords.filter(r => r.id !== id));
-    }
-  };
-
-  // 목표 금액 수정 핸들러 (setBudgetGoal 경고 해결용)
-  const handleUpdateGoal = () => {
-    const val = prompt("이번 달 목표 식비를 입력하세요 (원)", budgetGoal);
-    if (val && !isNaN(val)) setBudgetGoal(Number(val));
-  };
+  const lastDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  const startDayOfWeek = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
 
   return (
     <div className="expense_page_wrapper">
-      <Header />
-      
-      {/* 데이터 로드 중일 때 보여주는 인디케이터 */}
-      {isLoading && (
-        <div className="loading_overlay">
-          <Loader2 className="animate-spin" size={24} color="#764ba2" />
-          <span>업데이트 중...</span>
-        </div>
-      )}
+      {isLoading && <div className="loading_overlay"><Loader2 className="spinner" /></div>}
 
       <main className="expense_container">
         <header className="page_nav_header">
           <button onClick={() => navigate(-1)} className="icon_button_back"><ArrowLeft size={22} /></button>
-          <h2 className="page_title">4월 식비 분석</h2>
+          <h2 className="page_title">{viewDate.getMonth() + 1}월 지출 내역</h2>
         </header>
 
-        {/* 1. 요약 카드 (목표액 클릭 시 수정 가능) */}
-        <section className="summary_card" onClick={handleUpdateGoal} style={{ cursor: 'pointer' }}>
-          <div className="summary_header"><p>현재 총 지출</p><Wallet size={18} /></div>
+        {/* 1. 요약 카드 (클릭 시 목표 수정) */}
+        <section className="summary_card" onClick={handleUpdateGoal} style={{ cursor: "pointer" }}>
+          <div className="summary_header"><p>{currentYearMonth} 합계</p><Wallet size={18} /></div>
           <h2 className="spent_total_text">{totalSpent.toLocaleString()}원</h2>
           <div className="bar_track">
-            <div className="bar_fill" style={{ width: `${Math.min((totalSpent/budgetGoal)*100, 100)}%` }}></div>
+            <div className="bar_fill" style={{ width: `${Math.min((totalSpent / (budgetGoal || 1)) * 100, 100)}%` }}></div>
           </div>
-          <p className="budget_info">목표 {budgetGoal.toLocaleString()}원 대비 {Math.round((totalSpent/budgetGoal)*100)}% 지출</p>
+          <p className="budget_info">목표 {budgetGoal.toLocaleString()}원 대비</p>
         </section>
 
-        {/* 2. 카테고리 비중 */}
+        {/* 2. 월 이동 및 필터 달력 */}
         <section className="chart_card_section">
-          <h3 className="section_title">지출 카테고리 비중</h3>
-          <div className="donut_chart_layout">
-            <div className="donut_graphic" style={{ background: chartGradient }}>
-              <div className="donut_center_hole"><span className="hole_value">{Math.floor(totalSpent/10000)}만</span></div>
+          <div className="section_header_row">
+            <div className="month_selector">
+              <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))} className="month_nav_btn"><ChevronLeft size={20} /></button>
+              <h3 className="section_title">{currentYearMonth}</h3>
+              <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))} className="month_nav_btn"><ChevronRight size={20} /></button>
             </div>
-            <div className="chart_legend_list">
-              <LegendItem color="#764ba2" name="육류" percent={Math.round((categorySummary["육류"]/totalSpent)*100) || 0} />
-              <LegendItem color="#667eea" name="채소" percent={Math.round((categorySummary["채소"]/totalSpent)*100) || 0} />
-              <LegendItem color="#a5b4fc" name="가공" percent={Math.round((categorySummary["가공식품"]/totalSpent)*100) || 0} />
-              <LegendItem color="#e2e8f0" name="기타" percent={Math.round((categorySummary["기타"]/totalSpent)*100) || 0} />
-            </div>
+            <CalendarIcon size={16} color="#764ba2" />
           </div>
-        </section>
-
-        {/* 3. 지출 달력 */}
-        <section className="chart_card_section">
-          <div className="section_header_row"><h3 className="section_title">지출 달력</h3><CalendarIcon size={16} color="#764ba2" /></div>
           <div className="cal_grid">
-            {/* 4월 기준 공백 (수정 필요 시 조절) */}
-            {Array(3).fill(null).map((_, i) => <div key={`e-${i}`} className="cal_day empty"></div>)}
-            {Array.from({ length: 30 }, (_, i) => i + 1).map(day => {
+            {Array(startDayOfWeek).fill(null).map((_, i) => <div key={`empty-${i}`} className="cal_day empty"></div>)}
+            {Array.from({ length: lastDayOfMonth }, (_, i) => i + 1).map(day => {
               const amt = dailySummary[day] || 0;
+              const isSelected = selectedDay === day;
               return (
-                <div key={day} className={`cal_day ${amt > 0 ? 'has_value' : ''}`}>
+                <div 
+                  key={day} 
+                  className={`cal_day ${amt > 0 ? 'has_value' : ''} ${isSelected ? 'selected' : ''}`}
+                  onClick={() => amt > 0 && setSelectedDay(isSelected ? null : day)}
+                >
                   <span className="day_num">{day}</span>
-                  {amt > 0 && <span className="day_amount">{(amt/1000).toFixed(1)}k</span>}
+                  {amt > 0 && <span className="day_amount">{(amt/1000).toFixed(0)}k</span>}
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* 4. 장보기 내역 리스트 (안전하게 수정된 버전) */}
+        {/* 3. 장보기 내역 리스트 */}
         <section className="recent_history_section">
-          <h3 className="section_title">장보기 내역</h3>
+          <div className="section_header_row">
+            <h3 className="section_title">{selectedDay ? `${selectedDay}일 상세` : "전체 상세"}</h3>
+            {selectedDay && <button className="reset_view_btn" onClick={() => setSelectedDay(null)}>전체보기</button>}
+          </div>
           <div className="history_stack">
-            {(expenseRecords || []).map(record => (
-              <div key={record.id} className="history_item_card" onClick={() => handleDeleteRecord(record.id)}>
-                <div className="item_icon_bg"><ShoppingCart size={16} color="#764ba2" /></div>
-                <div className="item_info_text">
-                  <p className="item_name">
-                    {record.storeName || "정보 없음"} 
-                    {/* 날짜가 있을 때만 slice(5)를 수행하도록 조건부 처리 */}
-                    <span className="item_date">
-                      {record.purchaseDate && typeof record.purchaseDate === 'string' 
-                        ? record.purchaseDate.slice(5) 
-                        : ""}
-                    </span>
-                  </p>
-                  <p className="item_cat">{record.items?.length || 0}개 품목</p>
+            {filteredDisplayRecords.length > 0 ? (
+              filteredDisplayRecords.map((record) => (
+                <div key={`exp-${record.id}`} className="history_item_card">
+                  <div className="item_icon_bg"><ShoppingCart size={16} color="#764ba2" /></div>
+                  <div className="item_info_text">
+                    <p className="item_name">
+                      <span className="cat_badge">{record.category}</span>
+                      <span className="item_date">{record.purchasedAt?.substring(5).replace('-', '/')}</span>
+                    </p>
+                    <p className="item_cat">{record.rawItemInput}</p>
+                  </div>
+                  <div className="price_action_group">
+                    <p className="item_price">-{record.totalAmount?.toLocaleString()}원</p>
+                    <button className="del_btn" onClick={(e) => handleDeleteRecord(record.id, e)}>
+                      <Trash2 size={14} color="#ff4d4d" />
+                    </button>
+                  </div>
                 </div>
-                <p className="item_price">-{record.totalAmount?.toLocaleString() || 0}원</p>
-              </div>
-            ))}
+              ))
+            ) : <div className="empty_msg">기록이 없습니다.</div>}
           </div>
         </section>
 
-        {/* 추가 버튼 (FAB) */}
+        {/* 4. 추가 버튼 및 모달 */}
         <button className="fab_add_btn" onClick={() => setIsFormOpen(true)}><Plus size={28} /></button>
-        
-        {/* 입력 폼 모달 */}
         {isFormOpen && <ExpenseInputForm onAdd={handleAddRecord} onClose={() => setIsFormOpen(false)} />}
       </main>
     </div>
   );
 }
-
-// 범례 컴포넌트
-const LegendItem = ({ color, name, percent }) => (
-  <div className="legend_row">
-    <span className="legend_dot" style={{ backgroundColor: color }}></span>
-    <span className="legend_name">{name}</span>
-    <span className="legend_percent">{percent}%</span>
-  </div>
-);
-
-export default ExpensePage;

@@ -113,36 +113,59 @@
 }
 
 /* Stats Section */
+/* ... 기존 코드 상단 동일 ... */
+
+/* Stats Section */
 .profile_stats_section {
   background: white;
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px 20px; /* 상하 패딩을 조금 더 늘려 여유를 줍니다 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.section_title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 20px 0; /* 하단 마진을 16px에서 20px로 늘려 타이틀과 그리드 분리 */
 }
 
 .stats_grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  margin-top: 4px; /* 명시적으로 제목과의 간격을 확보 */
 }
 
+/* Stat Card 개선 */
 .stat_card {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #f1f3f7; /* 선명도를 위해 색상 소폭 조정 */
+  border-radius: 16px;
+  padding: 24px 16px; /* 내부 여백을 늘려 숫자가 돋보이게 함 */
   text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.stat_card:hover {
+  transform: translateY(-4px); /* 호버 시 떠오르는 효과 강조 */
+  border-color: #667eea;
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.1);
 }
 
 .stat_value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #667eea;
-  margin: 0 0 8px 0;
+  font-size: 26px; /* 가독성을 위해 크기 소폭 조정 */
+  font-weight: 800;
+  color: #764ba2; /* 강조색을 메인 테마 색상으로 변경 */
+  margin: 0 0 6px 0;
 }
 
 .stat_label {
   font-size: 13px;
-  color: #666;
+  font-weight: 500;
+  color: #888;
   margin: 0;
 }
 

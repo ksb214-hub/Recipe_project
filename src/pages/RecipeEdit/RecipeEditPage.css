@@ -1,0 +1,172 @@
+/* 전체 레이아웃 제한 */
+.mobile_container {
+    width: 100%;
+    padding-top: 20px;
+    max-width: 402px;
+    min-height: 874px;
+    margin: 0 auto;
+    background: #f8f9fa; /* 배경은 눈이 편한 밝은 회색 */
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* 히어로 배너 (높이 축소) */
+.hero_banner {
+  height: 220px;
+  position: relative;
+  background: url('https://images.unsplash.com/photo-1506368249639-73a05d6f6488?auto=format&fit=crop&w=480&q=80');
+  background-size: cover;
+  background-position: center;
+  padding: 30px 20px;
+  display: flex;
+  align-items: flex-end;
+  color: white;
+}
+
+.hero_overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+}
+
+.hero_content { position: relative; z-index: 1; }
+.hero_content h1 { font-size: 26px; margin: 5px 0; }
+.hero_content .sub_title { font-size: 10px; font-weight: 700; opacity: 0.8; }
+.hero_content p { font-size: 12px; opacity: 0.9; line-height: 1.4; }
+
+/* 통계 그리드 (2x2) */
+.stats_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 16px;
+  margin-top: -30px;
+  position: relative;
+  z-index: 2;
+}
+
+.stat_card {
+  background: white;
+  padding: 15px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.icon_box {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.icon_box.orange { background: #FFF0E6; color: #FF8A00; }
+.icon_box.green { background: #E6F7ED; color: #00B341; }
+.icon_box.yellow { background: #FFF9E6; color: #FFCC00; }
+.icon_box.pink { background: #FFE6EB; color: #FF4D6D; }
+
+.stat_value { font-size: 18px; font-weight: 800; color: #333; display: block; }
+.stat_value span { font-size: 12px; margin-left: 2px; }
+.stat_label { font-size: 11px; color: #999; }
+
+/* 메인 리스트 */
+.recipe_main { padding: 30px 16px; }
+
+.section_header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 20px;
+}
+.badge_alert { color: #FF8A00; font-size: 12px; font-weight: 700; }
+.section_header h2 { font-size: 19px; color: #222; margin-top: 4px; }
+.btn_text { border: none; background: none; color: #FF8A00; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+/* 가로 스크롤 태그 */
+.urgent_scroll {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 15px;
+  scrollbar-width: none; /* 파이어폭스 */
+}
+.urgent_scroll::-webkit-scrollbar { display: none; } /* 크롬 */
+.urgent_scroll .label { font-weight: 700; font-size: 13px; color: #555; white-space: nowrap; }
+
+.tag {
+  white-space: nowrap; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 600;
+}
+.tag.dday_1 { background: #FFEBEB; color: #FF4D4D; }
+.tag.dday_2, .tag.dday_3 { background: #FFF4E0; color: #FF9F00; }
+
+/* 가로형 레시피 카드 (모바일 최적화) */
+.recipe_list { display: flex; flex-direction: column; gap: 15px; }
+
+.recipe_card_horizontal {
+  display: flex; background: white; border-radius: 18px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03); cursor: pointer;
+}
+
+.img_wrapper { width: 110px; height: 100px; position: relative; }
+.img_wrapper img { width: 100%; height: 100%; object-fit: cover; }
+.match_badge {
+  position: absolute; top: 8px; left: 8px; background: rgba(255,138,0,0.9);
+  color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700;
+}
+
+.content_wrapper { padding: 15px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.content_wrapper h3 { font-size: 15px; color: #333; margin-bottom: 8px; }
+.meta { display: flex; gap: 12px; font-size: 11px; color: #999; }
+.star { color: #333; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+/* 3열 통계 그리드 스타일 */
+.stats_grid_3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: -30px; /* 배너 위로 살짝 걸치게 */
+  position: relative;
+  z-index: 5;
+}
+
+.stat_card {
+  background: white;
+  padding: 15px 10px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.icon_box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon_box.yellow { background: #FFF9E6; color: #FFB800; }
+.icon_box.green { background: #E6F7ED; color: #00B341; }
+.icon_box.pink { background: #FFF0F3; color: #FF4D6D; }
+
+.stat_value { font-size: 1.1rem; font-weight: 800; color: #333; }
+.stat_value span { font-size: 0.75rem; margin-left: 2px; color: #999; }
+.stat_label { font-size: 0.7rem; color: #999; font-weight: 500; }
+
+/* 유통기한 임박 태그 스타일 */
+.urgent_scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.dday_1, .dday_2, .dday_3 { background: #FFF0F0; color: #FF4D4D; }

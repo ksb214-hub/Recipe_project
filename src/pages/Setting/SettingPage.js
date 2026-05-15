@@ -37,7 +37,6 @@ export default function SettingsPage() {
 
   return (
     <div className="settings_page">
-      <Header />
       
       <main className="settings_container">
         <div className="settings_header">
