@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+node_modules
+build
+venv
+venv310
+src/data/collection/venv
+.ipynb_checkpoints
+.env
+.DS_Store
