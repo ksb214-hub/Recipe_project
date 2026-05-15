@@ -1,0 +1,56 @@
+/* Bookmark.css */
+.bookmark_page_container {
+  width: 100%;
+  max-width: 402px;
+  min-height: 874px;
+  margin: 0 auto;
+  background: #f8f9fa;
+  padding-bottom: 80px; /* 네비게이션 바 고려 */
+}
+
+.bookmark_subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
+
+.loading_box, .empty_bookmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.empty_bookmark p {
+  margin: 16px 0;
+  color: #a0aec0;
+  font-size: 16px;
+}
+
+.go_main_btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.go_main_btn:hover {
+  background: #764ba2;
+}
+
+.spinner {
+  animation: rotate 2s linear infinite;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}

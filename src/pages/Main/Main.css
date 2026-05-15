@@ -166,4 +166,40 @@
   display: none;
 }
 
+/* 레시피 카드 박스 (버튼의 기준점) */
+.recipe-card-box {
+  position: relative;
+}
+
+/* 신고 버튼 스타일 */
+.report_trigger_btn {
+  position: absolute;
+  top: 10px;
+  right: 45px; /* 북마크 버튼 위치에 따라 조절 (보통 북마크가 최우측) */
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 28px;  /* 버튼 크기 명시적 지정 */
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  color: #999; /* 아이콘 색상 */
+}
+
+/* 호버 효과 */
+.report_trigger_btn:hover {
+  background: rgba(255, 255, 255, 1);
+  color: #ff4d4f; /* 호버 시 약간 붉은색으로 강조 가능 */
+  transform: scale(1.1);
+}
+
+/* 액티브 효과 (클릭 시) */
+.report_trigger_btn:active {
+  transform: scale(0.95);
+}
+
 /* [제거됨] tags_container, popular_tag_btn, recipe_ingredients_box 관련 스타일 삭제 */

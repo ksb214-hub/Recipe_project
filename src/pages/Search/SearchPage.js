@@ -1,175 +1,173 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import "./SearchPage.css";
 import Card from "../../components/Card/Card";
-import { Search, Filter, Clock, BarChart3, X } from "lucide-react"; 
-import { recipes2 as recipes } from "../../data/collection/recipes2";
+import ReportModal from "../../components/ReportModal/ReportModal";
+import customInstance from "../../api/api";
+import { Search, Filter, BarChart3, X, Loader2, AlertCircle } from "lucide-react"; 
 
-/**
- * SearchPage 컴포넌트
- * - 검색, 카테고리 필터링, 시간/난이도 조절 기능을 포함합니다.
- */
 function SearchPage() {
-  // 상태 관리
+  const navigate = useNavigate();
+
+  /* --- 상태 관리 --- */
   const [searchQuery, setSearchQuery] = useState("");
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState([]);
+
+  // 필터 상태
   const [activeCategory, setActiveCategory] = useState("전체");
-  const [maxTime, setMaxTime] = useState("전체");
   const [difficulty, setDifficulty] = useState("전체");
 
-  // 자동완성 관련 상태
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionRef = useRef(null);
+  // 신고 모달 상태
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState("");
 
-  // 필터 옵션 배열 (사용 중이므로 경고 발생 안 함)
-  const categories = ["전체", "육류", "채소", "가공식품", "기타"];
-  const times = ["전체", "15분", "30분", "60분"];
-  const levels = ["전체", "쉬움", "보통", "어려움"];
+  /* ---------------------------------------------------------
+     1. 데이터 로드 (검색 API 및 북마크 ID 로드)
+     --------------------------------------------------------- */
+  const fetchSearchResults = useCallback(async () => {
+    setLoading(true);
+    try {
+      // 레시피 검색 API 호출 (제공해주신 URL 구조 반영)
+      const res = await customInstance.get("/api/recipes/search", {
+        params: {
+          keyword: searchQuery, 
+          sort: "relevance",
+          page: 0,
+          size: 20
+        }
+      });
+      setRecipes(res.data?.data?.content || []);
 
-  // 1. 자동완성 로직 (Debounce 적용)
-  useEffect(() => {
-    if (searchQuery.trim().length === 0) {
-      setSuggestions([]);
-      return;
+      // 사용자의 북마크 ID 목록 로드 (동기화)
+      const bookmarkRes = await customInstance.get("/api/recipe/bookmarks/ids");
+      setBookmarkedIds(bookmarkRes.data?.data || []);
+    } catch (err) {
+      console.error("검색 결과를 가져오는데 실패했습니다:", err);
+    } finally {
+      setLoading(false);
     }
-    const timer = setTimeout(() => {
-      const filtered = recipes
-        .filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        .slice(0, 5);
-      setSuggestions(filtered);
-    }, 200);
-    return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // 2. 바깥 클릭 시 자동완성 닫기
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(e.target)) {
-        setShowSuggestions(false);
+    const delayDebounceFn = setTimeout(() => {
+      fetchSearchResults();
+    }, 500); // 디바운스 적용
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [fetchSearchResults]);
+
+  /* ---------------------------------------------------------
+     2. 핸들러 (북마크, 신고, 초기화)
+     --------------------------------------------------------- */
+  
+  const toggleBookmark = async (e, recipeId) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    const isAlreadyBookmarked = bookmarkedIds.includes(recipeId);
+    try {
+      if (isAlreadyBookmarked) {
+        await customInstance.delete(`/api/recipes/${recipeId}/bookmark`);
+        setBookmarkedIds(prev => prev.filter(id => id !== recipeId));
+      } else {
+        await customInstance.post(`/api/recipes/${recipeId}/bookmark`);
+        setBookmarkedIds(prev => [...prev, recipeId]);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    } catch (err) {
+      console.error("북마크 처리 실패:", err);
+    }
+  };
 
-  // 3. 검색어 및 필터링 통합 로직
-  const filteredRecipes = useMemo(() => {
-    return recipes.filter((recipe) => {
-      const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === "전체" || (recipe.category && recipe.category.includes(activeCategory));
-      
-      const recipeTime = recipe.time ? parseInt(recipe.time) : 0;
-      const selectedTime = maxTime === "전체" ? Infinity : parseInt(maxTime);
-      const matchesTime = maxTime === "전체" || recipeTime <= selectedTime;
+  const openReport = (e, targetName) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setReportTarget(targetName);
+    setIsReportOpen(true);
+  };
 
-      const matchesDifficulty = difficulty === "전체" || recipe.difficulty === difficulty;
-
-      return matchesSearch && matchesCategory && matchesTime && matchesDifficulty;
-    });
-  }, [searchQuery, activeCategory, maxTime, difficulty]);
-
-  // 필터 초기화 함수
   const handleReset = () => {
     setSearchQuery("");
     setActiveCategory("전체");
-    setMaxTime("전체");
     setDifficulty("전체");
   };
 
-  return (
-    <div className="search_page_wrapper">
-      <main className="search_content">
-        {/* 검색창 영역 */}
-        <section className="search_header_area">
-          <h2 className="search_title">레시피 검색</h2>
-          <div className="search_box_container" ref={suggestionRef}>
-            <div className="search_box_inner">
-              <Search size={20} className="search_icon" />
-              <input
-                type="text"
-                placeholder="요리 이름 또는 재료 입력"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
-                className="search_input"
-              />
-              {searchQuery && <X size={18} className="clear_icon" onClick={() => setSearchQuery("")} />}
-            </div>
-            {showSuggestions && suggestions.length > 0 && (
-              <ul className="suggestion_list">
-                {suggestions.map((s, idx) => (
-                  <li key={s.id || idx} className="suggestion_item" onClick={() => { setSearchQuery(s.title); setShowSuggestions(false); }}>
-                    <Search size={14} />
-                    <span>{s.title}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
+  /* ---------------------------------------------------------
+     3. 필터링 로직 (클라이언트 사이드 가공)
+     --------------------------------------------------------- */
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter(recipe => {
+      const matchCategory = activeCategory === "전체" || recipe.category === activeCategory;
+      const matchDifficulty = difficulty === "전체" || recipe.difficulty === difficulty;
+      return matchCategory && matchDifficulty;
+    });
+  }, [recipes, activeCategory, difficulty]);
 
-        {/* 필터 상세 영역 (살려낸 기능들) */}
-        <section className="filter_section">
-          <div className="filter_group">
-            <div className="filter_label"><Filter size={14} /> <span>카테고리</span></div>
-            <div className="category_chips">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  className={`chip ${activeCategory === cat ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(cat)}
-                >{cat}</button>
-              ))}
-            </div>
-          </div>
-          <div className="filter_row">
-            <div className="filter_item">
-              <div className="filter_label"><Clock size={14} /> <span>조리 시간</span></div>
-              <select value={maxTime} onChange={(e) => setMaxTime(e.target.value)} className="filter_select">
-                {times.map(t => <option key={t} value={t}>{t === "전체" ? t : `${t} 이내`}</option>)}
-              </select>
-            </div>
-            <div className="filter_item">
-              <div className="filter_label"><BarChart3 size={14} /> <span>난이도</span></div>
-              <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="filter_select">
-                {levels.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-            </div>
+  return (
+    <div className="search_page">
+      <main className="search_container">
+        {/* 검색창 영역 */}
+        <section className="search_bar_section">
+          <div className="search_input_wrapper">
+            <Search className="search_icon" size={20} />
+            <input 
+              type="text" 
+              placeholder="어떤 요리를 찾으시나요?" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && <X className="clear_icon" size={18} onClick={() => setSearchQuery("")} />}
           </div>
         </section>
 
         {/* 결과 리스트 영역 */}
         <div className="search_result_list">
-          <p>총 <strong>{filteredRecipes.length}</strong>개의 레시피가 있습니다.</p>
-          {filteredRecipes.length > 0 ? (
-          <div className="recipe_grid">
-            {filteredRecipes.map((recipe, index) => {
-              // 1. 여기서 로그를 확인하세요
-              console.log("레시피 데이터 확인:", recipe.title, recipe.thumbnailImageUrl);
-              
-              // 2. 반드시 return을 작성해야 합니다
-              return (
-                <Link 
-                  key={recipe.id || index} 
-                  to={`/recipe/${encodeURIComponent(recipe.title)}`} 
-                  style={{ textDecoration: 'none' }}
-                >
+          <p className="result_count">총 <strong>{filteredRecipes.length}</strong>개의 레시피</p>
+          
+          {loading ? (
+            <div className="loading_box" style={{ textAlign: 'center', padding: '50px' }}>
+              <Loader2 className="spinner" />
+              <p>검색 중...</p>
+            </div>
+          ) : filteredRecipes.length > 0 ? (
+            <div className="recipe_grid">
+              {filteredRecipes.map((recipe) => (
+                <div key={recipe.id} className="recipe-card-box">
+                  {/* 신고 버튼 */}
+                  <button 
+                    className="report_trigger_btn"
+                    onClick={(e) => openReport(e, recipe.title)}
+                  >
+                    <AlertCircle size={16} />
+                  </button>
+
                   <Card 
                     title={recipe.title} 
                     thumbnailImageUrl={recipe.thumbnailImageUrl} 
-                    category={recipe.category}
+                    category={recipe.authorNickname || "공공데이터"}
+                    isBookmarked={bookmarkedIds.includes(recipe.id)}
+                    onToggleBookmark={(e) => toggleBookmark(e, recipe.id)}
+                    onClick={() => navigate(`/recipe/${recipe.id}`)}
                   />
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
+                </div>
+              ))}
+            </div>
+          ) : (
             <div className="no_result">
-              <p>조건에 맞는 레시피가 없네요!</p>
+              <p>검색 결과가 없습니다.</p>
               <button onClick={handleReset} className="reset_btn">필터 초기화</button>
             </div>
           )}
         </div>
       </main>
+
+      {/* 신고 모달 */}
+      <ReportModal 
+        isOpen={isReportOpen} 
+        onClose={() => setIsReportOpen(false)} 
+        targetName={reportTarget} 
+      />
     </div>
   );
 }

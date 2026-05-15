@@ -1,331 +1,215 @@
-/* src/pages/Search/SearchPage.css */
-
-/* SearchPage.css */
-
-.search_page_wrapper {
-  width: 100%;
-  max-width: 402px;
-  min-height: 874px;
-  margin: 0 auto;
-  background: #f8f9fa;
-  overflow-y: auto;
-}
-
-.search_content {
-  padding: 24px 20px;
-}
-
-.search_title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-/* 검색창 스타일링 */
-.search_box_inner {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.search_icon {
-  position: absolute;
-  left: 16px;
-  color: #764ba2; /* 보라색 포인트 */
-}
-
-.search_input {
-  width: 100%;
-  height: 54px;
-  background: white;
-  border: 2px solid #eee;
-  border-radius: 16px;
-  padding: 0 16px 0 48px; /* 아이콘 공간 확보 */
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.search_input:focus {
-  border-color: #667eea;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
-}
-
-/* 결과 정보 안내 */
-.search_result_info {
-  margin: 20px 0;
-  font-size: 14px;
-  color: #666;
-  padding-left: 4px;
-}
-.search_result_list{
-  padding: 10px;
-}
-
-.query_text {
-  color: #764ba2;
-  font-weight: 700;
-}
-
-.count_text {
-  font-weight: 700;
-}
-
-/* 카드 리스트 */
-.card_wrapper {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-/* 결과 없을 때 UI */
-.no_result_box {
-  text-align: center;
-  padding: 80px 20px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.no_result_emoji {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.no_result_text {
-  font-size: 18px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.no_result_hint {
-  font-size: 14px;
-  color: #999;
-}
-/* 카테고리 필터 섹션 */
-.category_filter_area {
-  margin: 10px 0 20px;
-}
-
-.filter_label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #888;
-  margin-bottom: 12px;
-  padding-left: 4px;
-}
-
-.category_chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto; /* 가로 스크롤 */
-  white-space: nowrap;
-  padding-bottom: 8px; /* 스크롤바 공간 */
-}
-
-/* 스크롤바 숨기기 */
-.category_chips::-webkit-scrollbar { display: none; }
-.category_chips { -ms-overflow-style: none; scrollbar-width: none; }
-
-.chip {
-  padding: 8px 18px;
-  border-radius: 20px;
-  background: white;
-  border: 1px solid #eee;
-  font-size: 14px;
-  font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.chip:hover {
-  background: #f8f7ff;
-  border-color: #764ba2;
-}
-
-.chip.active {
-  background: #764ba2;
-  border-color: #764ba2;
-  color: white;
-  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.2);
-}
-
-/* 결과 정보 텍스트 */
-.search_result_info {
-  margin-bottom: 16px;
-  font-size: 14px;
-  color: #444;
-}
-
-.query_text {
-  font-weight: 700;
-  color: #764ba2;
-}
-
-.count_text {
-  font-weight: 700;
-}
-
-.filter_section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.filter_row {
-  display: flex;
-  gap: 12px;
-}
-
-.filter_item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.filter_select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #eee;
-  background-color: #fff;
-  font-size: 14px;
-  color: #333;
-  appearance: none; /* 브라우저 기본 화살표 숨기기(커스텀 가능) */
-}
-
-/* 필터 라벨 스타일 */
-.filter_label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #667eea;
-}
-/* 컨테이너 및 배경 */
-.search_page_wrapper {
-    background-color: #f8f9fa;
-    min-height: 100vh;
-}
-
-/* 검색창 영역 */
-.search_box_container {
-    position: relative;
+/* 전체 컨테이너 및 래퍼 */
+.search_page {
     width: 100%;
-    max-width: 600px;
-    margin: 0 auto 24px;
+    max-width: 402px; /* 성빈님 프로젝트 기준 너비 */
+    min-height: 874px;
+    margin: 0 auto;
+    background: #f8f9fa;
+    overflow-x: hidden; /* 가로 스크롤 방지 */
 }
 
-.search_box_inner {
-    /* 주신 스타일 가이드 적용 */
+.search_container {
+    padding: 24px 20px;
+}
+
+/* --- 검색창 영역 (너비 문제 해결 핵심) --- */
+.search_bar_section {
+    margin-bottom: 24px;
+}
+
+.search_input_wrapper {
+    position: relative;
+    width: 100%; /* 부모 너비에 맞춤 */
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    background: white;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
 }
 
-.search_input {
-    flex: 1;
-    border: none;
+.search_input_wrapper input {
+    width: 100%;             /* 100%를 주더라도 */
+    box-sizing: border-box;  /* ⭐ 패딩과 테두리를 너비 안에 포함시켜 초과 방지 */
+    height: 54px;
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 16px;
+    padding: 0 45px 0 48px;  /* 왼쪽(아이콘), 오른쪽(삭제버튼) 공간 확보 */
+    font-size: 15px;
     outline: none;
-    font-size: 16px;
-}
-
-/* 자동완성 목록 컨테이너 */
-.suggestion_list {
-    position: absolute;
-    top: 65px;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    list-style: none;
-    padding: 0;
-}
-
-/* 자동완성 개별 항목 (성빈님 카드 스타일 적용) */
-.suggestion_item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 14px 20px;
-    background: white;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    margin-bottom: 8px; /* 카드 사이 간격 */
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-.suggestion_item:hover {
-    transform: translateY(-2px);
-    border-color: #ff6b6b;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.search_input_wrapper input:focus {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
 }
 
-/* 필터 섹션 */
+/* 내부 아이콘 위치 고정 */
+.search_icon {
+    position: absolute;
+    left: 16px;
+    color: #667eea;
+    pointer-events: none; /* 클릭 방해 금지 */
+}
+
+.clear_icon {
+    position: absolute;
+    right: 16px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.clear_icon:hover {
+    color: #666;
+}
+
+/* --- 필터 섹션 --- */
 .filter_section {
     background: white;
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid #f0f0f0;
     margin-bottom: 24px;
 }
 
-/* 카테고리 칩 스타일 */
+.filter_group label, .filter_item label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+}
+
 .category_chips {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-top: 10px;
 }
 
 .chip {
     padding: 8px 16px;
     border-radius: 20px;
-    border: 1px solid #eee;
-    background: #fff;
+    background: #f1f3f5;
+    border: none;
+    font-size: 13px;
+    color: #666;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .chip.active {
-    background: #ff6b6b;
+    background: #667eea;
     color: white;
-    border-color: #ff6b6b;
+    font-weight: 600;
 }
 
-/* 결과 그리드 */
-.recipe_grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-/* 리셋 버튼 */
-.reset_btn {
+.filter_row {
     margin-top: 20px;
-    padding: 10px 20px;
-    background: #ff6b6b;
+    padding-top: 20px;
+    border-top: 1px solid #f8f9fa;
+}
+
+.filter_select {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 0 12px;
+    font-size: 14px;
+    background: #fff;
+    outline: none;
+}
+
+/* --- 결과 리스트 및 카드 그리드 --- */
+.result_count {
+    font-size: 14px;
+    color: #666;
+    margin: 0 4px 12px;
+}
+
+.result_count strong {
+    color: #667eea;
+}
+
+
+
+.recipe-card-box {
+    position: relative; /* 신고 버튼 배치용 */
+    width: 100%;
+}
+
+/* --- 신고 버튼 (Main과 통일) --- */
+/* 1. 카드 박스 (상대 위치의 기준) */
+.recipe-card-box {
+    position: relative;
+    width: 100%;
+    /* 카드의 전체 클릭 영역과 버튼 영역이 겹치지 않게 여유 공간 확보 */
+}
+
+/* 2. 신고 버튼 (좌측 상단으로 이동) */
+.report_trigger_btn {
+    position: absolute;
+    top: 12px;
+    left: 12px; /* 👈 오른쪽에서 왼쪽으로 변경하여 북마크와 거리 확보 */
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    color: #999;
+    transition: all 0.2s ease;
+}
+
+.report_trigger_btn:hover {
+    background: #ffffff;
+    color: #ff4d4f; /* 호버 시 경고 의미의 빨간색 */
+}
+
+/* 3. 북마크 버튼 (Card 컴포넌트 내부에 있다면 스타일 간섭 방지) */
+/* 보통 Card 컴포넌트 우측 하단에 위치하므로, 위 report_trigger_btn과 대각선 끝에 놓이게 됩니다. */
+
+.report_trigger_btn:hover {
+    color: #ff4d4f;
+    transform: scale(1.1);
+}
+
+/* --- 로딩 및 기타 --- */
+.loading_box {
+    text-align: center;
+    padding: 60px 0;
+    color: #667eea;
+}
+
+.spinner {
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    100% { transform: rotate(360deg); }
+}
+
+.no_result {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 20px;
+    border: 1px dashed #ddd;
+}
+
+.reset_btn {
+    margin-top: 12px;
+    background: #667eea;
     color: white;
     border: none;
-    border-radius: 8px;
+    padding: 8px 20px;
+    border-radius: 10px;
     cursor: pointer;
 }

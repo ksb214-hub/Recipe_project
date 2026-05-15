@@ -43,8 +43,6 @@ export default function RecipeDetail() {
 
   return (
     <div className="recipe_detail_page">
-      <Header />
-
       <div className="detail_thumbnail">
         <img
           src={recipe.thumbnailImageUrl}

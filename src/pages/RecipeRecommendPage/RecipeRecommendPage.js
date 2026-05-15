@@ -1,87 +1,57 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, CheckCircle2, ChevronRight, Refrigerator } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronRight, Refrigerator, Flame, Loader2 } from "lucide-react";
 import "./RecipeRecommendPage.css";
-
-/* ---------------------------------------------------------
-   1. 더미 데이터 (백엔드 연동 전 테스트용)
-   --------------------------------------------------------- */
-const DUMMY_MY_FRIDGE = [
-  { ingredientId: 1, name: "계란", expiryDate: "2026-05-01" }, // D-1 (오늘 4월 30일 기준)
-  { ingredientId: 2, name: "우유", expiryDate: "2026-05-01" }, // D-1
-  { ingredientId: 3, name: "양파", expiryDate: "2026-05-05" }, // 여유
-  { ingredientId: 4, name: "베이컨", expiryDate: "2026-05-02" }, // D-2
-];
-
-const DUMMY_RECIPES = [
-  {
-    id: 101,
-    title: "초간단 계란 토스트",
-    description: "유통기한 임박한 계란과 우유를 한 번에 소비하세요!",
-    thumbnailImageUrl: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500",
-    ingredients: [
-      { ingredientId: 1, name: "계란" },
-      { ingredientId: 2, name: "우유" },
-      { ingredientId: 10, name: "식빵" }
-    ]
-  },
-  {
-    id: 102,
-    title: "양파 베이컨 볶음",
-    description: "남은 재료로 만드는 훌륭한 반찬",
-    thumbnailImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500",
-    ingredients: [
-      { ingredientId: 3, name: "양파" },
-      { ingredientId: 4, name: "베이컨" }
-    ]
-  }
-];
+import customInstance from "../../api/api";
 
 export default function RecipeRecommendPage() {
   const navigate = useNavigate();
-  const [urgentIngredients, setUrgentIngredients] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
+  
+  // 서버로부터 받을 추천 카테고리별 상태 관리
+  const [recommendData, setRecommendData] = useState({
+    expiringIngredientBased: [], // 유통기한 임박 기반
+    ingredientBased: [],         // 일반 보유 재료 기반
+    popular: [],                 // 인기 레시피
+  });
+  const [loading, setLoading] = useState(true);
 
-  /* 2. 유통기한 계산 로직 */
-  const calculateDDay = (expiryDate) => {
-    const today = new Date("2026-04-30"); // 테스트용 오늘 날짜 고정
-    const expire = new Date(expiryDate);
-    const diff = expire - today;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  };
+  /* ---------------------------------------------------------
+     1. 데이터 로드 (GET: /api/recipes/recommendations)
+     --------------------------------------------------------- */
+  const fetchRecommendations = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log("📡 추천 레시피 API 호출 중...");
+      const res = await customInstance.get("/api/recipes/recommendations");
+      
+      if (res.data?.success) {
+        console.log("✅ 추천 데이터 로드 완료:", res.data.data);
+        setRecommendData({
+          expiringIngredientBased: res.data.data.expiringIngredientBased || [],
+          ingredientBased: res.data.data.ingredientBased || [],
+          popular: res.data.data.popular || []
+        });
+      }
+    } catch (err) {
+      console.error("❌ 추천 데이터 로드 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // A. 냉장고 재료 가공
-    const myIngs = DUMMY_MY_FRIDGE.map(ing => ({
-      ...ing,
-      dDay: calculateDDay(ing.expiryDate)
-    }));
+    fetchRecommendations();
+  }, [fetchRecommendations]);
 
-    // B. D-1 이하 임박 재료만 필터링
-    const urgentOnes = myIngs.filter(ing => ing.dDay <= 1);
-    setUrgentIngredients(urgentOnes);
-
-    // C. 추천 로직: 임박 재료가 포함된 레시피 매칭
-    const urgentIds = urgentOnes.map(i => i.ingredientId);
-    
-    const matched = DUMMY_RECIPES.map(recipe => {
-      const recipeIngIds = recipe.ingredients.map(ri => ri.ingredientId);
-      const myAllIngIds = myIngs.map(i => i.ingredientId);
-      
-      // 내 전체 재료 중 이 레시피와 겹치는 개수
-      const matchCount = recipeIngIds.filter(id => myAllIngIds.includes(id)).length;
-      const matchRate = Math.round((matchCount / recipeIngIds.length) * 100);
-      
-      // 임박 재료가 포함되어 있는지 확인
-      const hasUrgent = recipeIngIds.some(id => urgentIds.includes(id));
-
-      return { ...recipe, matchRate, hasUrgent };
-    })
-    .filter(r => r.hasUrgent) // 임박 재료 있는 것만 노출
-    .sort((a, b) => b.matchRate - a.matchRate);
-
-    setRecommendations(matched);
-  }, []);
+  // 로딩 중 UI
+  if (loading) {
+    return (
+      <div className="recommend_loading">
+        <Loader2 className="spinner" size={40} />
+        <p>성빈님의 냉장고를 분석하여 레시피를 찾고 있어요...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="recommend_container">
@@ -91,45 +61,68 @@ export default function RecipeRecommendPage() {
         <p>음식물 쓰레기를 줄이기 위한 맞춤 추천</p>
       </header>
 
-      {/* 1. 유통기한 임박 재료 (D-1) */}
-      <section className="urgent_section">
-        <h2 className="title_red"><AlertCircle size={20} /> 오늘 내로 사용 권장!</h2>
-        <div className="ing_tag_list">
-          {urgentIngredients.map(ing => (
-            <div key={ing.ingredientId} className="urgent_tag">
-              <span className="badge_d1">D-{ing.dDay}</span>
-              <span className="name">{ing.name}</span>
-            </div>
-          ))}
+      {/* 1. 유통기한 임박 재료 기반 추천 (expiringIngredientBased) */}
+      <section className="recipe_section">
+        <h2 className="title_red"><AlertCircle size={20} /> 유통기한 임박! 지금 만드세요</h2>
+        <div className="recommend_list">
+          {recommendData.expiringIngredientBased.length > 0 ? (
+            recommendData.expiringIngredientBased.map(recipe => (
+              <RecipeRow key={recipe.id} recipe={recipe} navigate={navigate} tagType="urgent" />
+            ))
+          ) : (
+            <p className="empty_msg">현재 유통기한이 임박한 재료가 없습니다. 👍</p>
+          )}
         </div>
       </section>
 
-      {/* 2. 추천 레시피 리스트 */}
+      {/* 2. 내 재료 기반 추천 (ingredientBased) */}
       <section className="recipe_section">
-        <h2 className="title_green"><CheckCircle2 size={20} /> 임박 재료 활용 레시피</h2>
+        <h2 className="title_green"><CheckCircle2 size={20} /> 내 냉장고 재료 맞춤 레시피</h2>
         <div className="recommend_list">
-          {recommendations.map(recipe => (
-            <div key={recipe.id} className="recommend_card" onClick={() => navigate(`/recipe/${recipe.id}`)}>
-              <div className="card_img">
-                <img src={recipe.thumbnailImageUrl} alt={recipe.title} />
-                <div className="rate_layer">{recipe.matchRate}% 일치</div>
-              </div>
-              <div className="card_content">
-                <h3>{recipe.title}</h3>
-                <p>{recipe.description}</p>
-                <div className="card_tags">
-                  {recipe.ingredients.map(ri => (
-                    <span key={ri.ingredientId} className={urgentIngredients.some(ui => ui.ingredientId === ri.ingredientId) ? "tag_urgent" : "tag_normal"}>
-                      {ri.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <ChevronRight className="arrow" />
-            </div>
+          {recommendData.ingredientBased.length > 0 ? (
+            recommendData.ingredientBased.map(recipe => (
+              <RecipeRow key={recipe.id} recipe={recipe} navigate={navigate} tagType="match" />
+            ))
+          ) : (
+            <p className="empty_msg">재료를 등록하고 맞춤 레시피를 확인해보세요!</p>
+          )}
+        </div>
+      </section>
+
+      {/* 3. 요즘 뜨는 인기 레시피 (popular) */}
+      <section className="recipe_section">
+        <h2 className="title_orange"><Flame size={20} /> 지금 가장 인기 있는 요리</h2>
+        <div className="recommend_list">
+          {recommendData.popular.map(recipe => (
+            <RecipeRow key={recipe.id} recipe={recipe} navigate={navigate} tagType="view" />
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+/**
+ * 추천 리스트의 개별 행(Row) 컴포넌트
+ */
+function RecipeRow({ recipe, navigate, tagType }) {
+  return (
+    <div className="recommend_card" onClick={() => navigate(`/recipe/${recipe.id}`)}>
+      <div className="card_img">
+        <img src={recipe.thumbnailImageUrl} alt={recipe.title} />
+        {tagType === 'view' && recipe.viewCount !== undefined && (
+          <div className="rate_layer">조회수 {recipe.viewCount}</div>
+        )}
+      </div>
+      <div className="card_content">
+        <h3>{recipe.title}</h3>
+        <p className="author">By {recipe.authorNickname || "공공데이터"}</p>
+        <div className="card_tags">
+          <span className="tag_normal">#{recipe.id}</span>
+          <span className="tag_date">{new Date(recipe.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <ChevronRight className="arrow" />
     </div>
   );
 }
