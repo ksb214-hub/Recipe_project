@@ -11,9 +11,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: admin
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    # 💡 단순히 컨테이너 시작을 기다리는 것이 아닌, 완전히 건강한(Healthy) 상태가 될 때까지 대기합니다.
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
   mysql:
@@ -27,6 +30,12 @@ services:
       - "3307:3306"
     volumes:
       - zeronaeng_mysql_data:/var/lib/mysql
+    # 💡 MySQL 초기 스크립트 실행 및 핸드셰이크가 끝날 때까지 대기하기 위한 헬스체크
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padmin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   redis:
@@ -36,6 +45,12 @@ services:
       - "6379:6379"
     volumes:
       - zeronaeng_redis_data:/data
+    # 💡 Redis 엔진이 정상 부팅되어 PING-PONG 통신이 수립되었는지 검증하는 헬스체크 추가
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
 volumes:
