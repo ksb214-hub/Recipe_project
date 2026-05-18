@@ -25,7 +25,7 @@ export default function Main() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 북마크된 ID 목록 (숫자형 배열로 관리)
+  // 북마크된 ID 목록 (숫자형 배열로 관리, 실시간 동기화 상태)
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
 
   /* --- 신고 기능을 위한 상태 --- */
@@ -33,7 +33,24 @@ export default function Main() {
   const [reportTarget, setReportTarget] = useState("");
 
   /* ---------------------------------------------------------
-     1. 데이터 로드 (레시피, 식재료, 북마크 상태)
+     🔥 [추가] 로그인한 유저의 기존 북마크 ID 리스트 동기화 함수
+     --------------------------------------------------------- */
+  const fetchBookmarkedIds = useCallback(async () => {
+    try {
+      console.log("📡 [GET] /api/recipe/bookmarks/ids (기존 북마크 ID 목록 조회)");
+      const bookmarkRes = await customInstance.get("/api/recipe/bookmarks/ids");
+      
+      // 백엔드 공통 응답 규격 다중 방어 파싱 (data 필드가 존재하면 매핑)
+      const ids = bookmarkRes.data?.data || bookmarkRes.data || [];
+      console.log("✨ [동기화 성공] 현재 메인에서 인식한 유저 북마크 레시피 ID 목록:", ids);
+      setBookmarkedIds(ids);
+    } catch (err) {
+      console.error("❌ 기존 북마크 ID 목록 로드 실패:", err);
+    }
+  }, []);
+
+  /* ---------------------------------------------------------
+     1. 데이터 로드 (레시피, 식재료 목록 및 북마크 교차 연동)
      --------------------------------------------------------- */
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
@@ -48,17 +65,15 @@ export default function Main() {
       });
       setRecipes(recipeRes.data?.data?.content || []);
 
-      // 3. 사용자의 북마크 ID 목록 조회 (설계 문서 4.2 반영)
-      // 서버에서 [1178, 1175, ...] 와 같은 숫자 배열을 내려준다고 가정합니다.
-      const bookmarkRes = await customInstance.get("/api/recipe/bookmarks/ids");
-      setBookmarkedIds(bookmarkRes.data?.data || []);
+      // 💡 [해결 핵심 연동] 컴포넌트 마운트 시점에 실제 서버 DB에 기록된 하트 정보 가동
+      await fetchBookmarkedIds();
 
     } catch (err) { 
       console.error("데이터 로드 중 오류 발생:", err); 
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchBookmarkedIds]);
 
   useEffect(() => {
     fetchInitialData();
@@ -80,25 +95,49 @@ export default function Main() {
      2. 핸들러 (북마크 토글, 신고, 검색)
      --------------------------------------------------------- */
   
-  // ✅ 북마크 토글 기능 (설계 문서 4.1, 4.4 반영)
+  // ✅ 북마크 토글 기능 (사용자가 누를 때만 동작 및 409 Conflict 자가 치유 내장)
+  /* ---------------------------------------------------------
+     2. 핸들러 (북마크 토글, 신고, 검색)
+     --------------------------------------------------------- */
+  
+  // ✅ 북마크 토글 기능 (URL 패스 파라미터 규격 반영 및 409 자가치유)
   const toggleBookmark = async (e, recipeId) => {
     e.stopPropagation(); // 카드 상세 이동 방지
+    e.preventDefault();
     
+    // 현재 메모리 상태 배열에 존재하는지 체크
     const isAlreadyBookmarked = bookmarkedIds.includes(recipeId);
 
     try {
       if (isAlreadyBookmarked) {
-        // 이미 북마크 된 경우 -> DELETE 요청
+        // 1. 이미 북마크 된 경우 -> DELETE /api/recipes/{id}/bookmark
+        console.log(`📤 [DELETE] 북마크 해제 요청 - 레시피 ID: ${recipeId}`);
+        
+        // 💡 Axios의 delete 메서드는 두 번째 인자가 config 객체이므로 URL에 id를 직접 바인딩하는 것이 가장 안전합니다.
         await customInstance.delete(`/api/recipes/${recipeId}/bookmark`);
+        
+        // 프론트엔드 상태 즉시 반영 (하트 끄기)
         setBookmarkedIds(prev => prev.filter(id => id !== recipeId));
       } else {
-        // 북마크 안 된 경우 -> POST 요청
-        await customInstance.post(`/api/recipes/${recipeId}/bookmark`);
+        // 2. 북마크 안 된 경우 -> POST /api/recipes/{id}/bookmark
+        console.log(`📤 [POST] 북마크 등록 요청 - 레시피 ID: ${recipeId}`);
+        
+        // 💡 POST 요청 역시 URL 패스로 id를 넘기며, body는 빈 객체({})로 전달해 규격을 맞춥니다.
+        await customInstance.post(`/api/recipes/${recipeId}/bookmark`, {});
+        
+        // 프론트엔드 상태 즉시 반영 (하트 켜기)
         setBookmarkedIds(prev => [...prev, recipeId]);
       }
     } catch (err) {
-      console.error("북마크 처리 실패:", err);
-      alert("북마크 요청 중 문제가 발생했습니다.");
+      console.error("❌ 북마크 처리 실패:", err);
+      
+      // 💡 만약 브라우저 렌더링 상태 싱크가 순간적으로 튀어서 409 Conflict가 발생하면 자동 동기화
+      if (err.response?.status === 409) {
+        console.warn("⚠️ [싱크 충돌 감지] 실제 DB 상태 정렬을 위해 북마크 데이터를 새로고침합니다.");
+        fetchBookmarkedIds(); 
+      } else {
+        alert("북마크 처리 중 오류가 발생했습니다.");
+      }
     }
   };
 
@@ -119,7 +158,7 @@ export default function Main() {
   };
 
   /* ---------------------------------------------------------
-     3. 데이터 가공 및 UI 렌더링
+     3. 데이터 가공 및 UI 렌더링 (오리지널 가공 필터링 100% 보존)
      --------------------------------------------------------- */
   const suggestions = useMemo(() => {
     if (!searchTerm) return [];

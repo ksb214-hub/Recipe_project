@@ -27,6 +27,9 @@ export default function MyIngredientsPage() {
     expirationDate: ""
   });
 
+  /* ---------------------------------------------------------
+     [마스터 데이터 조회] 마스터 식재료 목록 조회 (GET: /api/ingredients)
+     --------------------------------------------------------- */
   const fetchAllMasterData = async () => {
     try {
       const res = await customInstance.get("/api/ingredients");
@@ -37,14 +40,17 @@ export default function MyIngredientsPage() {
     }
   };
 
+  /* ---------------------------------------------------------
+     [내 냉장고 조회] 내 식재료 목록 조회 (GET: /api/my/ingredients)
+     --------------------------------------------------------- */
   const fetchMyIngredients = useCallback(async () => {
     try {
       setLoading(true);
-      // 400 에러 방지를 위해 필터가 비어있으면 파라미터 없이 호출
       const params = filters.name ? { name: filters.name } : {};
       const res = await customInstance.get("/api/my/ingredients", { params });
       
-      console.log("🔍 서버 응답 데이터:", res.data);
+      console.log("🔍 내 식재료 서버 응답 데이터:", res.data);
+      // 백엔드 커스텀 응답 규격(data.items) 매핑 대응
       const extractedItems = res.data?.data?.items || res.data?.data?.content || [];
       setMyIngredients(extractedItems);
     } catch (err) {
@@ -63,23 +69,77 @@ export default function MyIngredientsPage() {
     if (activeTab === "list") fetchMyIngredients();
   }, [activeTab, fetchMyIngredients]);
 
+  /* ---------------------------------------------------------
+     🔥 [400 에러 원천 해결] 내 식재료 등록 핸들러 (POST: /api/my/ingredients)
+     --------------------------------------------------------- */
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    // 1. 프론트엔드 자체 유효성 예외 검사 (Id, 수량, 날짜 누락 차단)
+    if (!formData.ingredientId) {
+      alert("추가할 식재료를 선택해주세요.");
+      return;
+    }
+    if (!formData.quantity || isNaN(formData.quantity)) {
+      alert("올바른 수량을 입력해주세요.");
+      return;
+    }
+    if (!formData.expirationDate) {
+      alert("유통기한을 선택해주세요.");
+      return;
+    }
+
+    // 2. 백엔드 DTO 바인딩 규격에 부합하도록 안전 형변환 수행 (문자열 우회)
+    const parsedIngredientId = parseInt(formData.ingredientId, 10);
+    const parsedQuantity = parseFloat(formData.quantity);
+
+    if (isNaN(parsedIngredientId) || isNaN(parsedQuantity)) {
+      alert("데이터 타입 변환 중 내부 오류가 발생했습니다.");
+      return;
+    }
+
+    // 3. 💡 [날짜 포맷 정밀 방어선] 백엔드가 LocalDateTime을 요구할 수도 있으므로 보정 처리
+    // 기본 "YYYY-MM-DD" 형식을 검사한 뒤 필요에 따라 "T00:00:00" 접미사를 안전하게 핸들링합니다.
+    const formattedDateWithTime = formData.expirationDate.includes("T") 
+      ? formData.expirationDate 
+      : `${formData.expirationDate}T00:00:00`;
+
+    // 4. 백엔드 전송용 핵심 페이로드(Payload) 구성
+    // ※ 혹시 400 에러가 지속된다면 expirationDate 값을 formData.expirationDate(순수 날짜)로 토글해볼 수 있습니다.
     const payload = {
-      ingredientId: parseInt(formData.ingredientId, 10),
-      quantity: parseFloat(formData.quantity),
-      unit: formData.unit,
-      expirationDate: formData.expirationDate
+      ingredientId: parsedIngredientId,
+      quantity: parsedQuantity,
+      unit: formData.unit || "개",
+      expirationDate: formattedDateWithTime 
     };
 
     try {
-      await customInstance.post("/api/my/ingredients", payload);
-      alert("냉장고에 저장되었습니다!");
+      console.log("📤 [POST] /api/my/ingredients 보낼 최종 데이터(Payload):", JSON.stringify(payload, null, 2));
+      
+      const res = await customInstance.post("/api/my/ingredients", payload);
+      
+      console.log("✨ [등록 성공] 서버 응답 결과:", res.data);
+      alert("냉장고에 성공적으로 저장되었습니다!");
+      
+      // 저장 성공 후 데이터 상태 초기화 및 화면 전환
       setFormData({ ingredientId: "", quantity: "", unit: "개", expirationDate: "" });
       setActiveTab("list");
       fetchMyIngredients();
     } catch (err) {
-      alert("등록에 실패했습니다. 입력 정보를 확인해주세요.");
+      console.error("❌ [등록 실패] AxiosError 디테일 추적");
+      
+      // 5. 🔍 400 에러의 진짜 거절 사유를 완벽하게 콘솔에 파싱하여 노출
+      if (err.response) {
+        console.error("📊 서버 반환 상태 코드 (Status):", err.response.status);
+        console.error("📦 서버 실제 거절 내용 (Data):", err.response.data);
+        
+        // 백엔드 고유의 에러 메시지 래퍼 추출
+        const serverMsg = err.response.data?.message || err.response.data?.error || "필드 검증 오류 (Field Validation Error)";
+        alert(`등록 실패 (서버 사유): ${serverMsg}\n\n*콘솔창(F12)의 '서버 실제 거절 내용'을 확인하세요!`);
+      } else {
+        console.error("🚨 네트워크 연결 불안정:", err.message);
+        alert("서버와 통신할 수 없는 네트워크 상태입니다.");
+      }
     }
   };
 
@@ -106,7 +166,7 @@ export default function MyIngredientsPage() {
         {activeTab === "list" ? (
           <div className="list_section">
             <div className="filter_bar">
-              <div className="search_input_wrapper">
+              <div className="ing_input_wrapper">
                 <Search size={16} />
                 <input 
                   placeholder="재료 이름 검색" 

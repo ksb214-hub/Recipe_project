@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Header from "../../components/Header/Header"; 
 import { Bell, Lock, Globe, Moon, Shield, HelpCircle, ChevronRight } from "lucide-react";
 import "./SettingsPage.css";
 

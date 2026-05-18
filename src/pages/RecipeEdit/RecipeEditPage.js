@@ -1,219 +1,340 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import '../RecipeReg/RecipeRegPage.css';
-import Input from "../../components/Input/Input";
-import Button from "../../components/Button/Button";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ChevronLeft, Plus, Trash2, Save, Loader2, Image } from "lucide-react";
 import customInstance from "../../api/api";
-import { Plus, Trash2 } from "lucide-react"; // 아이콘 추가
+import "./RecipeEditPage.css"; // 아래 제공되는 CSS와 매칭됩니다.
 
-function RecipeEditPage() {
+export default function RecipeEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  /* ---------------------------------------------------------
-     1. 상태 관리
-     --------------------------------------------------------- */
+  /* --- 상태 관리 --- */
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // 레시피 기본 정보
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("기타");
+  const [cookingTime, setCookingTime] = useState("");
+  const [servings, setServings] = useState("");
+  const [difficulty, setDifficulty] = useState("초급");
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState("");
+
+  // 레시피 세부 기능 리스트 (🥕 재료 및 👩‍🍳 조리 순서)
   const [ingredients, setIngredients] = useState([]);
   const [steps, setSteps] = useState([]);
-  
-  const [availableIngredients, setAvailableIngredients] = useState([]); 
-  const [loading, setLoading] = useState(false);
 
   /* ---------------------------------------------------------
-     2. 데이터 불러오기 (데이터 정제 로직 추가)
+     1. 기존 레시피 데이터 로드 (GET: /api/recipes/{id})
      --------------------------------------------------------- */
-  const fetchRecipeDetail = useCallback(async () => {
-    try {
-      setLoading(true);
-      // 1. 마스터 식재료 목록 로드
-      const ingRes = await customInstance.get("/api/ingredients");
-      const ingList = ingRes.data?.data?.content || ingRes.data?.data || [];
-      setAvailableIngredients(ingList);
-
-      // 2. 수정할 레시피 상세 정보 로드
-      const res = await customInstance.get(`/api/recipes/${id}`);
-      const data = res.data?.data || res.data;
-
-      setTitle(data.title || "");
-      setDescription(data.description || "");
-      setThumbnailImageUrl(data.thumbnailImageUrl || "");
-      
-      // ✅ 중요: 서버에서 온 재료 데이터에서 ID만 추출하여 상태 설정
-      if (data.ingredients) {
-        const formattedIngs = data.ingredients.map(ing => ({
-          ingredientId: ing.ingredientId || ing.id, // 필드명 대응
-          amount: ing.amount || ""
-        }));
-        setIngredients(formattedIngs);
+  useEffect(() => {
+    const fetchOriginalRecipe = async () => {
+      try {
+        setLoading(true);
+        const res = await customInstance.get(`/api/recipes/${id}`);
+        if (res.data?.success) {
+          const data = res.data.data;
+          setTitle(data.title || "");
+          setDescription(data.description || "");
+          setCategory(data.category || "기타");
+          setCookingTime(data.cookingTime || "");
+          setServings(data.servings || "");
+          setDifficulty(data.difficulty || "초급");
+          setThumbnailImageUrl(data.thumbnailImageUrl || "");
+          setIngredients(data.ingredients || []);
+          setSteps(data.steps ? [...data.steps].sort((a, b) => a.stepNo - b.stepNo) : []);
+        }
+      } catch (err) {
+        console.error("수정할 레시피 로드 실패:", err);
+        alert("레시피 데이터를 불러오지 못했습니다.");
+        navigate(-1);
+      } finally {
+        setLoading(false);
       }
-
-      // ✅ 조리 순서 정제
-      if (data.steps) {
-        const formattedSteps = [...data.steps]
-          .sort((a, b) => a.stepNo - b.stepNo)
-          .map(s => ({
-            description: s.description || s.content || "",
-            cookingImageUrl: s.cookingImageUrl || ""
-          }));
-        setSteps(formattedSteps);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("데이터를 불러오는데 실패했습니다.");
-      navigate(-1);
-    } finally {
-      setLoading(false);
-    }
+    };
+    fetchOriginalRecipe();
   }, [id, navigate]);
 
-  useEffect(() => { fetchRecipeDetail(); }, [fetchRecipeDetail]);
-
   /* ---------------------------------------------------------
-     3. 핸들러 (추가/삭제/수정)
+     2. 🥕 필수 재료 동적 핸들러
      --------------------------------------------------------- */
-  // 재료 관련
-  const addIngredient = () => setIngredients([...ingredients, { ingredientId: availableIngredients[0]?.id || "", amount: "" }]);
-  const removeIngredient = (index) => setIngredients(ingredients.filter((_, i) => i !== index));
+  const handleAddIngredient = () => {
+    setIngredients([...ingredients, { name: "", amount: "" }]);
+  };
+
   const handleIngredientChange = (index, field, value) => {
-    const newIng = [...ingredients];
-    newIng[index][field] = value;
-    setIngredients(newIng);
+    const updated = [...ingredients];
+    updated[index][field] = value;
+    setIngredients(updated);
   };
 
-  // 단계 관련
-  const addStep = () => setSteps([...steps, { description: "", cookingImageUrl: "" }]);
-  const removeStep = (index) => setSteps(steps.filter((_, i) => i !== index));
-  const handleStepChange = (index, field, value) => {
-    const newSteps = [...steps];
-    newSteps[index][field] = value;
-    setSteps(newSteps);
+  const handleRemoveIngredient = (index) => {
+    setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
   /* ---------------------------------------------------------
-     4. 수정 요청 (PUT)
+     3. 👩‍🍳 조리 순서 동적 핸들러
      --------------------------------------------------------- */
-  const handleUpdate = async (e) => {
+  const handleAddStep = () => {
+    const nextStepNo = steps.length + 1;
+    setSteps([...steps, { stepNo: nextStepNo, description: "", cookingImageUrl: "" }]);
+  };
+
+  const handleStepChange = (index, field, value) => {
+    const updated = [...steps];
+    updated[index][field] = value;
+    setSteps(updated);
+  };
+
+  const handleRemoveStep = (index) => {
+    const filtered = steps.filter((_, i) => i !== index);
+    // 재정렬을 통해 stepNo 순차 순서 보장
+    const reordered = filtered.map((step, idx) => ({
+      ...step,
+      stepNo: idx + 1,
+    }));
+    setSteps(reordered);
+  };
+
+  /* ---------------------------------------------------------
+     4. 수정 완료 및 서버 전송 (PUT: /api/recipes/{id})
+     --------------------------------------------------------- */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // 유효성 검사 강화
     if (!title.trim()) return alert("레시피 제목을 입력해주세요.");
-    if (ingredients.length === 0) return alert("최소 하나 이상의 재료를 등록해주세요.");
-    if (ingredients.some(ing => !ing.amount)) return alert("재료의 양을 모두 입력해주세요.");
+    if (ingredients.length === 0) return alert("최소 한 개 이상의 재료를 추가해주세요.");
 
-    setLoading(true);
     try {
+      setSaving(true);
       const payload = {
         title,
         description,
+        category,
+        cookingTime,
+        servings,
+        difficulty,
         thumbnailImageUrl,
-        ingredients: ingredients.map(ing => ({
-          ingredientId: Number(ing.ingredientId),
-          amount: String(ing.amount)
-        })),
-        steps: steps.map((s, i) => ({
-          stepNo: i + 1,
-          description: s.description,
-          cookingImageUrl: s.cookingImageUrl
-        }))
+        ingredients,
+        steps,
       };
 
-      await customInstance.put(`/api/recipes/${id}`, payload);
-
-      alert("레시피가 성공적으로 수정되었습니다!");
-      navigate(`/recipe/${id}`);
+      const res = await customInstance.put(`/api/recipes/${id}`, payload);
+      if (res.data?.success) {
+        alert("레시피가 정상적으로 수정되었습니다.");
+        navigate(`/recipe/${id}`); // 수정 완료 후 상세페이지로 이동
+      }
     } catch (err) {
-      alert("수정 실패: " + (err.response?.data?.message || "서버 오류"));
+      console.error("레시피 수정 실패:", err);
+      alert("수정 요청 중 오류가 발생했습니다.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  if (loading && !title) return <div className="loading_container">로딩 중...</div>;
+  if (loading) {
+    return (
+      <div className="edit_loading">
+        <Loader2 className="spinner" size={40} />
+        <p>수정할 내용을 불러오는 중입니다...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="recipe_reg_container">
-      <main className="recipe_main_content">
-        <h2 className="reg_title">레시피 수정하기</h2>
-        
-        <form className="recipe_input_section" onSubmit={handleUpdate}>
-          {/* 기본 정보 */}
-          <section className="form_group">
-            <Input label="레시피 제목" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예) 매콤 김치찌개" />
-            <Input label="레시피 설명" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="간단한 소개를 적어주세요." />
-            <Input label="대표 이미지 URL" value={thumbnailImageUrl} onChange={(e) => setThumbnailImageUrl(e.target.value)} placeholder="https://..." />
-          </section>
+    <div className="recipe_edit_page">
+      {/* 상단바 */}
+      <div className="edit_top_nav">
+        <button onClick={() => navigate(-1)} className="nav_icon_btn">
+          <ChevronLeft size={24} />
+        </button>
+        <h2>레시피 수정</h2>
+        <button onClick={handleSubmit} className="save_text_btn" disabled={saving}>
+          {saving ? <Loader2 className="spinner" size={18} /> : <Save size={20} />}
+        </button>
+      </div>
 
-          {/* 재료 섹션 */}
-          <section className="form_group">
-            <div className="section_header">
-              <h3>🥕 재료 수정</h3>
-              <Button type="button" onClick={addIngredient} className="add_btn"><Plus size={16} /> 추가</Button>
+      <form onSubmit={handleSubmit} className="edit_form_container">
+        {/* 대표 이미지 미리보기 및 URL 입력 */}
+        <div className="edit_section image_upload_section">
+          <label className="section_label">대표 이미지 URL</label>
+          <div className="url_input_box">
+            <Image size={18} className="input_icon" />
+            <input
+              type="text"
+              placeholder="https://example.com/image.jpg"
+              value={thumbnailImageUrl}
+              onChange={(e) => setThumbnailImageUrl(e.target.value)}
+            />
+          </div>
+          {thumbnailImageUrl && (
+            <div className="edit_thumbnail_preview">
+              <img src={thumbnailImageUrl} alt="미리보기" referrerPolicy="no-referrer" />
             </div>
-            {ingredients.map((ing, index) => (
-              <div key={`ing-${index}`} className="input_row">
-                <select 
-                  className="ingredient_select" 
-                  value={ing.ingredientId} 
-                  onChange={(e) => handleIngredientChange(index, "ingredientId", e.target.value)}
-                >
-                  <option value="">재료 선택</option>
-                  {availableIngredients.map(item => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))}
-                </select>
-                <input 
-                  className="amount_input"
-                  placeholder="양 (예: 2큰술)" 
-                  value={ing.amount} 
-                  onChange={(e) => handleIngredientChange(index, "amount", e.target.value)} 
+          )}
+        </div>
+
+        {/* 기본 정보 */}
+        <div className="edit_section">
+          <label className="section_label">레시피 제목</label>
+          <input
+            type="text"
+            className="base_input"
+            placeholder="예) 촉촉한 계란 토스트"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+
+        <div className="edit_section">
+          <label className="section_label">요리 요약 설명</label>
+          <textarea
+            className="base_textarea"
+            placeholder="레시피에 대한 간단한 설명을 입력하세요."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {/* 메타 정보 메인 그리드 */}
+        <div className="meta_grid_inputs">
+          <div className="grid_item">
+            <label>카테고리</label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option value="한식">한식</option>
+              <option value="양식">양식</option>
+              <option value="일식">일식</option>
+              <option value="중식">중식</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div className="grid_item">
+            <label>난이도</label>
+            <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+              <option value="초급">초급</option>
+              <option value="중급">중급</option>
+              <option value="고급">고급</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="meta_grid_inputs">
+          <div className="grid_item">
+            <label>조리 시간</label>
+            <input
+              type="text"
+              placeholder="예) 15분"
+              value={cookingTime}
+              onChange={(e) => setCookingTime(e.target.value)}
+            />
+          </div>
+          <div className="grid_item">
+            <label>인분 수 기준</label>
+            <input
+              type="text"
+              placeholder="예) 2인분"
+              value={servings}
+              onChange={(e) => setServings(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* 🥕 필수 재료 편집 기능 영역 */}
+        <div className="edit_section">
+          <div className="section_title_flex">
+            <h3 className="sub_title_badge">🥕 필수 재료</h3>
+            <button type="button" onClick={handleAddIngredient} className="add_list_btn">
+              <Plus size={16} /> 추가
+            </button>
+          </div>
+
+          <div className="dynamic_list_container">
+            {ingredients.map((ing, idx) => (
+              <div key={idx} className="dynamic_item_row ingredient_row">
+                <input
+                  type="text"
+                  placeholder="재료명 (계란)"
+                  value={ing.name}
+                  onChange={(e) => handleIngredientChange(idx, "name", e.target.value)}
+                  className="flex_input_two"
                 />
-                <button type="button" className="remove_btn" onClick={() => removeIngredient(index)}><Trash2 size={18} /></button>
+                <input
+                  type="text"
+                  placeholder="계량 (2개)"
+                  value={ing.amount}
+                  onChange={(e) => handleIngredientChange(idx, "amount", e.target.value)}
+                  className="flex_input_one"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveIngredient(idx)}
+                  className="row_del_btn"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             ))}
-          </section>
+            {ingredients.length === 0 && (
+              <p className="empty_warn_text">등록된 재료가 없습니다. 추가를 눌러주세요.</p>
+            )}
+          </div>
+        </div>
 
-          {/* 요리 순서 섹션 */}
-          <section className="form_group">
-            <div className="section_header">
-              <h3>👩‍🍳 요리 순서 수정</h3>
-              <Button type="button" onClick={addStep} className="add_btn"><Plus size={16} /> 단계 추가</Button>
-            </div>
-            {steps.map((step, index) => (
-              <div key={`step-${index}`} className="step_edit_box">
-                <div className="step_label">
-                  <span>Step {index + 1}</span>
-                  <button type="button" className="remove_btn_small" onClick={() => removeStep(index)}>삭제</button>
+        {/* 👩‍🍳 조리 순서 편집 기능 영역 */}
+        <div className="edit_section">
+          <div className="section_title_flex">
+            <h3 className="sub_title_badge">👩‍🍳 조리 순서</h3>
+            <button type="button" onClick={handleAddStep} className="add_list_btn">
+              <Plus size={16} /> 추가
+            </button>
+          </div>
+
+          <div className="dynamic_list_container">
+            {steps.map((step, idx) => (
+              <div key={idx} className="step_edit_card">
+                <div className="step_card_header">
+                  <span className="step_number_label">Step {step.stepNo}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveStep(idx)}
+                    className="row_del_btn"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
-                <textarea 
-                  className="step_textarea"
+                <textarea
                   placeholder="조리 과정을 상세히 적어주세요."
                   value={step.description}
-                  onChange={(e) => handleStepChange(index, "description", e.target.value)}
+                  onChange={(e) => handleStepChange(idx, "description", e.target.value)}
+                  className="step_textarea"
                 />
-                <Input 
-                  placeholder="단계별 이미지 URL (선택)" 
-                  value={step.cookingImageUrl} 
-                  onChange={(e) => handleStepChange(index, "cookingImageUrl", e.target.value)} 
-                />
+                <div className="url_input_box step_img_url_box">
+                  <Image size={14} className="input_icon" />
+                  <input
+                    type="text"
+                    placeholder="과정 이미지 URL (선택)"
+                    value={step.cookingImageUrl || ""}
+                    onChange={(e) => handleStepChange(idx, "cookingImageUrl", e.target.value)}
+                  />
+                </div>
+                {step.cookingImageUrl && (
+                  <div className="step_preview_img">
+                    <img src={step.cookingImageUrl} alt="과정 미리보기" referrerPolicy="no-referrer" />
+                  </div>
+                )}
               </div>
             ))}
-          </section>
-          
-          <div className="reg_button_group">
-            <Button type="submit" variant="primary" disabled={loading} style={{ width: "100%", height: "50px", fontSize: "16px" }}>
-              {loading ? "수정 사항 저장 중..." : "수정 완료"}
-            </Button>
-            <Button type="button" onClick={() => navigate(-1)} style={{ width: "100%", marginTop: "10px", background: "#eee", color: "#666" }}>
-              취소하고 돌아가기
-            </Button>
+            {steps.length === 0 && (
+              <p className="empty_warn_text">등록된 조리 순서가 없습니다. 추가를 눌러주세요.</p>
+            )}
           </div>
-        </form>
-      </main>
+        </div>
+
+        {/* 하단 전체 저장 대형 버튼 */}
+        <button type="submit" className="huge_save_submit_btn" disabled={saving}>
+          {saving ? "레시피 수정 사항 저장 중..." : "수정 완료하기"}
+        </button>
+      </form>
     </div>
   );
 }
-
-export default RecipeEditPage;

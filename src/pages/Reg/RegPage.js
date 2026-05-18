@@ -14,9 +14,8 @@ function RegPage() {
   const [openId, setOpenId] = useState(null);
 
   /* ---------------------------------------------------------
-     0. 영양정보 데이터 안전하게 추출 (에러 해결)
+     0. 영양정보 데이터 안전하게 추출
      --------------------------------------------------------- */
-  // JSON 데이터가 바로 배열이 아닐 경우(객체 내부의 content 등)를 대비
   const nutritionDb = Array.isArray(nutritionData) 
     ? nutritionData 
     : (nutritionData?.data || nutritionData?.content || []);
@@ -31,24 +30,43 @@ function RegPage() {
       
       const res = await customInstance.get("/api/my/ingredients");
       
-      // ✅ 로그 1: 서버에서 온 순수 응답 확인
+      // ✅ 로그 1: 서버 응답 확인
       console.log("📦 서버 응답 전체 데이터:", res.data);
 
-      const rawData = res.data?.data || res.data || [];
-      
-      // ✅ 로그 2: 가공 전 데이터 상태 확인
-      console.log("🔍 가공 전 데이터(rawData):", rawData);
-
-      // 데이터가 배열인지 확인 후 최종 세팅
+      // 서버 응답 규격 유연하게 대응 (res.data.data 내부의 유효한 배열 탐색)
+      let rawData = res.data?.data;
       let finalArray = [];
+
       if (Array.isArray(rawData)) {
+        // 1. data 자체가 배열인 경우
         finalArray = rawData;
       } else if (rawData && typeof rawData === 'object') {
-        finalArray = [rawData]; // 단일 객체일 경우 배열로 감싸줌
+        // 2. data가 객체이고 그 안에 content, list, 또는 ingredients 등의 배열 필드가 숨어있는 경우
+        const possibleArrayFields = ['content', 'list', 'ingredients', 'myIngredients'];
+        const foundField = possibleArrayFields.find(field => Array.isArray(rawData[field]));
+        
+        if (foundField) {
+          finalArray = rawData[foundField];
+        } else {
+          // 3. 만약 배열 필드가 없고 순수 단일 객체이며 id나 name을 가지고 있다면 배열로 포장
+          if (rawData.id || rawData.name) {
+            finalArray = [rawData];
+          } else {
+            // 4. 그 외 객체의 값들 중 배열이 있다면 가로채기
+            const ObjectValues = Object.values(rawData);
+            const hiddenArray = ObjectValues.find(val => Array.isArray(val));
+            if (hiddenArray) finalArray = hiddenArray;
+          }
+        }
+      } else if (Array.isArray(res.data)) {
+        // 5. 최상위 응답 자체가 배열인 경우
+        finalArray = res.data;
       }
-
-      // ✅ 로그 3: 최종 ingredients 상태값 확인
-      console.log("✅ 최종 ingredients 배열 세팅:", finalArray);
+      
+      // ✅ 로그 2 & 3: 가공된 최종 배열 데이터 구조 검증
+      console.log("🔍 안전하게 감지 및 가공된 원본 데이터 자원:", rawData);
+      console.log("✅ 화면(렌더링)에 세팅될 최종 ingredients 배열:", finalArray);
+      
       setIngredients(finalArray);
 
     } catch (err) { 
@@ -68,13 +86,13 @@ function RegPage() {
      --------------------------------------------------------- */
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
-    if (!name || !shelfLifeDays) return alert("입력값을 확인해주세요.");
+    if (!name.trim() || !shelfLifeDays) return alert("입력값을 확인해주세요.");
     
     try {
       setLoading(true);
       const payload = {
         name: name,
-        shelfLifeDays: parseInt(shelfLifeDays)
+        shelfLifeDays: parseInt(shelfLifeDays, 10)
       };
 
       console.log("📤 [POST] 등록 요청 데이터:", payload);
@@ -141,34 +159,39 @@ function RegPage() {
               <p className="status_msg">로딩 중...</p>
             ) : ingredients.length > 0 ? (
               ingredients.map((item, index) => {
-                // ✅ 로그 4: 각 아이템 렌더링 시 데이터 확인
-                console.log(`🎨 렌더링 아이템 [${index}]:`, item);
+                // 각 아이템 유효성 검증로그
+                console.log(`🎨 렌더링 대상 아이템 [${index}]:`, item);
 
-                // 영양 정보 데이터(배열)에서 .find 수행
                 const nutrition = Array.isArray(nutritionDb) 
                   ? nutritionDb.find(n => n.name === item.name)
                   : null;
                 
+                // key값 고유성 확보 및 백엔드 key 바인딩 방어선 구축
+                const itemId = item.id || item.ingredientId || index;
+                const daysLeft = item.daysLeft !== undefined && item.daysLeft !== null ? item.daysLeft : item.shelfLifeDays;
+                
                 return (
-                  <div key={item.id || index} className="ingredient_card">
+                  <div key={itemId} className="ingredient_card">
                     <div 
                       className="card_header" 
-                      onClick={() => setOpenId(openId === item.id ? null : item.id)}
+                      onClick={() => setOpenId(openId === itemId ? null : itemId)}
+                      style={{ cursor: 'pointer' }}
                     >
                       <div className="info_area">
-                        <span className="item_name">{item.name}</span>
-                        {/* ⭐ 서버 응답 필드인 daysLeft 사용 */}
-                        <span className="item_days">{item.daysLeft}일 남음</span>
+                        <span className="item_name" style={{ fontWeight: 'bold', marginRight: '10px' }}>{item.name || "이름 없음"}</span>
+                        <span className="item_days" style={{ color: '#ff4d4d', fontSize: '13px' }}>
+                          {daysLeft !== undefined ? `${daysLeft}일 남음` : "기한 정보 없음"}
+                        </span>
                       </div>
-                      <button onClick={(e) => handleDelete(e, item.id)} className="del_btn">삭제</button>
+                      <button onClick={(e) => handleDelete(e, itemId)} className="del_btn">삭제</button>
                     </div>
 
-                    {openId === item.id && nutrition && (
-                      <div className="card_nutrition_dropdown">
-                        <div className="nutrition_header">
+                    {openId === itemId && nutrition && (
+                      <div className="card_nutrition_dropdown" style={{ padding: '10px', backgroundColor: '#f9f9f9', marginTop: '5px', borderRadius: '8px' }}>
+                        <div className="nutrition_header" style={{ fontSize: '12px', marginBottom: '5px', color: '#666' }}>
                           기준: {nutrition.serving_size} / <b>{nutrition.kcal} kcal</b>
                         </div>
-                        <div className="nutrition_content">
+                        <div className="nutrition_content" style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
                           <span>탄: <b>{nutrition.carbs}</b></span>
                           <span>단: <b>{nutrition.protein}</b></span>
                           <span>지: <b>{nutrition.fat}</b></span>

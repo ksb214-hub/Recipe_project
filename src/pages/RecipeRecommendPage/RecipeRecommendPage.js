@@ -66,8 +66,14 @@ export default function RecipeRecommendPage() {
         <h2 className="title_red"><AlertCircle size={20} /> 유통기한 임박! 지금 만드세요</h2>
         <div className="recommend_list">
           {recommendData.expiringIngredientBased.length > 0 ? (
-            recommendData.expiringIngredientBased.map(recipe => (
-              <RecipeRow key={recipe.id} recipe={recipe} navigate={navigate} tagType="urgent" />
+            // ✅ [수정] 고유 key={recipe.id} 속성을 추가하여 React 렌더링 에러를 방지합니다.
+            recommendData.expiringIngredientBased.map((recipe, index) => (
+              <RecipeRow 
+                key={recipe.id || `expiring-${index}`} 
+                recipe={recipe} 
+                navigate={navigate} 
+                tagType="urgent" 
+              />
             ))
           ) : (
             <p className="empty_msg">현재 유통기한이 임박한 재료가 없습니다. 👍</p>
@@ -80,8 +86,14 @@ export default function RecipeRecommendPage() {
         <h2 className="title_green"><CheckCircle2 size={20} /> 내 냉장고 재료 맞춤 레시피</h2>
         <div className="recommend_list">
           {recommendData.ingredientBased.length > 0 ? (
-            recommendData.ingredientBased.map(recipe => (
-              <RecipeRow key={recipe.id} recipe={recipe} navigate={navigate} tagType="match" />
+            // ✅ [수정] 동일하게 고유 key 속성을 매핑해 줍니다.
+            recommendData.ingredientBased.map((recipe, index) => (
+              <RecipeRow 
+                key={recipe.id || `ingredient-${index}`} 
+                recipe={recipe} 
+                navigate={navigate} 
+                tagType="match" 
+              />
             ))
           ) : (
             <p className="empty_msg">재료를 등록하고 맞춤 레시피를 확인해보세요!</p>
@@ -93,8 +105,14 @@ export default function RecipeRecommendPage() {
       <section className="recipe_section">
         <h2 className="title_orange"><Flame size={20} /> 지금 가장 인기 있는 요리</h2>
         <div className="recommend_list">
-          {recommendData.popular.map(recipe => (
-            <RecipeRow key={recipe.id} recipe={recipe} navigate={navigate} tagType="view" />
+          {recommendData.popular.map((recipe, index) => (
+            // ✅ [수정] 동일하게 고유 key 속성을 바인딩해 줍니다.
+            <RecipeRow 
+              key={recipe.id || `popular-${index}`} 
+              recipe={recipe} 
+              navigate={navigate} 
+              tagType="view" 
+            />
           ))}
         </div>
       </section>
@@ -119,7 +137,9 @@ function RecipeRow({ recipe, navigate, tagType }) {
         <p className="author">By {recipe.authorNickname || "공공데이터"}</p>
         <div className="card_tags">
           <span className="tag_normal">#{recipe.id}</span>
-          <span className="tag_date">{new Date(recipe.createdAt).toLocaleDateString()}</span>
+          <span className="tag_date">
+            {recipe.createdAt ? new Date(recipe.createdAt).toLocaleDateString() : "날짜 정보 없음"}
+          </span>
         </div>
       </div>
       <ChevronRight className="arrow" />

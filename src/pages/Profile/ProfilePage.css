@@ -131,7 +131,7 @@
   margin: 0 0 20px 0; /* 하단 마진을 16px에서 20px로 늘려 타이틀과 그리드 분리 */
 }
 
-.stats_grid {
+.stat_grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -189,4 +189,93 @@
   font-weight: 800;
   color: #333;
   margin: 0 0 4px 0;
+}
+
+/* ==========================================================
+   프로필 상단 메인 카드 섹션 (Profile Card)
+   ========================================================== */
+.profile_card_section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f1f3f7;
+  box-shadow: 0 4px 16px rgba(118, 75, 162, 0.04);
+  text-align: center;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease;
+}
+
+.profile_card_section:hover {
+  transform: translateY(-2px);
+}
+
+/* 아바타 래퍼 및 레벨 배지 */
+.profile_avatar_wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: #f3f0ff;
+  color: #764ba2;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.profile_level_badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8787);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.3);
+  letter-spacing: -0.3px;
+}
+
+/* 유저 이름 */
+.profile_name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 12px 0 0 0;
+}
+
+/* 등급 및 레벨 뱃지 라벨 그룹 */
+.profile_badge_group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.profile_subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #718096;
+  background-color: #f7fafc;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.profile_level_text_badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #764ba2;
+  background-color: #f3f0ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #e9d8fd;
 }

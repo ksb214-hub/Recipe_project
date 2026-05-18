@@ -164,3 +164,94 @@
   justify-content: center;
   height: 100vh;
 }
+/* 상단 액션 바 (Back 버튼, 하트 버튼) */
+.detail_top_nav {
+    position: absolute; /* 이미지 위에 겹치게 배치 */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    /* 버튼이 이미지 위에서 잘 보이도록 상단에 살짝 그림자 효과 */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+}
+
+.nav_icon_btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9); /* 버튼 배경 흰색 투명하게 */
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    color: #333;
+}
+
+.nav_icon_btn:active {
+    transform: scale(0.9);
+}
+
+/* 하트 버튼 활성화 상태 (빨간색 하트) */
+.nav_icon_btn.active {
+    background: #fff;
+}
+
+.nav_icon_btn.active svg {
+    filter: drop-shadow(0 0 2px rgba(255, 107, 107, 0.3));
+}
+
+/* 로딩 및 에러 화면 중앙 정렬을 위한 스타일 */
+.detail_loading, .error_message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 15px;
+    color: #667eea;
+}
+
+.detail_loading p, .error_message p {
+    font-weight: 600;
+    color: #666;
+    text-align: center;
+}
+
+.back_btn {
+    padding: 10px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* 작성자 정보 섹션 추가 */
+.detail_author {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #888;
+}
+
+.detail_author b {
+    color: #333;
+    margin-left: 4px;
+}
+
+.view_count {
+    background: #f1f3f5;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
