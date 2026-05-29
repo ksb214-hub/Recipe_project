@@ -1,0 +1,148 @@
+/* 로딩 뷰 전체 화면 중앙 정렬 */
+.ing_loading_full {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  gap: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.ing_loading_full .spinner {
+  animation: spin 1s linear infinite;
+  color: #00B341;
+}
+
+/* 메인 바디 레이아웃 */
+.detail_main_body {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 상단 상자 비주얼 그래픽 디자인 */
+.detail_visual_card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fcfcfc;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.visual_circle {
+  width: 80px;
+  height: 80px;
+  background-color: #e6f7ec;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.detail_visual_card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 12px 0;
+}
+
+/* 디데이 배지 스타일 정의 */
+.detail_badge {
+  background-color: #00B341;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.detail_badge.danger {
+  background-color: #ff3b30;
+}
+
+/* 정보 리스트 그룹 카드 */
+.info_list_group {
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 8px 16px;
+}
+
+.info_item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.info_item:last-child {
+  border-bottom: none;
+}
+
+.info_label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.info_label .sub_label {
+  color: #888;
+}
+
+.info_value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+}
+
+.info_value.sub_value {
+  font-weight: 500;
+  color: #666;
+}
+
+/* 하단 거대 액션 소진 버튼 스타일 */
+.detail_action_container {
+  margin-top: 12px;
+}
+
+.delete_huge_btn {
+  width: 100%;
+  background-color: #fff;
+  color: #ff3b30;
+  border: 1px solid #ff3b30;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.delete_huge_btn:hover:not(:disabled) {
+  background-color: #fff5f5;
+}
+
+.delete_huge_btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

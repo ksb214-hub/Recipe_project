@@ -1,0 +1,22 @@
+.disabled_read_input {
+  background-color: #f5f5f5 !important;
+  color: #777 !important;
+  border: 1px solid #e2e2e2 !important;
+  cursor: not-allowed;
+  font-weight: 600;
+}
+
+.ing_loading_box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  gap: 12px;
+  color: #666;
+}
+
+.ing_loading_box .spinner {
+  animation: spin 1s linear infinite;
+  color: #00B341;
+}

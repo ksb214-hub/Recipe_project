@@ -25,61 +25,40 @@ export default function Main() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 북마크된 ID 목록 (숫자형 배열로 관리, 실시간 동기화 상태)
-  const [bookmarkedIds, setBookmarkedIds] = useState([]);
-
-  /* --- 신고 기능을 위한 상태 --- */
+  /* --- 신고 기능을 위한 상태 관리 교정 --- */
   const [isReportOpen, setIsReportOpen] = useState(false);
-  const [reportTarget, setReportTarget] = useState("");
+  const [reportTargetId, setReportTargetId] = useState(null); // ⭐ 레시피 고유 ID 저장용 상태 추가
+  const [reportTargetName, setReportTargetName] = useState(""); // 기존 제목 저장 변수명 변경 (명확성)
 
   /* ---------------------------------------------------------
-     🔥 [추가] 로그인한 유저의 기존 북마크 ID 리스트 동기화 함수
-     --------------------------------------------------------- */
-  const fetchBookmarkedIds = useCallback(async () => {
-    try {
-      console.log("📡 [GET] /api/recipe/bookmarks/ids (기존 북마크 ID 목록 조회)");
-      const bookmarkRes = await customInstance.get("/api/recipe/bookmarks/ids");
-      
-      // 백엔드 공통 응답 규격 다중 방어 파싱 (data 필드가 존재하면 매핑)
-      const ids = bookmarkRes.data?.data || bookmarkRes.data || [];
-      console.log("✨ [동기화 성공] 현재 메인에서 인식한 유저 북마크 레시피 ID 목록:", ids);
-      setBookmarkedIds(ids);
-    } catch (err) {
-      console.error("❌ 기존 북마크 ID 목록 로드 실패:", err);
-    }
-  }, []);
-
-  /* ---------------------------------------------------------
-     1. 데이터 로드 (레시피, 식재료 목록 및 북마크 교차 연동)
+     1. 데이터 로드 (존재하지 않는 북마크 GET API 제거)
      --------------------------------------------------------- */
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. 식재료 목록 조회
+      // 1. 전체 식재료 목록 조회
       const ingRes = await customInstance.get("/api/ingredients");
       setAllIngredients(ingRes.data?.data?.content || []); 
       
-      // 2. 레시피 목록 조회 (최신순)
+      // 2. 최신 레시피 목록 조회
       const recipeRes = await customInstance.get("/api/recipes", {
         params: { page: 0, size: 10, sort: 'latest' }
       });
+      
       setRecipes(recipeRes.data?.data?.content || []);
-
-      // 💡 [해결 핵심 연동] 컴포넌트 마운트 시점에 실제 서버 DB에 기록된 하트 정보 가동
-      await fetchBookmarkedIds();
 
     } catch (err) { 
       console.error("데이터 로드 중 오류 발생:", err); 
     } finally {
       setLoading(false);
     }
-  }, [fetchBookmarkedIds]);
+  }, []);
 
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
 
-  // 재료 기반 추천 로직 (Flask 서버 연동 시)
+  // 재료 기반 추천 로직 (Flask 서버 연동)
   useEffect(() => {
     const fetchRecommendations = async () => {
       if (activeIngredients.length === 0) { setRecommendedData([]); return; }
@@ -92,62 +71,57 @@ export default function Main() {
   }, [activeIngredients]);
 
   /* ---------------------------------------------------------
-     2. 핸들러 (북마크 토글, 신고, 검색)
+     2. 핸들러 (북마크 토글, 신고, 재료 추가)
      --------------------------------------------------------- */
   
-  // ✅ 북마크 토글 기능 (사용자가 누를 때만 동작 및 409 Conflict 자가 치유 내장)
-  /* ---------------------------------------------------------
-     2. 핸들러 (북마크 토글, 신고, 검색)
-     --------------------------------------------------------- */
-  
-  // ✅ 북마크 토글 기능 (URL 패스 파라미터 규격 반영 및 409 자가치유)
-  const toggleBookmark = async (e, recipeId) => {
-    e.stopPropagation(); // 카드 상세 이동 방지
+  // 북마크 토글 기능
+  const toggleBookmark = async (e, recipeId, isCurrentlyBookmarked) => {
+    e.stopPropagation(); 
     e.preventDefault();
-    
-    // 현재 메모리 상태 배열에 존재하는지 체크
-    const isAlreadyBookmarked = bookmarkedIds.includes(recipeId);
 
     try {
-      if (isAlreadyBookmarked) {
-        // 1. 이미 북마크 된 경우 -> DELETE /api/recipes/{id}/bookmark
+      if (isCurrentlyBookmarked) {
         console.log(`📤 [DELETE] 북마크 해제 요청 - 레시피 ID: ${recipeId}`);
-        
-        // 💡 Axios의 delete 메서드는 두 번째 인자가 config 객체이므로 URL에 id를 직접 바인딩하는 것이 가장 안전합니다.
         await customInstance.delete(`/api/recipes/${recipeId}/bookmark`);
-        
-        // 프론트엔드 상태 즉시 반영 (하트 끄기)
-        setBookmarkedIds(prev => prev.filter(id => id !== recipeId));
       } else {
-        // 2. 북마크 안 된 경우 -> POST /api/recipes/{id}/bookmark
         console.log(`📤 [POST] 북마크 등록 요청 - 레시피 ID: ${recipeId}`);
-        
-        // 💡 POST 요청 역시 URL 패스로 id를 넘기며, body는 빈 객체({})로 전달해 규격을 맞춥니다.
         await customInstance.post(`/api/recipes/${recipeId}/bookmark`, {});
-        
-        // 프론트엔드 상태 즉시 반영 (하트 켜기)
-        setBookmarkedIds(prev => [...prev, recipeId]);
       }
+
+      setRecipes(prevRecipes => 
+        prevRecipes.map(recipe => {
+          if (recipe.id === recipeId) {
+            const currentFlag = recipe.isBookmarked !== undefined ? recipe.isBookmarked : (recipe.liked || false);
+            return { 
+              ...recipe, 
+              isBookmarked: !currentFlag,
+              liked: !currentFlag 
+            };
+          }
+          return recipe;
+        })
+      );
+
     } catch (err) {
       console.error("❌ 북마크 처리 실패:", err);
-      
-      // 💡 만약 브라우저 렌더링 상태 싱크가 순간적으로 튀어서 409 Conflict가 발생하면 자동 동기화
-      if (err.response?.status === 409) {
-        console.warn("⚠️ [싱크 충돌 감지] 실제 DB 상태 정렬을 위해 북마크 데이터를 새로고침합니다.");
-        fetchBookmarkedIds(); 
-      } else {
-        alert("북마크 처리 중 오류가 발생했습니다.");
-      }
+      alert("북마크 처리 중 오류가 발생했습니다.");
     }
   };
 
-  // 신고 모달 열기
-  const openReport = (e, targetName) => {
+  // 💡 [수정 포인트 1] 신고 모달을 열 때 고유 ID와 제목을 동시에 저장하도록 변경
+  const openReport = (e, id, title) => {
     e.stopPropagation(); 
-    setReportTarget(targetName);
+    setReportTargetId(id);     // 고유 ID 상태 업데이트
+    setReportTargetName(title); // 제목 상태 업데이트
     setIsReportOpen(true);
   };
 
+  // 💡 [수정 포인트 2] 신고가 성공했을 때 화면 목록에서 해당 레시피 블라인드(필터) 콜백 함수 생성
+  const handleReportSuccess = (reportedId) => {
+    setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe.id !== reportedId));
+  };
+
+  // 검색창 입력 및 선택을 통한 재료 태그 추가
   const handleAddIngredient = (name) => {
     const ingredientName = name || searchTerm.trim();
     if (ingredientName && !activeIngredients.includes(ingredientName)) {
@@ -158,7 +132,7 @@ export default function Main() {
   };
 
   /* ---------------------------------------------------------
-     3. 데이터 가공 및 UI 렌더링 (오리지널 가공 필터링 100% 보존)
+     3. 데이터 가공 및 필터링
      --------------------------------------------------------- */
   const suggestions = useMemo(() => {
     if (!searchTerm) return [];
@@ -187,7 +161,7 @@ export default function Main() {
     <div className="main_page_container">
       <main className="con">
         
-        {/* 등록 버튼 영역 */}
+        {/* 바로가기 버튼 영역 */}
         <div className="quick_action_row">
           <div className="quick_card" onClick={() => navigate("/reg")}>
             <div className="quick_icon_circle"><Refrigerator size={20} /></div>
@@ -223,7 +197,7 @@ export default function Main() {
           </div>
         </Section>
 
-        {/* 결과 리스트 섹션 */}
+        {/* 오늘의 추천 레시피 리스트 섹션 */}
         <Section title="오늘의 추천 레시피">
           {loading ? (
             <div className="loading_box" style={{ textAlign: 'center', padding: '50px' }}>
@@ -233,27 +207,31 @@ export default function Main() {
           ) : (
             <div className="card-wrapper">
               {processedRecipes.length > 0 ? (
-                processedRecipes.map((recipe) => (
-                  <div key={recipe.id} className="recipe-card-box">
-                    {/* 신고 버튼 */}
-                    <button 
-                      className="report_trigger_btn"
-                      onClick={(e) => openReport(e, recipe.title)}
-                      title="신고하기"
-                    >
-                      <AlertCircle size={16} />
-                    </button>
+                processedRecipes.map((recipe) => {
+                  const currentIsBookmarked = recipe.isBookmarked || recipe.liked || false;
 
-                    <Card
-                      title={recipe.title}
-                      category={recipe.displayAuthor}
-                      thumbnailImageUrl={recipe.thumbnailImageUrl} 
-                      isBookmarked={bookmarkedIds.includes(recipe.id)}
-                      onToggleBookmark={(e) => toggleBookmark(e, recipe.id)}
-                      onClick={() => navigate(`/recipe/${recipe.id}`)}
-                    />
-                  </div>
-                ))
+                  return (
+                    <div key={recipe.id} className="recipe-card-box">
+                      {/* 💡 [수정 포인트 3] openReport 인자에 recipe.id와 recipe.title을 정밀 매핑하여 전송 */}
+                      <button 
+                        className="report_trigger_btn"
+                        onClick={(e) => openReport(e, recipe.id, recipe.title)}
+                        title="신고하기"
+                      >
+                        <AlertCircle size={16} />
+                      </button>
+
+                      <Card
+                        title={recipe.title}
+                        category={recipe.displayAuthor}
+                        thumbnailImageUrl={recipe.thumbnailImageUrl} 
+                        isBookmarked={currentIsBookmarked}
+                        onToggleBookmark={(e) => toggleBookmark(e, recipe.id, currentIsBookmarked)}
+                        onClick={() => navigate(`/recipe/${recipe.id}`)}
+                      />
+                    </div>
+                  );
+                })
               ) : (
                 <p className="empty_msg">추천할 레시피가 없습니다. 재료를 검색해보세요!</p>
               )}
@@ -262,11 +240,18 @@ export default function Main() {
         </Section>
       </main>
 
-      {/* 공통 모달 */}
+      {/* =========================================================
+          💡 [수정 포인트 4] 완벽하게 개편된 ReportModal Props 주입 및 성공 콜백 연결
+         ========================================================= */}
       <ReportModal 
         isOpen={isReportOpen} 
-        onClose={() => setIsReportOpen(false)} 
-        targetName={reportTarget} 
+        onClose={() => {
+          setIsReportOpen(false);
+          setReportTargetId(null); // 닫힐 때 식별자 안전 초기화
+        }} 
+        targetId={reportTargetId}        // ⭐ 이제 정상적으로 id 상숫값이 주입됩니다!
+        targetName={reportTargetName}    // 신고 대상 레시피 제목 매핑
+        onReportSuccess={handleReportSuccess} // 신고 성공 시 목록에서 리프레시 없이 필터링
       />
     </div>
   );

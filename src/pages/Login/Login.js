@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom"; 
 import Button from "../../components/Button/Button";
 import Input from "../../components/Input/Input";
-import { api, setClientToken } from "../../api/api"; 
+import api, { setClientToken } from "../../api/api"; 
 import "./Login.css";
 
 function Login() {

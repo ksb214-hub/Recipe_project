@@ -7,19 +7,30 @@ import Layout from "./layout/Layout";
 import Main from "./pages/Main/Main";
 import Login from "./pages/Login/Login";
 import SearchPage from "./pages/Search/SearchPage";
-import RegPage from "./pages/Reg/RegPage";
-import RecipeRegPage from "./pages/RecipeReg/RecipeRegPage";
+
+// 인증 페이지
 import FindId from "./pages/Find/FindId/FindId";
 import FindPw from "./pages/Find/FindPw/FindPw";
 import SignUpPage from "./pages/SignUp/SignUpPage";
-import ExpensePage from "./pages/Expense/ExpensePage";
-import SettingsPage from "./pages/Setting/SettingPage";
-import RecipeDetail from './pages/RecipeDetail/RecipeDetail';
 import ProfilePage from "./pages/Profile/ProfilePage";
+import SettingsPage from "./pages/Setting/SettingPage";
+
+// 지출 목록 페이지
+import ExpensePage from "./pages/Expense/ExpensePage";
+
+// 레시피 페이지
+import RecipeDetail from './pages/RecipeDetail/RecipeDetail';
 import RecipeRecommendPage from "./pages/RecipeRecommendPage/RecipeRecommendPage";
-import MyIngredientsPage from "./pages/MyIngredients/MyIngredientsPage";
 import MyRecipePage from "./pages/MyRecipe/MyRecipePage";
 import RecipeEditPage from "./pages/RecipeEdit/RecipeEditPage";
+import RecipeRegPage from "./pages/RecipeReg/RecipeRegPage";
+
+// 재료 페이지
+import MyIngredientsPage from "./pages/MyIngredients/MyIngredientsPage";
+import MyIngredientDetailPage from "./pages/MyIngredients/MyIngredientDetailPage"; // 신규 임포트
+import RegPage from "./pages/Reg/RegPage";
+import MyIngredientEditPage from "./pages/MyIngredients/MyIngredientEditPage";
+
 
 function App() {
   return (
@@ -54,6 +65,9 @@ function App() {
             <Route path="/join" element={<SignUpPage />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/find-pw" element={<FindPw />} />
+
+            <Route path="/my-ingredients/:id" element={<MyIngredientDetailPage />} />
+            <Route path="/my-ingredients/edit/:id" element={<Layout><MyIngredientEditPage /></Layout>} />
 
             {/* 4. 404 페이지 */}
             <Route path="*" element={<div className="p-20 text-center">404 Not Found</div>} />

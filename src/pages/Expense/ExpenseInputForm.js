@@ -10,7 +10,7 @@ function ExpenseInputForm({ onAdd, onClose }) {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
-    category: "기타",
+    category: "채소", // 💡 기본 선택값을 지정된 카테고리의 첫 번째 값인 '채소'로 변경
     date: "2026.04.08", // 오늘 날짜 기본값
   });
 
@@ -21,13 +21,16 @@ function ExpenseInputForm({ onAdd, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.price) return alert("항목과 금액을 입력해주세요!");
+    if (!formData.name || !formData.name.trim()) return alert("항목을 입력해주세요!");
+    if (!formData.price || isNaN(formData.price) || parseInt(formData.price, 10) <= 0) {
+      return alert("올바른 결제 금액을 입력해주세요!");
+    }
     
     // 부모 컴포넌트(ExpensePage)로 데이터 전달
     onAdd({
       ...formData,
       id: Date.now(),
-      price: parseInt(formData.price),
+      price: parseInt(formData.price, 10),
     });
     onClose();
   };
@@ -55,7 +58,7 @@ function ExpenseInputForm({ onAdd, onClose }) {
             />
           </div>
 
-          {/* 2. 금액 및 카테고리 (가로 배치) */}
+          {/* 2. 금액 및 카테고리 (가로 배치 - 11개 스펙 완전 정렬) */}
           <div className="input_row">
             <div className="input_group flex_2">
               <label>금액 (원)</label>
@@ -70,9 +73,17 @@ function ExpenseInputForm({ onAdd, onClose }) {
             <div className="input_group flex_1">
               <label>분류</label>
               <select name="category" value={formData.category} onChange={handleChange}>
-                <option value="육류">육류</option>
+                {/* 💡 QA 요구 명세에 맞춘 고정 카테고리 11개 목록 매핑 */}
                 <option value="채소">채소</option>
+                <option value="과일">과일</option>
+                <option value="육류">육류</option>
+                <option value="수산물">수산물</option>
+                <option value="유제품">유제품</option>
                 <option value="가공식품">가공식품</option>
+                <option value="곡류/면">곡류/면</option>
+                <option value="양념/조미료">양념/조미료</option>
+                <option value="음료">음료</option>
+                <option value="간식">간식</option>
                 <option value="기타">기타</option>
               </select>
             </div>
