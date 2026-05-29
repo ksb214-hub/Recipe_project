@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
-import { api } from "../../api/api";
+import  api  from "../../api/api";
 import "./SignUpPage.css";
 
 function SignUpPage() {
@@ -28,69 +28,130 @@ function SignUpPage() {
     return () => clearTimeout(handler);
   }, [form.loginId, form.nickname, currentStep]);
 
-  // [중복 체크 실행] 값이 4자 이상일 때만 API 호출
+  // [중복 체크 실행] 백엔드 조건에 맞는 최소 길이 이상일 때만 API 호출
   useEffect(() => {
-    if (debouncedValue.length >= 4) {
-      if (currentStep === 1) checkDuplicate("id", debouncedValue);
-      if (currentStep === 3) checkDuplicate("nickname", debouncedValue);
+    if (currentStep === 1 && debouncedValue.length >= 2 && debouncedValue.length <= 15) {
+      checkDuplicate("id", debouncedValue);
+    }
+    if (currentStep === 3 && debouncedValue.length >= 1 && debouncedValue.length <= 12) {
+      checkDuplicate("nickname", debouncedValue);
     }
   }, [debouncedValue, currentStep]);
 
   /**
-   * [중복 확인 API]
-   * 성빈님이 주신 CSS의 .error_text와 .input_error를 활용하도록 에러 상태를 제어합니다.
+   * [중복 확인 API 호출 로직 - 409 Conflict 및 응답 본문 파싱]
+   * GET /api/auth/check-id?loginId=값
+   * GET /api/auth/check-nickname?nickname=값
+   */
+  /**
+   * [중복 확인 API 호출 로직 - 중복 시 alert 출력 버전]
    */
   const checkDuplicate = async (type, value) => {
+    const isId = type === "id";
+    const endpoint = isId ? "/api/auth/check-id" : "/api/auth/check-nickname";
+    const paramKey = isId ? "loginId" : "nickname";
+
     try {
-      const isId = type === "id";
-      const endpoint = isId ? "/api/auth/check-id" : "/api/auth/check-nickname";
-      const paramKey = isId ? "loginId" : "nickname";
-
       const response = await api.get(endpoint, { params: { [paramKey]: value } });
-      const isAvailable = response.data.isAvailable;
+      
+      const isSuccess = response.data?.success;
+      const isAvailable = response.data?.data?.available;
 
-      if (!isAvailable) {
-        setErrors((prev) => ({
-          ...prev,
-          [isId ? "loginId" : "nickname"]: `이미 사용 중인 ${isId ? "아이디" : "닉네임"}입니다.`
-        }));
+      if (isSuccess === false || isAvailable === false) {
+        const serverMessage = response.data?.message || `이미 사용 중인 ${isId ? "아이디" : "닉네임"}입니다.`;
+        
+        // 💡 텍스트 대신 alert으로 알림 표시
+        alert(serverMessage);
+        
+        // 중복된 값은 누적 에러로 기록하여 다음 단계 이동을 방지
+        setErrors((prev) => ({ ...prev, [isId ? "loginId" : "nickname"]: serverMessage }));
       } else {
-        // 중복이 아닐 경우 에러 제거
+        // 사용 가능한 경우 에러 초기화
         setErrors((prev) => ({ ...prev, [isId ? "loginId" : "nickname"]: "" }));
       }
     } catch (error) {
-      console.error("중복 확인 중 에러 발생:", error);
+      if (error.response && error.response.status === 409) {
+        const responseData = error.response.data;
+        const serverMessage = responseData?.message || `이미 사용 중인 ${isId ? "아이디" : "닉네임"}입니다.`;
+        
+        // 💡 409 Conflict 에러 시에도 alert으로 표시
+        alert(serverMessage);
+        
+        setErrors((prev) => ({ ...prev, [isId ? "loginId" : "nickname"]: serverMessage }));
+      } else {
+        console.error(`${type} 중복 확인 중 시스템 에러 발생:`, error);
+      }
     }
   };
 
+  /**
+   * [입력 핸들러]
+   * 백엔드 최대 길이 조건(아이디 15자, 닉네임 12자) 초과 시 타이핑 자체를 원천 차단
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "loginId" && value.length > 15) return;
+    if (name === "nickname" && value.length > 12) return;
+
     setForm((prev) => ({ ...prev, [name]: value }));
-    // 입력 중에는 즉시 해당 필드의 에러 메시지 초기화
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   /**
-   * [단계 이동] CSS의 에러 스타일을 트리거하기 위해 유효성 검사 포함
+   * [단계별 유효성 검사 및 다음 단계 이동]
    */
   const handleNext = async () => {
+    // STEP 1: 아이디 검증 (2자 ~ 15자)
     if (currentStep === 1) {
-      if (!form.loginId || errors.loginId) return; // 아이디 미입력 또는 중복 시 중단
+      if (!form.loginId) {
+        setErrors({ loginId: "아이디를 입력해 주세요." });
+        return;
+      }
+      if (form.loginId.length < 2) {
+        setErrors({ loginId: "아이디는 최소 2자 이상이어야 합니다." });
+        return;
+      }
+      if (errors.loginId) return; // 실시간 중복 에러가 떠 있다면 다음 단계 이동 불가
     }
+
+    // STEP 2: 비밀번호 검증 (10자 이상 + 영문/숫자 조합 필수)
     if (currentStep === 2) {
-      if (!form.password || form.password !== form.passwordConfirm) {
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{10,}$/;
+
+      if (!form.password) {
+        setErrors({ password: "비밀번호를 입력해 주세요." });
+        return;
+      }
+      if (!passwordRegex.test(form.password)) {
+        setErrors({ password: "비밀번호는 10자 이상이며, 영문과 숫자를 모두 포함해야 합니다." });
+        return;
+      }
+      if (form.password !== form.passwordConfirm) {
         setErrors({ passwordConfirm: "비밀번호가 일치하지 않습니다." });
         return;
       }
     }
+
+    // STEP 3: 닉네임 검증 (빈 값 및 공백 불가, 최대 12자)
     if (currentStep === 3) {
-      if (!form.nickname || errors.nickname) return;
-      handleSubmit(); // 마지막 단계는 가입 실행
+      if (!form.nickname || form.nickname.trim() === "") {
+        setErrors({ nickname: "닉네임은 필수 입력 항목입니다." });
+        return;
+      }
+      if (errors.nickname) return; // 실시간 중복 에러가 떠 있다면 가입 불가
+      
+      handleSubmit(); // 최종 회원가입 진행
       return;
     }
+
     setCurrentStep((prev) => prev + 1);
   };
 
+  /**
+   * [최종 회원가입 API 호출]
+   * POST /api/auth/signup
+   */
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -99,9 +160,10 @@ function SignUpPage() {
         password: form.password,
         nickname: form.nickname,
       });
-      setCurrentStep(4);
+      setCurrentStep(4); // 성공 완료 화면으로 이동
     } catch (error) {
-      alert("회원가입에 실패했습니다.");
+      console.error("회원가입 요청 중 에러 발생:", error);
+      alert(error.response?.data?.message || "회원가입에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
@@ -133,7 +195,7 @@ function SignUpPage() {
                 name="loginId" 
                 value={form.loginId} 
                 onChange={handleChange} 
-                placeholder="아이디 입력 (4자 이상)" 
+                placeholder="아이디 입력 (2자 ~ 15자)" 
                 className={errors.loginId ? "input_error" : "input_field"} 
               />
               {errors.loginId && <p className="error_text">{errors.loginId}</p>}
@@ -147,7 +209,16 @@ function SignUpPage() {
           {currentStep === 2 && (
             <motion.div key="step2" className="step_content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <h3 className="signup_subtitle">비밀번호 설정</h3>
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="비밀번호" className="input_field" />
+              <input 
+                name="password" 
+                type="password" 
+                value={form.password} 
+                onChange={handleChange} 
+                placeholder="비밀번호 (10자 이상, 영문+숫자 조합)" 
+                className={errors.password ? "input_error" : "input_field"} 
+              />
+              {errors.password && <p className="error_text">{errors.password}</p>}
+              
               <input 
                 name="passwordConfirm" 
                 type="password" 
@@ -157,6 +228,7 @@ function SignUpPage() {
                 className={errors.passwordConfirm ? "input_error" : "input_field"} 
               />
               {errors.passwordConfirm && <p className="error_text">{errors.passwordConfirm}</p>}
+              
               <div className="button_group">
                 <button className="prev_button" onClick={() => setCurrentStep(1)}>이전</button>
                 <button className="next_button" onClick={handleNext}>다음</button>
@@ -172,7 +244,7 @@ function SignUpPage() {
                 name="nickname" 
                 value={form.nickname} 
                 onChange={handleChange} 
-                placeholder="닉네임 입력" 
+                placeholder="닉네임 입력 (최대 12자)" 
                 className={errors.nickname ? "input_error" : "input_field"} 
               />
               {errors.nickname && <p className="error_text">{errors.nickname}</p>}

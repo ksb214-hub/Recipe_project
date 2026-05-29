@@ -14,6 +14,9 @@ export default function MyIngredientsPage() {
   const [allIngredients, setAllIngredients] = useState([]); 
   const [loading, setLoading] = useState(true);
   
+  // 💡 엔터 누르기 전 검색창의 텍스트를 임시 저장할 상태 변수 (실시간 API 호출 방지)
+  const [searchInputValue, setSearchInputValue] = useState("");
+
   const [filters, setFilters] = useState({
     name: "",
     sortField: "expirationDate",
@@ -50,7 +53,6 @@ export default function MyIngredientsPage() {
       const res = await customInstance.get("/api/my/ingredients", { params });
       
       console.log("🔍 내 식재료 서버 응답 데이터:", res.data);
-      // 백엔드 커스텀 응답 규격(data.items) 매핑 대응
       const extractedItems = res.data?.data?.items || res.data?.data?.content || [];
       setMyIngredients(extractedItems);
     } catch (err) {
@@ -70,42 +72,34 @@ export default function MyIngredientsPage() {
   }, [activeTab, fetchMyIngredients]);
 
   /* ---------------------------------------------------------
-     🔥 [400 에러 원천 해결] 내 식재료 등록 핸들러 (POST: /api/my/ingredients)
+     💡 Enter 클릭 및 검색 돋보기 폼 제출 처리 핸들러
+     --------------------------------------------------------- */
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault(); // 브라우저 창 새로고침 원천 차단
+    setFilters((prev) => ({ ...prev, name: searchInputValue })); // 필터 조건 반영하여 useEffect 트리거
+  };
+
+  /* ---------------------------------------------------------
+     내 식재료 등록 핸들러 (POST: /api/my/ingredients)
      --------------------------------------------------------- */
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // 1. 프론트엔드 자체 유효성 예외 검사 (Id, 수량, 날짜 누락 차단)
-    if (!formData.ingredientId) {
-      alert("추가할 식재료를 선택해주세요.");
-      return;
-    }
-    if (!formData.quantity || isNaN(formData.quantity)) {
-      alert("올바른 수량을 입력해주세요.");
-      return;
-    }
-    if (!formData.expirationDate) {
-      alert("유통기한을 선택해주세요.");
-      return;
-    }
+    if (!formData.ingredientId) return alert("추가할 식재료를 선택해주세요.");
+    if (!formData.quantity || isNaN(formData.quantity)) return alert("올바른 수량을 입력해주세요.");
+    if (!formData.expirationDate) return alert("유통기한을 선택해주세요.");
 
-    // 2. 백엔드 DTO 바인딩 규격에 부합하도록 안전 형변환 수행 (문자열 우회)
     const parsedIngredientId = parseInt(formData.ingredientId, 10);
     const parsedQuantity = parseFloat(formData.quantity);
 
     if (isNaN(parsedIngredientId) || isNaN(parsedQuantity)) {
-      alert("데이터 타입 변환 중 내부 오류가 발생했습니다.");
-      return;
+      return alert("데이터 타입 변환 중 내부 오류가 발생했습니다.");
     }
 
-    // 3. 💡 [날짜 포맷 정밀 방어선] 백엔드가 LocalDateTime을 요구할 수도 있으므로 보정 처리
-    // 기본 "YYYY-MM-DD" 형식을 검사한 뒤 필요에 따라 "T00:00:00" 접미사를 안전하게 핸들링합니다.
     const formattedDateWithTime = formData.expirationDate.includes("T") 
       ? formData.expirationDate 
       : `${formData.expirationDate}T00:00:00`;
 
-    // 4. 백엔드 전송용 핵심 페이로드(Payload) 구성
-    // ※ 혹시 400 에러가 지속된다면 expirationDate 값을 formData.expirationDate(순수 날짜)로 토글해볼 수 있습니다.
     const payload = {
       ingredientId: parsedIngredientId,
       quantity: parsedQuantity,
@@ -114,30 +108,17 @@ export default function MyIngredientsPage() {
     };
 
     try {
-      console.log("📤 [POST] /api/my/ingredients 보낼 최종 데이터(Payload):", JSON.stringify(payload, null, 2));
-      
-      const res = await customInstance.post("/api/my/ingredients", payload);
-      
-      console.log("✨ [등록 성공] 서버 응답 결과:", res.data);
+      await customInstance.post("/api/my/ingredients", payload);
       alert("냉장고에 성공적으로 저장되었습니다!");
-      
-      // 저장 성공 후 데이터 상태 초기화 및 화면 전환
       setFormData({ ingredientId: "", quantity: "", unit: "개", expirationDate: "" });
       setActiveTab("list");
       fetchMyIngredients();
     } catch (err) {
-      console.error("❌ [등록 실패] AxiosError 디테일 추적");
-      
-      // 5. 🔍 400 에러의 진짜 거절 사유를 완벽하게 콘솔에 파싱하여 노출
+      console.error("❌ [등록 실패]");
       if (err.response) {
-        console.error("📊 서버 반환 상태 코드 (Status):", err.response.status);
-        console.error("📦 서버 실제 거절 내용 (Data):", err.response.data);
-        
-        // 백엔드 고유의 에러 메시지 래퍼 추출
-        const serverMsg = err.response.data?.message || err.response.data?.error || "필드 검증 오류 (Field Validation Error)";
-        alert(`등록 실패 (서버 사유): ${serverMsg}\n\n*콘솔창(F12)의 '서버 실제 거절 내용'을 확인하세요!`);
+        const serverMsg = err.response.data?.message || err.response.data?.error || "필드 검증 오류";
+        alert(`등록 실패 (서버 사유): ${serverMsg}`);
       } else {
-        console.error("🚨 네트워크 연결 불안정:", err.message);
         alert("서버와 통신할 수 없는 네트워크 상태입니다.");
       }
     }
@@ -165,34 +146,55 @@ export default function MyIngredientsPage() {
       <main className="ing_content">
         {activeTab === "list" ? (
           <div className="list_section">
-            <div className="filter_bar">
+            
+            {/* 시맨틱 form 구조로 변경하여 돋보기 클릭 및 키보드 엔터 완벽 제어 */}
+            <form className="filter_bar" onSubmit={handleSearchSubmit}>
               <div className="ing_input_wrapper">
                 <Search size={16} />
                 <input 
-                  placeholder="재료 이름 검색" 
-                  value={filters.name} 
-                  onChange={(e) => setFilters(prev => ({...prev, name: e.target.value}))} 
+                  id="ingredient-search-input"
+                  placeholder="재료 이름 검색 (Enter 또는 검색)" 
+                  value={searchInputValue} 
+                  onChange={(e) => setSearchInputValue(e.target.value)}
                 />
               </div>
-            </div>
+              <button type="submit" style={{ display: "none" }}>검색</button>
+            </form>
 
             {loading ? <div className="ing_loading"><Loader2 className="spinner" /></div> : (
               <div className="ing_list">
                 {myIngredients.length > 0 ? (
-                  myIngredients.map((ing, idx) => (
-                    <div key={`my-${ing.myIngredientId || idx}`} className="ing_card">
-                      <div className="ing_avatar"><Refrigerator size={22} color="#00B341" /></div>
-                      <div className="ing_details">
-                        <div className="top_info">
-                          <span className="ing_name">{ing.name}</span>
-                          <span className="ing_qty">{ing.quantity}{ing.unit}</span>
+                  myIngredients.map((ing, idx) => {
+                    const ingredientId = ing.id || ing.myIngredientId || idx;
+                    const daysLeft = ing.daysLeft !== undefined ? ing.daysLeft : (ing.dDay || 0);
+
+                    // 디데이 텍스트 가독성 분기 가공 처리 (daysLeft 매핑)
+                    let dDayText = "";
+                    if (daysLeft === 0) dDayText = "D-Day";
+                    else if (daysLeft > 0) dDayText = `D-${daysLeft}`;
+                    else dDayText = `D+${Math.abs(daysLeft)} (만료)`;
+
+                    return (
+                      <div 
+                        key={`my-${ingredientId}`} 
+                        className="ing_card"
+                        /* 재료 클릭 시 상세조회 페이지 경로로 라우팅 링크 바인딩 */
+                        onClick={() => navigate(`/my-ingredients/${ingredientId}`)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div className="ing_avatar"><Refrigerator size={22} color="#00B341" /></div>
+                        <div className="ing_details">
+                          <div className="top_info">
+                            <span className="ing_name">{ing.name}</span>
+                            <span className="ing_qty">{ing.quantity}{ing.unit}</span>
+                          </div>
+                          <p className={`ing_status ${daysLeft <= 3 ? "danger" : ""}`}>
+                            {dDayText} ({ing.expirationDate})
+                          </p>
                         </div>
-                        <p className={`ing_status ${ing.dDay <= 3 ? "danger" : ""}`}>
-                          D-{ing.dDay} ({ing.expirationDate})
-                        </p>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : <div className="empty_state_box">냉장고가 비어있습니다.</div>}
               </div>
             )}
@@ -200,8 +202,10 @@ export default function MyIngredientsPage() {
         ) : (
           <form className="reg_section" onSubmit={handleRegister}>
             <div className="input_group">
-              <label>재료 선택</label>
+              {/* 💡 중복 ID 에러 해결: htmlFor와 select id 매칭 독립화 */}
+              <label htmlFor="reg-ingredient-select">재료 선택</label>
               <select 
+                id="reg-ingredient-select"
                 name="ingredientId" 
                 value={formData.ingredientId} 
                 onChange={(e) => setFormData({...formData, ingredientId: e.target.value})} 
@@ -209,27 +213,58 @@ export default function MyIngredientsPage() {
                 className="master_select"
               >
                 <option value="">추가할 재료를 선택하세요</option>
-                {allIngredients.map((item) => (
-                  <option key={`m-${item.ingredientId || item.id}`} value={item.ingredientId || item.id}>{item.name}</option>
-                ))}
+                {allIngredients.map((item) => {
+                  const masterId = item.ingredientId || item.id;
+                  return (
+                    <option key={`m-${masterId}`} value={masterId}>
+                      {item.name}
+                    </option>
+                  );
+                })}
               </select>
             </div>
+
             <div className="input_row">
               <div className="input_group flex_2">
-                <label>수량</label>
-                <input type="number" step="0.1" value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} required />
+                {/* 💡 중복 ID 에러 해결: 수량 필드 고유 ID 부여 */}
+                <label htmlFor="reg-quantity-input">수량</label>
+                <input 
+                  id="reg-quantity-input"
+                  type="number" 
+                  step="0.1" 
+                  value={formData.quantity} 
+                  onChange={(e) => setFormData({...formData, quantity: e.target.value})} 
+                  required 
+                />
               </div>
               <div className="input_group flex_1">
-                <label>단위</label>
-                <select value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})}>
-                  <option value="개">개</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option>
+                {/* 💡 중복 ID 에러 해결: 단위 필드 고유 ID 부여 */}
+                <label htmlFor="reg-unit-select">단위</label>
+                <select 
+                  id="reg-unit-select"
+                  value={formData.unit} 
+                  onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                >
+                  <option value="개">개</option>
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                  <option value="ml">ml</option>
                 </select>
               </div>
             </div>
+
             <div className="input_group">
-              <label>유통기한</label>
-              <input type="date" value={formData.expirationDate} onChange={(e) => setFormData({...formData, expirationDate: e.target.value})} required />
+              {/* 💡 중복 ID 에러 해결: 유통기한 필드 고유 ID 부여 */}
+              <label htmlFor="reg-expiration-date">유통기한</label>
+              <input 
+                id="reg-expiration-date"
+                type="date" 
+                value={formData.expirationDate} 
+                onChange={(e) => setFormData({...formData, expirationDate: e.target.value})} 
+                required 
+              />
             </div>
+            
             <button type="submit" className="save_btn"><Save size={18} /> 냉장고에 저장</button>
           </form>
         )}

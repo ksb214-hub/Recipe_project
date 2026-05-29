@@ -20,27 +20,22 @@ function RecipeRegPage() {
   
   const [recipes, setRecipes] = useState([]); 
   const [availableIngredients, setAvailableIngredients] = useState([]); 
-  const [bookmarkedIds, setBookmarkedIds] = useState([]); // GET 제거 후 빈 배열로 초기화
+  const [bookmarkedIds, setBookmarkedIds] = useState([]); 
   const [loading, setLoading] = useState(false);
 
   /* ---------------------------------------------------------
-     2. 서버 데이터 로드 (GET 요청 제거 및 수정)
+     2. 서버 데이터 로드
      --------------------------------------------------------- */
   const fetchData = useCallback(async () => {
     try {
-      // 1. 레시피 로드
       const recipeRes = await customInstance({ url: "/api/recipes", method: "GET" });
       const recipeList = recipeRes.data?.data?.content || recipeRes.data?.content || recipeRes.data || [];
       setRecipes(recipeList);
 
-      // 2. 재료 로드
       const ingRes = await customInstance({ url: "/api/ingredients", method: "GET" });
       const rawIngData = ingRes.data;
       const finalIngList = rawIngData.content || rawIngData.data?.content || rawIngData.data || [];
       setAvailableIngredients(finalIngList);
-
-      // ❌ 북마크 GET 요청 부분은 서버 에러 방지를 위해 삭제되었습니다.
-
     } catch (err) {
       console.error("❌ 데이터 로드 실패:", err);
     }
@@ -51,31 +46,35 @@ function RecipeRegPage() {
   }, [fetchData]);
 
   /* ---------------------------------------------------------
-     3. 핸들러 (북마크 등록/해제 및 입력 관리)
+     3. DB 컬럼 규격에 맞춘 실시간 입력 제한 핸들러
      --------------------------------------------------------- */
-  
+  const handleTitleChange = (e) => {
+    const value = e.target.value;
+    if (value.length > 100) return; // varchar(100) 초과 차단
+    setTitle(value);
+  };
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    if (value.length > 1000) return; // 최대 1000자 가이드라인 차단
+    setDescription(value);
+  };
+
+  const handleThumbnailUrlChange = (e) => {
+    const value = e.target.value;
+    if (value.length > 1000) return; // varchar(1000) 초과 차단
+    setThumbnailImageUrl(value);
+  };
+
   const toggleBookmark = async (e, recipeId) => {
     e.stopPropagation();
     if (!recipeId) return;
-
     const targetId = Number(recipeId);
     const isCurrentlyBookmarked = bookmarkedIds.includes(targetId);
-    
     try {
-      // POST/DELETE 요청은 기존대로 유지
       const method = isCurrentlyBookmarked ? "DELETE" : "POST";
-      await customInstance({
-        url: `/api/recipes/${targetId}/bookmark`,
-        method: method
-      });
-
-      // 로컬 상태 업데이트
-      setBookmarkedIds(prev => 
-        isCurrentlyBookmarked 
-          ? prev.filter(id => id !== targetId) 
-          : [...prev, targetId]
-      );
-
+      await customInstance({ url: `/api/recipes/${targetId}/bookmark`, method });
+      setBookmarkedIds(prev => isCurrentlyBookmarked ? prev.filter(id => id !== targetId) : [...prev, targetId]);
     } catch (err) {
       console.error("❌ 북마크 통신 에러:", err);
     }
@@ -93,25 +92,45 @@ function RecipeRegPage() {
   
   const handleStepChange = (index, field, value) => {
     const newSteps = [...steps];
+    
+    // 조리 단계 설명 및 이미지 URL도 DB 규격 varchar(1000)을 초과하지 않도록 실시간 차단
+    if (field === "description" && value.length > 1000) return;
+    if (field === "cookingImageUrl" && value.length > 1000) return;
+
     newSteps[index][field] = value;
     setSteps(newSteps);
   };
 
   /* ---------------------------------------------------------
-     4. 레시피 등록 실행
+     4. 레시피 등록 및 데이터 정밀 검증
      --------------------------------------------------------- */
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
     
-    const validIngredients = ingredients
-      .filter(ing => ing.ingredientId !== "" && ing.amount.trim() !== "")
-      .map(ing => ({ 
-        ingredientId: Number(ing.ingredientId), 
-        amount: String(ing.amount) 
-      }));
+    // 1. 제목 최소 글자 수 검증
+    if (!title || title.trim().length === 0) {
+      return alert("레시피 제목은 최소 1글자 이여야 합니다.");
+    }
 
-    if (!title.trim() || validIngredients.length === 0) {
-      return alert("제목과 최소 하나 이상의 재료를 선택해주세요.");
+    // 2. 상세 설명 최소 글자 수 검증
+    if (!description || description.trim().length === 0) {
+      return alert("레시피 순서는 최소 1자여야합니다.");
+    }
+
+    // 재료 가공 및 유효성 검사
+    const validIngredients = ingredients.filter(ing => ing.ingredientId !== "");
+    if (validIngredients.length === 0) {
+      return alert("최소 1개 이상의 재료를 선택해야 합니다.");
+    }
+    const hasEmptyAmount = validIngredients.some(ing => !ing.amount || ing.amount.trim() === "");
+    if (hasEmptyAmount) {
+      return alert("선택한 재료의 수량 또는 용량을 입력해 주세요.");
+    }
+
+    // 조리 순서(Step) 빈값 검증 (Null = NO 대응)
+    const hasEmptyStepDesc = steps.some(s => !s.description || s.description.trim() === "");
+    if (hasEmptyStepDesc) {
+      return alert("조리 순서 내용을 입력해 주세요.");
     }
 
     setLoading(true);
@@ -120,16 +139,21 @@ function RecipeRegPage() {
         title: title.trim(),
         description: description.trim(),
         thumbnailImageUrl: thumbnailImageUrl.trim() || null,
-        ingredients: validIngredients,
-        steps: steps
-          .filter(s => s.description.trim() !== "")
-          .map((s, i) => ({ ...s, stepNo: i + 1 }))
+        status: "PUBLISHED", // DB의 필수 enum 컬럼 반영
+        ingredients: validIngredients.map(ing => ({
+          ingredientId: Number(ing.ingredientId),
+          amount: String(ing.amount)
+        })),
+        steps: steps.map((s, i) => ({
+          stepNo: i + 1,
+          description: s.description.trim(),
+          cookingImageUrl: s.cookingImageUrl.trim() || null
+        }))
       };
 
       await customInstance({ url: "/api/recipes", method: "POST", data: recipeData });
-      alert("🎉 레시피가 등록되었습니다!");
+      alert("레시피가 입력됐습니다.");
       
-      // 폼 초기화
       setTitle(""); setDescription(""); setThumbnailImageUrl("");
       setIngredients([{ ingredientId: "", amount: "" }]);
       setSteps([{ stepNo: 1, description: "", cookingImageUrl: "" }]);
@@ -149,13 +173,13 @@ function RecipeRegPage() {
         
         <form className="recipe_input_section" onSubmit={handleRegister}>
           <section className="form_group">
-            <Input label="레시피 제목" value={title} onChange={(e) => setTitle(e.target.value)} />
-            <Input label="간략한 설명" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <Input label="대표 이미지 URL" value={thumbnailImageUrl} onChange={(e) => setThumbnailImageUrl(e.target.value)} />
+            <Input label="레시피 제목" value={title} onChange={handleTitleChange} placeholder="레시피 제목을 입력하세요 (최대 100자)" />
+            <Input label="간략한 설명" value={description} onChange={handleDescriptionChange} placeholder="조리 설명을 입력하세요 (최대 1000자)" />
+            <Input label="대표 이미지 URL" value={thumbnailImageUrl} onChange={handleThumbnailUrlChange} placeholder="이미지 URL 경로를 입력하세요 (최대 1000자)" />
           </section>
 
           <section className="form_group">
-            <h3>재료 설정</h3>
+            <h3>재료 설정 (필수)</h3>
             {ingredients.map((ing, index) => (
               <div key={index} className="input_row">
                 <select 
@@ -175,11 +199,12 @@ function RecipeRegPage() {
           </section>
 
           <section className="form_group">
-            <h3>조리 순서</h3>
+            <h3>조리 순서 (필수)</h3>
             {steps.map((step, index) => (
               <div key={index} className="step_input_box">
                 <h4>Step {index + 1}</h4>
-                <Input placeholder="조리 과정을 설명해주세요." value={step.description} onChange={(e) => handleStepChange(index, "description", e.target.value)} />
+                <Input placeholder="조리 과정을 설명해주세요. (최대 1000자)" value={step.description} onChange={(e) => handleStepChange(index, "description", e.target.value)} />
+                <Input placeholder="단계별 이미지 URL (선택, 최대 1000자)" value={step.cookingImageUrl || ""} onChange={(e) => handleStepChange(index, "cookingImageUrl", e.target.value)} />
               </div>
             ))}
             <button type="button" className="add_btn" onClick={addStep}>+ 단계 추가</button>
@@ -197,23 +222,11 @@ function RecipeRegPage() {
           <div className="recipe_grid">
             {recipes.length > 0 ? (
               recipes.map((r, idx) => (
-                <div 
-                  key={r.id || idx} 
-                  className="recipe_card" 
-                  onClick={() => navigate(`/recipe/${r.id}`)}
-                  style={{ cursor: "pointer", position: "relative" }} 
-                >
+                <div key={r.id || idx} className="recipe_card" onClick={() => navigate(`/recipe/${r.id}`)} style={{ cursor: "pointer", position: "relative" }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <strong>{r.title}</strong>
-                    <button 
-                      onClick={(e) => toggleBookmark(e, r.id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
-                    >
-                      <Heart 
-                        size={20} 
-                        fill={bookmarkedIds.includes(Number(r.id)) ? "#ff4d4f" : "none"} 
-                        stroke={bookmarkedIds.includes(Number(r.id)) ? "#ff4d4f" : "#ccc"} 
-                      />
+                    <button onClick={(e) => toggleBookmark(e, r.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}>
+                      <Heart size={20} fill={bookmarkedIds.includes(Number(r.id)) ? "#ff4d4f" : "none"} stroke={bookmarkedIds.includes(Number(r.id)) ? "#ff4d4f" : "#ccc"} />
                     </button>
                   </div>
                   <p>{r.description}</p>

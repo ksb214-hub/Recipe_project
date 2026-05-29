@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, Plus, Trash2, Save, Loader2, Image } from "lucide-react";
 import customInstance from "../../api/api";
-import "./RecipeEditPage.css"; // 아래 제공되는 CSS와 매칭됩니다.
+import "./RecipeEditPage.css"; 
 
 export default function RecipeEditPage() {
   const { id } = useParams();
@@ -57,7 +57,24 @@ export default function RecipeEditPage() {
   }, [id, navigate]);
 
   /* ---------------------------------------------------------
-     2. 🥕 필수 재료 동적 핸들러
+     2. 🛠️ 기획 명세서 기준 실시간 글자 수 초과 입력 제한 핸들러
+     --------------------------------------------------------- */
+  const handleTitleChange = (e) => {
+    const value = e.target.value;
+    // [QA 조건 3번] 제목 100자 초과 시 실시간 입력 원천 차단
+    if (value.length > 100) return;
+    setTitle(value);
+  };
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    // [QA 조건 5번] 요약 설명/상세 내용 1000자 초과 시 실시간 입력 원천 차단
+    if (value.length > 1000) return;
+    setDescription(value);
+  };
+
+  /* ---------------------------------------------------------
+     3. 🥕 필수 재료 동적 핸들러
      --------------------------------------------------------- */
   const handleAddIngredient = () => {
     setIngredients([...ingredients, { name: "", amount: "" }]);
@@ -74,7 +91,7 @@ export default function RecipeEditPage() {
   };
 
   /* ---------------------------------------------------------
-     3. 👩‍🍳 조리 순서 동적 핸들러
+     4. 👩‍🍳 조리 순서 동적 핸들러
      --------------------------------------------------------- */
   const handleAddStep = () => {
     const nextStepNo = steps.length + 1;
@@ -83,6 +100,8 @@ export default function RecipeEditPage() {
 
   const handleStepChange = (index, field, value) => {
     const updated = [...steps];
+    // [QA 조건 5번] 조리 순서 텍스트 입력 시에도 1000자 초과 입력 실시간 차단
+    if (field === "description" && value.length > 1000) return;
     updated[index][field] = value;
     setSteps(updated);
   };
@@ -98,35 +117,78 @@ export default function RecipeEditPage() {
   };
 
   /* ---------------------------------------------------------
-     4. 수정 완료 및 서버 전송 (PUT: /api/recipes/{id})
+     5. 🚀 수정 완료 및 서버 전송 (PATCH: /api/recipes/{id})
      --------------------------------------------------------- */
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!title.trim()) return alert("레시피 제목을 입력해주세요.");
-    if (ingredients.length === 0) return alert("최소 한 개 이상의 재료를 추가해주세요.");
+    if (e) e.preventDefault();
+
+    // [QA 조건 4번] 0자 레시피 제목 예외 처리
+    if (!title || title.trim().length === 0) {
+      return alert("레시피 제목은 최소 1글자 이여야 합니다.");
+    }
+
+    // [QA 조건 6번] 0자 레시피 상세 설명 예외 처리
+    if (!description || description.trim().length === 0) {
+      return alert("레시피 순서는 최소 1자여야합니다.");
+    }
+
+    // 재료 기본 검증
+    if (ingredients.length === 0) {
+      return alert("최소 한 개 이상의 재료를 추가해주세요.");
+    }
+    const invalidIng = ingredients.some(ing => !ing.name.trim() || !ing.amount.trim());
+    if (invalidIng) {
+      return alert("추가된 모든 재료의 이름과 계량을 빠짐없이 입력해주세요.");
+    }
+
+    // 조리 순서 기본 검증
+    if (steps.length === 0) {
+      return alert("최소 한 개 이상의 조리 순서를 추가해주세요.");
+    }
+    const invalidStep = steps.some(s => !s.description.trim());
+    if (invalidStep) {
+      return alert("조리 순서의 세부 내용을 입력해주세요.");
+    }
 
     try {
       setSaving(true);
+
+      // 📦 요청 payload 구조화 정제 (요구사항에 맞게 PATCH 데이터 구성)
       const payload = {
-        title,
-        description,
-        category,
-        cookingTime,
-        servings,
-        difficulty,
-        thumbnailImageUrl,
-        ingredients,
-        steps,
+        title: title.trim(),
+        description: description.trim(),
+        category: category,
+        cookingTime: cookingTime.trim() || null,
+        servings: servings.trim() || null,
+        difficulty: difficulty,
+        thumbnailImageUrl: thumbnailImageUrl.trim() || null,
+        ingredients: ingredients.map(ing => ({
+          name: ing.name.trim(),
+          amount: ing.amount.trim()
+        })),
+        steps: steps.map((s, idx) => ({
+          stepNo: idx + 1,
+          description: s.description.trim(),
+          cookingImageUrl: s.cookingImageUrl?.trim() || null
+        })),
       };
 
-      const res = await customInstance.put(`/api/recipes/${id}`, payload);
-      if (res.data?.success) {
+      console.log("📤 [PATCH/Payload] 전송 바디 내용 확인:", payload);
+
+      // [요구사항 1번 적용] PUT 대신 PATCH 메서드로 백엔드 호출 실행
+      const res = await customInstance.patch(`/api/recipes/${id}`, payload);
+      
+      if (res.data?.success || res.status === 200) {
         alert("레시피가 정상적으로 수정되었습니다.");
         navigate(`/recipe/${id}`); // 수정 완료 후 상세페이지로 이동
       }
     } catch (err) {
-      console.error("레시피 수정 실패:", err);
-      alert("수정 요청 중 오류가 발생했습니다.");
+      console.error("❌ 레시피 수정 실패:", err);
+      if (err.response?.status === 403) {
+        alert("본인이 작성한 레시피만 수정할 수 있습니다.");
+      } else {
+        alert(`수정 실패: ${err.response?.data?.message || "수정 요청 중 오류가 발생했습니다."}`);
+      }
     } finally {
       setSaving(false);
     }
@@ -145,11 +207,11 @@ export default function RecipeEditPage() {
     <div className="recipe_edit_page">
       {/* 상단바 */}
       <div className="edit_top_nav">
-        <button onClick={() => navigate(-1)} className="nav_icon_btn">
+        <button type="button" onClick={() => navigate(-1)} className="nav_icon_btn">
           <ChevronLeft size={24} />
         </button>
         <h2>레시피 수정</h2>
-        <button onClick={handleSubmit} className="save_text_btn" disabled={saving}>
+        <button type="button" onClick={handleSubmit} className="save_text_btn" disabled={saving}>
           {saving ? <Loader2 className="spinner" size={18} /> : <Save size={20} />}
         </button>
       </div>
@@ -176,23 +238,23 @@ export default function RecipeEditPage() {
 
         {/* 기본 정보 */}
         <div className="edit_section">
-          <label className="section_label">레시피 제목</label>
+          <label className="section_label">레시피 제목 ({title.length}/100자)</label>
           <input
             type="text"
             className="base_input"
             placeholder="예) 촉촉한 계란 토스트"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={handleTitleChange}
           />
         </div>
 
         <div className="edit_section">
-          <label className="section_label">요리 요약 설명</label>
+          <label className="section_label">요리 요약 설명 ({description.length}/1000자)</label>
           <textarea
             className="base_textarea"
             placeholder="레시피에 대한 간단한 설명을 입력하세요."
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={handleDescriptionChange}
           />
         </div>
 
@@ -303,7 +365,7 @@ export default function RecipeEditPage() {
                   </button>
                 </div>
                 <textarea
-                  placeholder="조리 과정을 상세히 적어주세요."
+                  placeholder="조리 과정을 상세히 적어주세요. (최대 1000자)"
                   value={step.description}
                   onChange={(e) => handleStepChange(idx, "description", e.target.value)}
                   className="step_textarea"

@@ -15,7 +15,7 @@ function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
   
-  // 인기 검색어 상태
+  // 인기 검색어 상태 (객체 배열 구조 대응)
   const [popularKeywords, setPopularKeywords] = useState([]);
 
   // 필터 상태
@@ -37,18 +37,29 @@ function SearchPage() {
       if (res.data?.success) {
         const keywords = res.data.data?.keywords || res.data.data || [];
         
-        // 💡 [핵심 방어 코드] 백엔드에서 빈 배열([])이 오면 화면이 심심하지 않게 추천 키워드로 대체합니다.
+        // 💡 백엔드 인기 검색어가 비어있을 때 규격에 맞춘 객체 배열로 대체 배치
         if (keywords.length === 0) {
           console.log("ℹ️ 백엔드 인기 검색어가 비어있어 기본 추천 키워드로 대체 배치합니다.");
-          setPopularKeywords(["김치찌개", "떡볶이", "디저트", "돈까스", "계란말이"]);
+          setPopularKeywords([
+            { rank: 1, keyword: "김치찌개" },
+            { rank: 2, keyword: "떡볶이" },
+            { rank: 3, keyword: "디저트" },
+            { rank: 4, keyword: "돈까스" },
+            { rank: 5, keyword: "계란말이" }
+          ]);
         } else {
           setPopularKeywords(keywords);
         }
       }
     } catch (err) {
       console.error("❌ 인기 검색어 로드 실패:", err);
-      // 에러가 나더라도 클라이언트가 멈추지 않도록 기본 배열 세팅
-      setPopularKeywords(["김치찌개", "떡볶이", "디저트", "닭백숙"]);
+      // 에러가 나더라도 동일한 { rank, keyword } 규격의 배열을 세팅하여 화면 다운 방지
+      setPopularKeywords([
+        { rank: 1, keyword: "김치찌개" },
+        { rank: 2, keyword: "떡볶이" },
+        { rank: 3, keyword: "디저트" },
+        { rank: 4, keyword: "닭백숙" }
+      ]);
     }
   }, []);
 
@@ -79,7 +90,8 @@ function SearchPage() {
       // 북마크 연동
       try {
         const bookmarkRes = await customInstance.get("/api/recipe/bookmarks/ids");
-        setBookmarkedIds(bookmarkRes.data?.data || bookmarkRes.data || []);
+        const ids = bookmarkRes.data?.data || bookmarkRes.data || [];
+        setBookmarkedIds(ids.map(id => Number(id)));
       } catch (bErr) {
         console.warn("⚠️ 북마크 ID 리스트 로드 실패:", bErr);
         setBookmarkedIds([]);
@@ -117,15 +129,17 @@ function SearchPage() {
   const toggleBookmark = async (e, recipeId) => {
     e.stopPropagation();
     e.preventDefault();
+    if (!recipeId) return;
     
-    const isAlreadyBookmarked = bookmarkedIds.includes(recipeId);
+    const targetId = Number(recipeId);
+    const isAlreadyBookmarked = bookmarkedIds.includes(targetId);
     try {
       if (isAlreadyBookmarked) {
-        await customInstance.delete(`/api/recipes/${recipeId}/bookmark`);
-        setBookmarkedIds(prev => prev.filter(id => id !== recipeId));
+        await customInstance.delete(`/api/recipes/${targetId}/bookmark`);
+        setBookmarkedIds(prev => prev.filter(id => id !== targetId));
       } else {
-        await customInstance.post(`/api/recipes/${recipeId}/bookmark`, {});
-        setBookmarkedIds(prev => [...prev, recipeId]);
+        await customInstance.post(`/api/recipes/${targetId}/bookmark`, {});
+        setBookmarkedIds(prev => [...prev, targetId]);
       }
     } catch (err) {
       console.error("❌ 북마크 처리 실패:", err);
@@ -185,31 +199,35 @@ function SearchPage() {
           <section className="popular_keywords_section" style={{ padding: '10px 20px 15px' }}>
             <div className="section_header" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <TrendingUp size={18} color="#667eea" />
-              {/* 백엔드 데이터 여부에 따라 제목을 유연하게 변경 */}
               <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#333' }}>
-                {popularKeywords.includes("김치찌개") && !searchQuery ? "추천 검색어" : "인기 검색어"}
+                인기 검색어
               </h3>
             </div>
             <div className="keyword_list" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {popularKeywords.map((kw, idx) => (
-                <span 
-                  key={`pop-kw-${idx}`} 
-                  className="keyword_tag"
-                  onClick={() => handleKeywordClick(kw)}
-                  style={{
-                    padding: '6px 14px',
-                    background: '#fff',
-                    border: '1px solid #eee',
-                    borderRadius: '20px',
-                    fontSize: '13px',
-                    color: '#666',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {kw}
-                </span>
-              ))}
+              {popularKeywords.map((kw, idx) => {
+                // 💡 [핵심 수정] kw가 객체 구조 { rank, keyword } 이므로 내부 문자열을 안전하게 추출합니다.
+                const keywordText = typeof kw === "object" ? kw.keyword : kw;
+                
+                return (
+                  <span 
+                    key={`pop-kw-${idx}`} 
+                    className="keyword_tag"
+                    onClick={() => handleKeywordClick(keywordText)}
+                    style={{
+                      padding: '6px 14px',
+                      background: '#fff',
+                      border: '1px solid #eee',
+                      borderRadius: '20px',
+                      fontSize: '13px',
+                      color: '#666',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {keywordText}
+                  </span>
+                );
+              })}
             </div>
           </section>
         )}
@@ -230,7 +248,8 @@ function SearchPage() {
           ) : filteredRecipes.length > 0 ? (
             <div className="recipe_grid">
               {filteredRecipes.map((recipe, index) => {
-                const uniqueKey = recipe.id || `search-recipe-${index}`;
+                const targetRecipeId = recipe.id;
+                const uniqueKey = targetRecipeId || `search-recipe-${index}`;
                 return (
                   <div key={uniqueKey} className="recipe-card-box">
                     <button 
@@ -244,9 +263,15 @@ function SearchPage() {
                       title={recipe.title} 
                       thumbnailImageUrl={recipe.thumbnailImageUrl} 
                       category={recipe.authorNickname || "공공데이터"}
-                      isBookmarked={bookmarkedIds.includes(recipe.id)}
-                      onToggleBookmark={(e) => toggleBookmark(e, recipe.id)}
-                      onClick={() => navigate(`/recipe/${recipe.id}`)}
+                      isBookmarked={bookmarkedIds.includes(Number(targetRecipeId))}
+                      onToggleBookmark={(e) => toggleBookmark(e, targetRecipeId)}
+                      onClick={() => {
+                        if (targetRecipeId) {
+                          navigate(`/recipe/${targetRecipeId}`);
+                        } else {
+                          alert("상세 데이터를 조회할 수 없는 레시피 식별자입니다.");
+                        }
+                      }}
                     />
                   </div>
                 );
