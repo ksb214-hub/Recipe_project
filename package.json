@@ -1,6 +1,7 @@
 {
   "name": "login-project",
   "version": "0.1.0",
+  "proxy": "http://localhost:8081",
   "private": true,
   "dependencies": {
     "@tanstack/react-query": "^5.96.1",
